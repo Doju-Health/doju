@@ -11,6 +11,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderTracking from "./pages/OrderTracking";
+import SellerDashboard from "./pages/seller/SellerDashboard";
 import BuyerOnboarding from "./pages/onboarding/BuyerOnboarding";
 import SellerOnboarding from "./pages/onboarding/SellerOnboarding";
 import About from "./pages/About";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/track-order" element={<OrderTracking />} />
+            <Route path="/seller/dashboard" element={<SellerDashboard />} />
             <Route path="/onboarding/buyer" element={<BuyerOnboarding />} />
             <Route path="/onboarding/seller" element={<SellerOnboarding />} />
             <Route path="/about" element={<About />} />
