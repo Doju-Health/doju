@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import dojuLogo from '@/assets/doju-logo.jpg';
 
 const Footer = () => {
   return (
@@ -7,11 +8,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-doju-navy">
-                <span className="text-sm font-bold text-primary-foreground">DJ</span>
-              </div>
-              <span className="text-xl font-bold text-foreground">Doju</span>
+            <Link to="/" className="flex items-center">
+              <img src={dojuLogo} alt="Doju" className="h-10 w-auto object-contain" />
             </Link>
             <p className="text-sm text-muted-foreground">
               Your trusted source for clinical-grade medical equipment and supplies.
