@@ -14,21 +14,30 @@ import nebulizerImg from '@/assets/products/nebulizer.jpg';
 import firstAidKitImg from '@/assets/products/first-aid-kit.jpg';
 import oxygenConcentratorImg from '@/assets/products/oxygen-concentrator.jpg';
 
+// Import category images
+import diagnosticsImg from '@/assets/categories/diagnostics.jpg';
+import monitorsImg from '@/assets/categories/monitors.jpg';
+import consumablesImg from '@/assets/categories/consumables.jpg';
+import thermometersImg from '@/assets/categories/thermometers.jpg';
+import mobilityImg from '@/assets/categories/mobility.jpg';
+import respiratoryImg from '@/assets/categories/respiratory.jpg';
+
 export const categories: Category[] = [
-  { id: '1', name: 'Diagnostics', description: 'Stethoscopes, BP cuffs, otoscopes', icon: 'Stethoscope', productCount: 124 },
-  { id: '2', name: 'Monitors', description: 'ECG, oximeters, patient monitors', icon: 'Activity', productCount: 86 },
-  { id: '3', name: 'Consumables', description: 'Gloves, syringes, bandages', icon: 'Package', productCount: 210 },
-  { id: '4', name: 'Thermometers', description: 'Infrared, digital, contactless', icon: 'Thermometer', productCount: 42 },
-  { id: '5', name: 'Mobility', description: 'Wheelchairs, walkers, canes', icon: 'Wheelchair', productCount: 33 },
-  { id: '6', name: 'Respiratory', description: 'O2 concentrators, nebulizers', icon: 'Wind', productCount: 55 },
+  { id: '1', name: 'Diagnostics', description: 'Stethoscopes, BP cuffs, otoscopes', icon: 'Stethoscope', productCount: 124, image: diagnosticsImg },
+  { id: '2', name: 'Monitors', description: 'ECG, oximeters, patient monitors', icon: 'Activity', productCount: 86, image: monitorsImg },
+  { id: '3', name: 'Consumables', description: 'Gloves, syringes, bandages', icon: 'Package', productCount: 210, image: consumablesImg },
+  { id: '4', name: 'Thermometers', description: 'Infrared, digital, contactless', icon: 'Thermometer', productCount: 42, image: thermometersImg },
+  { id: '5', name: 'Mobility', description: 'Wheelchairs, walkers, canes', icon: 'Wheelchair', productCount: 33, image: mobilityImg },
+  { id: '6', name: 'Respiratory', description: 'O2 concentrators, nebulizers', icon: 'Wind', productCount: 55, image: respiratoryImg },
 ];
 
+// Prices in Naira (NGN)
 export const featuredProducts: Product[] = [
   {
     id: '1',
     name: 'Classic Stethoscope III',
     description: 'Designed for accurate auscultation in clinical and home settings. Comfortable ear tips, tunable diaphragm, and durable tubing deliver clear acoustics and long-lasting performance.',
-    price: 129.00,
+    price: 85000,
     images: [stethoscopeImg],
     category: 'Diagnostics',
     brand: 'OmniCare',
@@ -41,8 +50,8 @@ export const featuredProducts: Product[] = [
   {
     id: '2',
     name: 'Automatic BP Monitor',
-    description: 'Digital blood pressure monitor with large LCD display. Easy one-button operation with memory for 60 readings.',
-    price: 79.00,
+    description: 'Digital blood pressure monitor with large LCD display. Easy one-button operation with memory for 60 readings. Accurate and reliable for daily health monitoring.',
+    price: 52000,
     images: [bpMonitorImg],
     category: 'Monitors',
     brand: 'PulseCheck',
@@ -55,8 +64,8 @@ export const featuredProducts: Product[] = [
   {
     id: '3',
     name: 'LED Otoscope Kit',
-    description: 'Professional LED otoscope with 10 disposable specula. Bright illumination for clear ear examinations.',
-    price: 59.00,
+    description: 'Professional LED otoscope with 10 disposable specula. Bright illumination for clear ear examinations. Essential for ENT diagnostics.',
+    price: 38500,
     images: [otoscopeImg],
     category: 'Diagnostics',
     brand: 'AeroMed',
@@ -69,8 +78,8 @@ export const featuredProducts: Product[] = [
   {
     id: '4',
     name: 'Infrared Thermometer',
-    description: 'Non-contact infrared thermometer with instant readings. Perfect for home and clinical use.',
-    price: 39.00,
+    description: 'Non-contact infrared thermometer with instant readings. Perfect for home and clinical use. Accurate temperature measurement in seconds.',
+    price: 25500,
     images: [thermometerImg],
     category: 'Thermometers',
     brand: 'ThermaCo',
@@ -83,8 +92,8 @@ export const featuredProducts: Product[] = [
   {
     id: '5',
     name: 'Finger Pulse Oximeter',
-    description: 'Compact pulse oximeter with SpO2 and pulse rate display. OLED screen with multiple display modes.',
-    price: 29.00,
+    description: 'Compact pulse oximeter with SpO2 and pulse rate display. OLED screen with multiple display modes. Essential for monitoring oxygen levels.',
+    price: 19000,
     images: [oximeterImg],
     category: 'Monitors',
     brand: 'OmniCare',
@@ -97,8 +106,8 @@ export const featuredProducts: Product[] = [
   {
     id: '6',
     name: 'Lightweight Wheelchair',
-    description: 'Foldable aluminum wheelchair with comfortable seat and footrests. Weight capacity 250 lbs.',
-    price: 229.00,
+    description: 'Foldable aluminum wheelchair with comfortable seat and footrests. Weight capacity 250 lbs. Easy to transport and store.',
+    price: 150000,
     images: [wheelchairImg],
     category: 'Mobility',
     brand: 'OmniCare',
@@ -115,8 +124,8 @@ export const allProducts: Product[] = [
   {
     id: '7',
     name: 'Handheld ECG Device',
-    description: 'Portable ECG monitor with 6-lead capability. Connects to smartphone app for recording and sharing.',
-    price: 189.00,
+    description: 'Portable ECG monitor with 6-lead capability. Connects to smartphone app for recording and sharing. Clinical-grade heart monitoring on the go.',
+    price: 124000,
     images: [ecgDeviceImg],
     category: 'Monitors',
     brand: 'PulseCheck',
@@ -129,8 +138,8 @@ export const allProducts: Product[] = [
   {
     id: '8',
     name: 'Portable Ultrasound Probe',
-    description: 'Wireless ultrasound probe compatible with iOS and Android. 192 elements for clear imaging.',
-    price: 499.00,
+    description: 'Wireless ultrasound probe compatible with iOS and Android. 192 elements for clear imaging. Professional diagnostics anywhere.',
+    price: 328000,
     images: [ultrasoundProbeImg],
     category: 'Diagnostics',
     brand: 'AeroMed',
@@ -143,8 +152,8 @@ export const allProducts: Product[] = [
   {
     id: '9',
     name: 'Blood Glucose Monitor Kit',
-    description: 'Complete glucose monitoring kit with meter, 50 test strips, and lancing device.',
-    price: 49.00,
+    description: 'Complete glucose monitoring kit with meter, 50 test strips, and lancing device. Essential for diabetes management.',
+    price: 32000,
     images: [glucoseMonitorImg],
     category: 'Monitors',
     brand: 'OmniCare',
@@ -157,8 +166,8 @@ export const allProducts: Product[] = [
   {
     id: '10',
     name: 'Compact Nebulizer',
-    description: 'Quiet and efficient compressor nebulizer for respiratory treatments. Includes adult and child masks.',
-    price: 69.00,
+    description: 'Quiet and efficient compressor nebulizer for respiratory treatments. Includes adult and child masks. Fast and effective medication delivery.',
+    price: 45000,
     images: [nebulizerImg],
     category: 'Respiratory',
     brand: 'AeroMed',
@@ -171,8 +180,8 @@ export const allProducts: Product[] = [
   {
     id: '11',
     name: 'Emergency First Aid Kit',
-    description: 'Comprehensive 150-piece first aid kit in a durable case. Ideal for home, office, or travel.',
-    price: 35.00,
+    description: 'Comprehensive 150-piece first aid kit in a durable case. Ideal for home, office, or travel. Be prepared for any emergency.',
+    price: 23000,
     images: [firstAidKitImg],
     category: 'Consumables',
     brand: 'OmniCare',
@@ -185,8 +194,8 @@ export const allProducts: Product[] = [
   {
     id: '12',
     name: 'Portable O2 Concentrator',
-    description: 'Lightweight portable oxygen concentrator with 5L flow rate. 8-hour battery life.',
-    price: 699.00,
+    description: 'Lightweight portable oxygen concentrator with 5L flow rate. 8-hour battery life. Medical-grade oxygen therapy anywhere.',
+    price: 459000,
     images: [oxygenConcentratorImg],
     category: 'Respiratory',
     brand: 'AeroMed',

@@ -1,54 +1,78 @@
 import { Category } from '@/types';
 import { Link } from 'react-router-dom';
-import { Stethoscope, Activity, Package, Thermometer, Wind, Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 
 interface CategoryCardProps {
   category: Category;
+  index?: number;
 }
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Stethoscope: Stethoscope,
-  Activity: Activity,
-  Package: Package,
-  Thermometer: Thermometer,
-  Wind: Wind,
-  Wheelchair: Heart, // Using Heart as fallback
-};
-
-const CategoryCard = ({ category }: CategoryCardProps) => {
-  const Icon = iconMap[category.icon] || Package;
-
+const CategoryCard = ({ category, index = 0 }: CategoryCardProps) => {
   return (
-    <div className="group rounded-xl border border-border bg-card p-4 transition-all duration-300 hover:shadow-lg hover:border-doju-lime/30">
-      <div className="flex items-start gap-3 mb-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-doju-lime-pale text-doju-lime">
-          <Icon className="h-5 w-5" />
+    <Link to={`/marketplace?category=${category.id}`}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: index * 0.08 }}
+        whileHover={{ y: -6, scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="group relative rounded-2xl overflow-hidden cursor-pointer h-64"
+      >
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          {category.image ? (
+            <motion.img
+              src={category.image}
+              alt={category.name}
+              className="h-full w-full object-cover"
+              whileHover={{ scale: 1.1 }}
+              transition={{ duration: 0.6 }}
+            />
+          ) : (
+            <div className="h-full w-full bg-gradient-to-br from-doju-navy to-doju-navy-light" />
+          )}
         </div>
-        <div>
-          <h3 className="font-semibold text-doju-navy">{category.name}</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">{category.description}</p>
-        </div>
-      </div>
-      
-      {/* Placeholder image */}
-      <div className="relative aspect-[4/3] rounded-lg bg-muted overflow-hidden mb-3">
-        <div className="absolute inset-0 bg-gradient-to-br from-doju-navy/5 to-doju-lime/5" />
-      </div>
 
-      <div className="flex gap-2">
-        <Link to={`/marketplace?category=${category.id}`}>
-          <Button variant="doju-ghost" size="sm">
-            View items
-          </Button>
-        </Link>
-        <Link to={`/marketplace?category=${category.id}`}>
-          <Button variant="doju-primary" size="sm">
-            Shop now
-          </Button>
-        </Link>
-      </div>
-    </div>
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-doju-navy via-doju-navy/60 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
+
+        {/* Content */}
+        <div className="absolute inset-0 p-5 flex flex-col justify-end">
+          <motion.div
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 + index * 0.08 }}
+          >
+            <h3 className="text-xl font-bold text-primary-foreground mb-1 group-hover:text-doju-lime transition-colors">
+              {category.name}
+            </h3>
+            <p className="text-sm text-primary-foreground/70 mb-3">
+              {category.description}
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-primary-foreground/60">
+                {category.productCount} products
+              </span>
+              <motion.div
+                className="flex items-center gap-1 text-doju-lime text-sm font-medium"
+                initial={{ x: 0 }}
+                whileHover={{ x: 5 }}
+              >
+                Shop now
+                <ArrowRight className="h-4 w-4" />
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Animated border on hover */}
+        <motion.div
+          className="absolute inset-0 rounded-2xl border-2 border-doju-lime opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          initial={false}
+        />
+      </motion.div>
+    </Link>
   );
 };
 
