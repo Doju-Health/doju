@@ -18,7 +18,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const isAdminLogin = searchParams.get('admin') === 'true';
   
-  const { user, signIn, signUp, loading } = useAuth();
+  const { user, signIn, signUp, loading, isAdmin } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,9 +29,14 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !loading) {
-      navigate('/');
+      // Redirect admins to admin dashboard, others to home
+      if (isAdmin) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, isAdmin, navigate]);
 
   const validateForm = () => {
     try {

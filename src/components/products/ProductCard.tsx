@@ -29,12 +29,13 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   };
 
   return (
-    <motion.div
+<motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.1 }}
       whileHover={{ y: -8 }}
-      className="group rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-doju-lime/40"
+      onClick={handleProductClick}
+      className="group rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-doju-lime/40 cursor-pointer"
     >
       {/* Image */}
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
@@ -122,14 +123,20 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
               variant="doju-outline"
               size="sm"
               className="w-full gap-2"
-              onClick={() => addToCart(product)}
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(product);
+              }}
             >
               <ShoppingCart className="h-4 w-4" />
               Add
             </Button>
           </motion.div>
           <motion.div className="flex-1" whileTap={{ scale: 0.95 }}>
-            <Button variant="doju-primary" size="sm" className="w-full" onClick={handleProductClick}>
+            <Button variant="doju-primary" size="sm" className="w-full" onClick={(e) => {
+              e.stopPropagation();
+              handleProductClick();
+            }}>
               View
             </Button>
           </motion.div>
