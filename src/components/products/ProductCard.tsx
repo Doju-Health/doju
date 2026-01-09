@@ -2,9 +2,11 @@ import { Product } from '@/types';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Eye, Star, Users } from 'lucide-react';
+import { ShoppingCart, Eye, Star, Users, LogIn } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +15,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleProductClick = () => {
@@ -119,18 +122,34 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
 
         <div className="flex gap-2 pt-2">
           <motion.div className="flex-1" whileTap={{ scale: 0.95 }}>
-            <Button
-              variant="doju-outline"
-              size="sm"
-              className="w-full gap-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                addToCart(product);
-              }}
-            >
-              <ShoppingCart className="h-4 w-4" />
-              Add
-            </Button>
+            {user ? (
+              <Button
+                variant="doju-outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addToCart(product);
+                }}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                Add
+              </Button>
+            ) : (
+              <Button
+                variant="doju-outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toast.info("Sign in to add items to your cart");
+                  navigate(`/auth?returnTo=/product/${product.id}`);
+                }}
+              >
+                <LogIn className="h-4 w-4" />
+                Sign in
+              </Button>
+            )}
           </motion.div>
           <motion.div className="flex-1" whileTap={{ scale: 0.95 }}>
             <Button variant="doju-primary" size="sm" className="w-full" onClick={(e) => {
