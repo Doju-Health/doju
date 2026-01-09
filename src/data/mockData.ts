@@ -1,5 +1,19 @@
 import { Product, Category } from '@/types';
 
+// Import product images
+import stethoscopeImg from '@/assets/products/stethoscope.jpg';
+import bpMonitorImg from '@/assets/products/bp-monitor.jpg';
+import otoscopeImg from '@/assets/products/otoscope.jpg';
+import thermometerImg from '@/assets/products/thermometer.jpg';
+import oximeterImg from '@/assets/products/oximeter.jpg';
+import wheelchairImg from '@/assets/products/wheelchair.jpg';
+import ecgDeviceImg from '@/assets/products/ecg-device.jpg';
+import ultrasoundProbeImg from '@/assets/products/ultrasound-probe.jpg';
+import glucoseMonitorImg from '@/assets/products/glucose-monitor.jpg';
+import nebulizerImg from '@/assets/products/nebulizer.jpg';
+import firstAidKitImg from '@/assets/products/first-aid-kit.jpg';
+import oxygenConcentratorImg from '@/assets/products/oxygen-concentrator.jpg';
+
 export const categories: Category[] = [
   { id: '1', name: 'Diagnostics', description: 'Stethoscopes, BP cuffs, otoscopes', icon: 'Stethoscope', productCount: 124 },
   { id: '2', name: 'Monitors', description: 'ECG, oximeters, patient monitors', icon: 'Activity', productCount: 86 },
@@ -15,7 +29,7 @@ export const featuredProducts: Product[] = [
     name: 'Classic Stethoscope III',
     description: 'Designed for accurate auscultation in clinical and home settings. Comfortable ear tips, tunable diaphragm, and durable tubing deliver clear acoustics and long-lasting performance.',
     price: 129.00,
-    images: ['/placeholder.svg'],
+    images: [stethoscopeImg],
     category: 'Diagnostics',
     brand: 'OmniCare',
     sku: 'OC-STETH-003',
@@ -29,7 +43,7 @@ export const featuredProducts: Product[] = [
     name: 'Automatic BP Monitor',
     description: 'Digital blood pressure monitor with large LCD display. Easy one-button operation with memory for 60 readings.',
     price: 79.00,
-    images: ['/placeholder.svg'],
+    images: [bpMonitorImg],
     category: 'Monitors',
     brand: 'PulseCheck',
     sku: 'PC-BP-201',
@@ -43,7 +57,7 @@ export const featuredProducts: Product[] = [
     name: 'LED Otoscope Kit',
     description: 'Professional LED otoscope with 10 disposable specula. Bright illumination for clear ear examinations.',
     price: 59.00,
-    images: ['/placeholder.svg'],
+    images: [otoscopeImg],
     category: 'Diagnostics',
     brand: 'AeroMed',
     sku: 'AM-OTO-110',
@@ -57,7 +71,7 @@ export const featuredProducts: Product[] = [
     name: 'Infrared Thermometer',
     description: 'Non-contact infrared thermometer with instant readings. Perfect for home and clinical use.',
     price: 39.00,
-    images: ['/placeholder.svg'],
+    images: [thermometerImg],
     category: 'Thermometers',
     brand: 'ThermaCo',
     sku: 'TC-IR-07',
@@ -71,7 +85,7 @@ export const featuredProducts: Product[] = [
     name: 'Finger Pulse Oximeter',
     description: 'Compact pulse oximeter with SpO2 and pulse rate display. OLED screen with multiple display modes.',
     price: 29.00,
-    images: ['/placeholder.svg'],
+    images: [oximeterImg],
     category: 'Monitors',
     brand: 'OmniCare',
     sku: 'OC-OXI-22',
@@ -85,7 +99,7 @@ export const featuredProducts: Product[] = [
     name: 'Lightweight Wheelchair',
     description: 'Foldable aluminum wheelchair with comfortable seat and footrests. Weight capacity 250 lbs.',
     price: 229.00,
-    images: ['/placeholder.svg'],
+    images: [wheelchairImg],
     category: 'Mobility',
     brand: 'OmniCare',
     sku: 'OC-MOB-05',
@@ -103,7 +117,7 @@ export const allProducts: Product[] = [
     name: 'Handheld ECG Device',
     description: 'Portable ECG monitor with 6-lead capability. Connects to smartphone app for recording and sharing.',
     price: 189.00,
-    images: ['/placeholder.svg'],
+    images: [ecgDeviceImg],
     category: 'Monitors',
     brand: 'PulseCheck',
     sku: 'PC-ECG-09',
@@ -117,7 +131,7 @@ export const allProducts: Product[] = [
     name: 'Portable Ultrasound Probe',
     description: 'Wireless ultrasound probe compatible with iOS and Android. 192 elements for clear imaging.',
     price: 499.00,
-    images: ['/placeholder.svg'],
+    images: [ultrasoundProbeImg],
     category: 'Diagnostics',
     brand: 'AeroMed',
     sku: 'AM-US-301',
@@ -131,7 +145,7 @@ export const allProducts: Product[] = [
     name: 'Blood Glucose Monitor Kit',
     description: 'Complete glucose monitoring kit with meter, 50 test strips, and lancing device.',
     price: 49.00,
-    images: ['/placeholder.svg'],
+    images: [glucoseMonitorImg],
     category: 'Monitors',
     brand: 'OmniCare',
     sku: 'OC-GLU-12',
@@ -145,7 +159,7 @@ export const allProducts: Product[] = [
     name: 'Compact Nebulizer',
     description: 'Quiet and efficient compressor nebulizer for respiratory treatments. Includes adult and child masks.',
     price: 69.00,
-    images: ['/placeholder.svg'],
+    images: [nebulizerImg],
     category: 'Respiratory',
     brand: 'AeroMed',
     sku: 'AM-NEB-44',
@@ -159,7 +173,7 @@ export const allProducts: Product[] = [
     name: 'Emergency First Aid Kit',
     description: 'Comprehensive 150-piece first aid kit in a durable case. Ideal for home, office, or travel.',
     price: 35.00,
-    images: ['/placeholder.svg'],
+    images: [firstAidKitImg],
     category: 'Consumables',
     brand: 'OmniCare',
     sku: 'OC-FA-10',
@@ -173,7 +187,7 @@ export const allProducts: Product[] = [
     name: 'Portable O2 Concentrator',
     description: 'Lightweight portable oxygen concentrator with 5L flow rate. 8-hour battery life.',
     price: 699.00,
-    images: ['/placeholder.svg'],
+    images: [oxygenConcentratorImg],
     category: 'Respiratory',
     brand: 'AeroMed',
     sku: 'AM-O2-90',
