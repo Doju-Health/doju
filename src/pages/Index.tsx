@@ -326,8 +326,44 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Shop By Category */}
+        {/* Top Selling Products - Moved above categories */}
         <section className="py-12 sm:py-20 bg-muted/30">
+          <div className="container px-4 sm:px-6">
+            <motion.div 
+              className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-12 gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <div>
+                <Badge className="mb-2 sm:mb-3 bg-doju-lime/10 text-doju-lime border-doju-lime/20 text-xs">
+                  Best Sellers
+                </Badge>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
+                  Top Selling Products
+                </h2>
+                <p className="text-muted-foreground mt-1.5 sm:mt-2 max-w-lg text-sm sm:text-base">
+                  Our most popular medical equipment trusted by healthcare professionals.
+                </p>
+              </div>
+              <Link to="/marketplace">
+                <Button variant="doju-outline" className="gap-2 group h-10 sm:h-11 text-sm">
+                  View All Products
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </motion.div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {topProducts.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Shop By Category */}
+        <section className="py-12 sm:py-20 bg-card">
           <div className="container px-4 sm:px-6">
             <motion.div 
               className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-12 gap-4"
@@ -409,41 +445,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Featured Products - Top 4 */}
-        <section className="py-12 sm:py-20 bg-muted/30">
-          <div className="container px-4 sm:px-6">
-            <motion.div 
-              className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-12 gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <div>
-                <Badge className="mb-2 sm:mb-3 bg-doju-lime/10 text-doju-lime border-doju-lime/20 text-xs">
-                  Best Sellers
-                </Badge>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
-                  Top-Selling Products
-                </h2>
-                <p className="text-muted-foreground mt-1.5 sm:mt-2 text-sm sm:text-base">
-                  Our most popular items this week — trusted by healthcare professionals.
-                </p>
-              </div>
-              <Link to="/marketplace">
-                <Button variant="doju-primary" className="gap-2 group h-10 sm:h-11 text-sm">
-                  Browse All Products
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-            </motion.div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {topProducts.map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* Trust Section */}
         <section className="py-12 sm:py-20 bg-card">
