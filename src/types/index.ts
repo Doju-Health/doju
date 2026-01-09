@@ -2,6 +2,15 @@
 
 export type UserRole = 'buyer' | 'seller' | 'admin';
 
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  productCount: number;
+  image?: string;
+}
+
 export interface User {
   id: string;
   name: string;

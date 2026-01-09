@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Header from '@/components/layout/Header';
@@ -7,21 +7,63 @@ import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/products/ProductCard';
 import CategoryCard from '@/components/products/CategoryCard';
 import { categories, featuredProducts } from '@/data/mockData';
-import { Shield, Truck, BadgeCheck, Headphones } from 'lucide-react';
+import { 
+  Shield, Truck, BadgeCheck, Headphones, 
+  CheckCircle, Zap, Heart, Globe, 
+  ArrowRight, Star, Users, Package
+} from 'lucide-react';
 import heroImage from '@/assets/hero-medical.jpg';
+import { useRef } from 'react';
 
 const Index = () => {
-  const trustBadges = [
-    { icon: Shield, label: 'Secure checkout', description: '256-bit encryption and PCI compliant.' },
-    { icon: Truck, label: 'Fast delivery', description: 'Same-day dispatch on select items.' },
-    { icon: BadgeCheck, label: 'Verified sellers', description: 'Thorough vetting and documentation.' },
-    { icon: Headphones, label: 'Support 24/7', description: 'Clinical-grade product guidance.' },
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"]
+  });
+  
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 150]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+
+  const whyChooseDoju = [
+    { 
+      icon: Shield, 
+      title: 'Trusted & Verified', 
+      description: 'Every seller is vetted, every product is certified. Shop with confidence knowing you\'re getting authentic medical equipment.',
+      color: 'bg-blue-500/10 text-blue-600'
+    },
+    { 
+      icon: Zap, 
+      title: 'Fast & Reliable', 
+      description: 'Swift delivery across Nigeria. Track your order in real-time and receive updates at every step.',
+      color: 'bg-yellow-500/10 text-yellow-600'
+    },
+    { 
+      icon: Heart, 
+      title: 'Healthcare First', 
+      description: 'Built by healthcare professionals, for healthcare professionals. We understand your needs.',
+      color: 'bg-red-500/10 text-red-600'
+    },
+    { 
+      icon: Globe, 
+      title: 'Wide Selection', 
+      description: 'From diagnostics to mobility aids, find everything you need in one trusted marketplace.',
+      color: 'bg-green-500/10 text-green-600'
+    },
   ];
 
-  const steps = [
-    { number: 1, title: 'Find products', description: 'Search by category, brand, or SKU across verified listings.' },
-    { number: 2, title: 'Checkout securely', description: 'Encrypted payments and multiple shipping options.' },
-    { number: 3, title: 'Receive quickly', description: 'Track orders from warehouse to your door.' },
+  const stats = [
+    { value: '500+', label: 'Verified Sellers', icon: Users },
+    { value: '10K+', label: 'Products', icon: Package },
+    { value: '50K+', label: 'Happy Customers', icon: Heart },
+    { value: '24/7', label: 'Support', icon: Headphones },
+  ];
+
+  const trustBadges = [
+    { icon: Shield, label: 'Secure Checkout', description: 'Bank-grade encryption' },
+    { icon: Truck, label: 'Nationwide Delivery', description: 'Fast & tracked shipping' },
+    { icon: BadgeCheck, label: 'Quality Guarantee', description: '100% authentic products' },
+    { icon: Headphones, label: 'Expert Support', description: 'Clinical guidance 24/7' },
   ];
 
   const containerVariants = {
@@ -33,116 +75,185 @@ const Index = () => {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div ref={containerRef} className="min-h-screen flex flex-col overflow-x-hidden">
       <Header />
       
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-card border-b border-border overflow-hidden">
-          <div className="container py-12 md:py-20">
-            <div className="grid lg:grid-cols-2 gap-8 items-center">
+        {/* Hero Section - Enhanced */}
+        <section className="relative bg-gradient-to-br from-doju-navy via-doju-navy to-doju-navy-light overflow-hidden min-h-[90vh] flex items-center">
+          {/* Animated background elements */}
+          <motion.div 
+            className="absolute inset-0 opacity-10"
+            animate={{ 
+              backgroundPosition: ['0% 0%', '100% 100%'],
+            }}
+            transition={{ 
+              duration: 30, 
+              repeat: Infinity, 
+              repeatType: 'reverse' 
+            }}
+            style={{
+              backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
+            }}
+          />
+          
+          {/* Floating shapes */}
+          <motion.div 
+            className="absolute top-20 left-10 w-72 h-72 bg-doju-lime/20 rounded-full blur-3xl"
+            animate={{ 
+              scale: [1, 1.2, 1],
+              opacity: [0.2, 0.3, 0.2],
+            }}
+            transition={{ duration: 8, repeat: Infinity }}
+          />
+          <motion.div 
+            className="absolute bottom-20 right-10 w-96 h-96 bg-doju-lime/10 rounded-full blur-3xl"
+            animate={{ 
+              scale: [1.2, 1, 1.2],
+              opacity: [0.1, 0.2, 0.1],
+            }}
+            transition={{ duration: 10, repeat: Infinity }}
+          />
+
+          <div className="container relative z-10 py-16 md:py-24">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
               <motion.div 
-                className="space-y-6"
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
+                className="space-y-8"
+                style={{ y: heroY, opacity: heroOpacity }}
               >
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <Badge className="bg-doju-lime/20 text-doju-lime border-doju-lime/30 mb-4 py-2 px-4">
+                    <Star className="h-3 w-3 mr-1 fill-doju-lime" />
+                    Nigeria's #1 Medical Equipment Marketplace
+                  </Badge>
+                </motion.div>
+                
                 <motion.h1 
-                  className="text-4xl md:text-5xl font-bold text-foreground leading-tight"
-                  initial={{ opacity: 0, y: 20 }}
+                  className="text-4xl md:text-6xl lg:text-7xl font-bold text-primary-foreground leading-tight"
+                  initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
                 >
-                  Trusted marketplace for medical equipment
+                  Quality Healthcare,{' '}
+                  <span className="text-doju-lime">Delivered</span>
                 </motion.h1>
+                
                 <motion.p 
-                  className="text-lg text-muted-foreground max-w-lg"
-                  initial={{ opacity: 0, y: 20 }}
+                  className="text-xl text-primary-foreground/80 max-w-lg"
+                  initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
                 >
-                  Shop FDA-compliant devices and supplies from verified sellers. Transparent pricing, fast delivery, and secure checkout.
+                  Shop certified medical equipment from verified sellers. 
+                  Fast delivery, secure payments, and expert support — all in one place.
                 </motion.p>
+                
                 <motion.div 
-                  className="flex flex-wrap gap-3"
-                  initial={{ opacity: 0, y: 20 }}
+                  className="flex flex-wrap gap-4"
+                  initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
                 >
                   <Link to="/marketplace">
-                    <Button variant="doju-primary" size="lg" className="group">
-                      <span>Shop Featured</span>
+                    <Button size="xl" className="bg-doju-lime text-doju-navy hover:bg-doju-lime-light font-bold gap-2 group">
+                      Start Shopping
                       <motion.span
-                        className="inline-block ml-1"
-                        initial={{ x: 0 }}
-                        whileHover={{ x: 4 }}
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
                       >
-                        →
+                        <ArrowRight className="h-5 w-5" />
                       </motion.span>
                     </Button>
                   </Link>
-                  <Link to="/marketplace">
-                    <Button variant="doju-outline" size="lg">
-                      Browse Categories
+                  <Link to="/onboarding/seller">
+                    <Button size="xl" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+                      Become a Seller
                     </Button>
                   </Link>
                 </motion.div>
+
+                {/* Trust indicators */}
                 <motion.div 
-                  className="flex flex-wrap gap-4 pt-2"
+                  className="flex flex-wrap gap-6 pt-4"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
+                  transition={{ delay: 0.6 }}
                 >
-                  <Badge variant="secondary" className="gap-2 py-1.5 px-3">
-                    <Shield className="h-4 w-4" />
-                    Secure Payments
-                  </Badge>
-                  <Badge variant="secondary" className="gap-2 py-1.5 px-3">
-                    <Truck className="h-4 w-4" />
-                    Fast Delivery
-                  </Badge>
-                  <Badge variant="secondary" className="gap-2 py-1.5 px-3">
-                    <BadgeCheck className="h-4 w-4" />
-                    Verified Suppliers
-                  </Badge>
+                  {[
+                    { icon: Shield, text: 'Secure Payments' },
+                    { icon: Truck, text: 'Fast Delivery' },
+                    { icon: BadgeCheck, text: 'Verified Sellers' },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-2 text-primary-foreground/70">
+                      <item.icon className="h-4 w-4 text-doju-lime" />
+                      <span className="text-sm">{item.text}</span>
+                    </div>
+                  ))}
                 </motion.div>
               </motion.div>
+
               <motion.div 
-                className="relative"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                className="relative hidden lg:block"
+                initial={{ opacity: 0, scale: 0.9, x: 50 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
               >
                 <motion.div 
-                  className="rounded-2xl overflow-hidden shadow-2xl"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
+                  className="relative rounded-3xl overflow-hidden shadow-2xl"
+                  whileHover={{ scale: 1.02, rotateY: 5 }}
+                  transition={{ duration: 0.4 }}
                 >
                   <img
                     src={heroImage}
-                    alt="Medical equipment and healthcare professionals"
+                    alt="Medical equipment"
                     className="w-full h-auto object-cover"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-doju-navy/40 to-transparent" />
                 </motion.div>
-                {/* Floating badges */}
+
+                {/* Floating stat cards */}
                 <motion.div
-                  className="absolute -bottom-4 -left-4 bg-card rounded-xl shadow-lg p-4 border border-border"
+                  className="absolute -bottom-6 -left-6 bg-card rounded-2xl shadow-xl p-5 border border-border"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 }}
+                  transition={{ delay: 1 }}
+                  whileHover={{ scale: 1.05 }}
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-full bg-doju-lime-pale flex items-center justify-center">
-                      <BadgeCheck className="h-5 w-5 text-doju-lime" />
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-xl bg-doju-lime-pale flex items-center justify-center">
+                      <Users className="h-6 w-6 text-doju-lime" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">500+</p>
-                      <p className="text-xs text-muted-foreground">Verified Sellers</p>
+                      <p className="text-2xl font-bold text-foreground">500+</p>
+                      <p className="text-sm text-muted-foreground">Verified Sellers</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  className="absolute -top-6 -right-6 bg-card rounded-2xl shadow-xl p-5 border border-border"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.2 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-foreground">10K+</p>
+                      <p className="text-sm text-muted-foreground">Products Listed</p>
                     </div>
                   </div>
                 </motion.div>
@@ -151,167 +262,214 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Categories Section */}
-        <section className="py-16 bg-muted/30">
+        {/* Stats Bar */}
+        <section className="bg-card border-y border-border py-8">
           <div className="container">
             <motion.div 
-              className="flex items-center justify-between mb-8"
+              className="grid grid-cols-2 md:grid-cols-4 gap-8"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={containerVariants}
+            >
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  variants={itemVariants}
+                  className="text-center"
+                >
+                  <motion.div
+                    className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-doju-lime-pale text-doju-lime mb-3"
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                  >
+                    <stat.icon className="h-6 w-6" />
+                  </motion.div>
+                  <motion.p 
+                    className="text-3xl md:text-4xl font-bold text-foreground"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1, type: 'spring' }}
+                  >
+                    {stat.value}
+                  </motion.p>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Shop By Category */}
+        <section className="py-20 bg-muted/30">
+          <div className="container">
+            <motion.div 
+              className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Shop by Category</h2>
-                <p className="text-muted-foreground mt-1">
-                  Explore essential equipment for clinics, hospitals, and home care.
+                <Badge className="mb-3 bg-doju-lime/10 text-doju-lime border-doju-lime/20">
+                  Browse Categories
+                </Badge>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                  Shop By Category
+                </h2>
+                <p className="text-muted-foreground mt-2 max-w-lg">
+                  Explore our wide range of medical equipment for clinics, hospitals, and home care.
                 </p>
               </div>
               <Link to="/marketplace">
-                <Button variant="link" className="text-doju-lime">
-                  View all
+                <Button variant="doju-outline" className="gap-2 group">
+                  View All Categories
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
             </motion.div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {categories.map((category, index) => (
+                <CategoryCard key={category.id} category={category} index={index} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Why Choose DOJU */}
+        <section className="py-20 bg-card">
+          <div className="container">
             <motion.div 
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
+              className="text-center mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              {categories.map((category, index) => (
-                <motion.div key={category.id} variants={itemVariants} custom={index}>
-                  <CategoryCard category={category} />
+              <Badge className="mb-3 bg-doju-lime/10 text-doju-lime border-doju-lime/20">
+                Why DOJU?
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Why Choose DOJU?
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                We're not just a marketplace — we're your trusted partner in healthcare procurement.
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {whyChooseDoju.map((item, index) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -10 }}
+                  className="relative group"
+                >
+                  <div className="rounded-2xl border border-border bg-background p-8 h-full transition-all duration-300 group-hover:shadow-xl group-hover:border-doju-lime/30">
+                    <motion.div 
+                      className={`h-14 w-14 rounded-2xl ${item.color} flex items-center justify-center mb-6`}
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                    >
+                      <item.icon className="h-7 w-7" />
+                    </motion.div>
+                    <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-doju-lime transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
                 </motion.div>
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
 
         {/* Featured Products */}
-        <section className="py-16">
+        <section className="py-20 bg-muted/30">
           <div className="container">
             <motion.div 
-              className="flex items-center justify-between mb-8"
+              className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Featured Products</h2>
-                <p className="text-muted-foreground mt-1">
-                  Top-rated picks from verified brands.
+                <Badge className="mb-3 bg-doju-lime/10 text-doju-lime border-doju-lime/20">
+                  Featured
+                </Badge>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                  Top-Rated Products
+                </h2>
+                <p className="text-muted-foreground mt-2">
+                  Best sellers from verified brands with full details and transparent pricing.
                 </p>
               </div>
               <Link to="/marketplace">
-                <Button variant="link" className="text-doju-lime">
-                  See more
+                <Button variant="doju-primary" className="gap-2 group">
+                  Browse All Products
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
             </motion.div>
-            <motion.div 
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              {featuredProducts.slice(0, 4).map((product, index) => (
-                <motion.div key={product.id} variants={itemVariants} custom={index}>
-                  <ProductCard product={product} />
-                </motion.div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
 
         {/* Trust Section */}
-        <section className="py-16 bg-muted/30">
+        <section className="py-20 bg-card">
           <div className="container">
             <motion.div 
-              className="text-center mb-10"
+              className="text-center mb-12"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-2xl font-bold text-foreground">Why shop with us</h2>
-              <p className="text-muted-foreground mt-1">
-                Reliability and safety at every step.
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Shop With Confidence
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Your safety and satisfaction are our top priorities.
               </p>
             </motion.div>
-            <motion.div 
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {trustBadges.map((badge, index) => (
                 <motion.div
-                  key={index}
-                  variants={itemVariants}
-                  whileHover={{ y: -5, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }}
-                  className="rounded-xl border border-border bg-card p-6 text-center transition-all duration-300"
+                  key={badge.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="rounded-2xl border border-border bg-background p-6 text-center transition-all duration-300 hover:shadow-lg hover:border-doju-lime/30"
                 >
-                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-doju-lime-pale text-doju-lime mb-4">
-                    <badge.icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="font-semibold text-doju-navy">{badge.label}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{badge.description}</p>
+                  <motion.div 
+                    className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-doju-lime-pale text-doju-lime mb-4"
+                    whileHover={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <badge.icon className="h-7 w-7" />
+                  </motion.div>
+                  <h3 className="font-bold text-foreground mb-1">{badge.label}</h3>
+                  <p className="text-sm text-muted-foreground">{badge.description}</p>
                 </motion.div>
               ))}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* How It Works */}
-        <section className="py-16">
-          <div className="container">
-            <motion.div 
-              className="text-center mb-10"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-2xl font-bold text-foreground">How it works</h2>
-              <p className="text-muted-foreground mt-1">
-                From search to delivery in three simple steps.
-              </p>
-            </motion.div>
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              {steps.map((step, index) => (
-                <motion.div
-                  key={step.number}
-                  variants={itemVariants}
-                  whileHover={{ y: -5 }}
-                  className="rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:shadow-lg"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <motion.span 
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-doju-lime text-doju-navy font-bold text-sm"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                    >
-                      {step.number}
-                    </motion.span>
-                    <h3 className="font-semibold text-foreground">{step.title}</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{step.description}</p>
-                </motion.div>
-              ))}
-            </motion.div>
+            </div>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 bg-doju-navy overflow-hidden relative">
+        <section className="py-24 bg-gradient-to-br from-doju-navy via-doju-navy to-doju-navy-light overflow-hidden relative">
           <motion.div 
-            className="absolute inset-0 opacity-10"
+            className="absolute inset-0 opacity-20"
             animate={{ 
               backgroundPosition: ['0% 0%', '100% 100%'],
             }}
@@ -325,41 +483,62 @@ const Index = () => {
               backgroundSize: '50px 50px',
             }}
           />
+          
+          {/* Floating shapes */}
+          <motion.div 
+            className="absolute top-10 right-20 w-40 h-40 bg-doju-lime/20 rounded-full blur-2xl"
+            animate={{ y: [0, -20, 0], scale: [1, 1.1, 1] }}
+            transition={{ duration: 5, repeat: Infinity }}
+          />
+          <motion.div 
+            className="absolute bottom-10 left-20 w-60 h-60 bg-doju-lime/10 rounded-full blur-3xl"
+            animate={{ y: [0, 20, 0], scale: [1.1, 1, 1.1] }}
+            transition={{ duration: 7, repeat: Infinity }}
+          />
+
           <div className="container text-center relative z-10">
-            <motion.h2 
-              className="text-3xl font-bold text-primary-foreground mb-4"
-              initial={{ opacity: 0, y: 20 }}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
+              className="max-w-3xl mx-auto"
             >
-              Ready to get started?
-            </motion.h2>
-            <motion.p 
-              className="text-primary-foreground/80 mb-8 max-w-lg mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-            >
-              Join thousands of healthcare professionals who trust Doju for their medical equipment needs.
-            </motion.p>
-            <motion.div 
-              className="flex flex-wrap gap-4 justify-center"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-            >
-              <Link to="/onboarding/buyer">
-                <Button variant="doju-primary" size="lg" className="group">
-                  Create buyer account
-                </Button>
-              </Link>
-              <Link to="/onboarding/seller">
-                <Button variant="outline" size="lg" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10">
-                  Become a seller
-                </Button>
-              </Link>
+              <motion.h2 
+                className="text-4xl md:text-5xl font-bold text-primary-foreground mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                Ready to Transform Your Healthcare Procurement?
+              </motion.h2>
+              <motion.p 
+                className="text-xl text-primary-foreground/80 mb-10"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+              >
+                Join thousands of healthcare professionals who trust DOJU for quality medical equipment.
+              </motion.p>
+              <motion.div 
+                className="flex flex-wrap gap-4 justify-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
+                <Link to="/onboarding/buyer">
+                  <Button size="xl" className="bg-doju-lime text-doju-navy hover:bg-doju-lime-light font-bold gap-2">
+                    Create Buyer Account
+                    <ArrowRight className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link to="/onboarding/seller">
+                  <Button size="xl" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+                    Become a Seller
+                  </Button>
+                </Link>
+              </motion.div>
             </motion.div>
           </div>
         </section>
