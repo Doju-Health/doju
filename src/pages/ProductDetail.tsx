@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import CartCheckoutBar from '@/components/cart/CartCheckoutBar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
@@ -203,6 +204,7 @@ const ProductDetail = () => {
         </section>
       </main>
 
+      <CartCheckoutBar />
       <Footer />
     </div>
   );
