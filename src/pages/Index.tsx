@@ -29,8 +29,8 @@ const Index = () => {
   const whyChooseDoju = [
     { 
       icon: Shield, 
-      title: 'Trusted & Verified', 
-      description: 'Every seller is vetted, every product is certified. Shop with confidence knowing you\'re getting authentic medical equipment.',
+      title: 'Trusted & Reliable', 
+      description: 'Every product is certified and quality-checked. Shop with confidence knowing you\'re buying directly from DOJU.',
       color: 'bg-blue-500/10 text-blue-600'
     },
     { 
@@ -48,15 +48,15 @@ const Index = () => {
     { 
       icon: Globe, 
       title: 'Wide Selection', 
-      description: 'From diagnostics to mobility aids, find everything you need in one trusted marketplace.',
+      description: 'From diagnostics to mobility aids, find everything you need from one trusted source — DOJU.',
       color: 'bg-green-500/10 text-green-600'
     },
   ];
 
   const stats = [
-    { value: '500+', label: 'Verified Sellers', icon: Users },
     { value: '10K+', label: 'Products', icon: Package },
     { value: '50K+', label: 'Happy Customers', icon: Heart },
+    { value: '99%', label: 'Satisfaction Rate', icon: Star },
     { value: '24/7', label: 'Support', icon: Headphones },
   ];
 
@@ -86,10 +86,10 @@ const Index = () => {
       
       <main className="flex-1">
         {/* Hero Section - Enhanced */}
-        <section className="relative bg-gradient-to-br from-doju-navy via-doju-navy to-doju-navy-light overflow-hidden min-h-[90vh] flex items-center">
+        <section className="relative bg-background overflow-hidden min-h-[90vh] flex items-center">
           {/* Animated background elements */}
           <motion.div 
-            className="absolute inset-0 opacity-10"
+            className="absolute inset-0 opacity-5"
             animate={{ 
               backgroundPosition: ['0% 0%', '100% 100%'],
             }}
@@ -99,25 +99,25 @@ const Index = () => {
               repeatType: 'reverse' 
             }}
             style={{
-              backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+              backgroundImage: 'radial-gradient(circle, hsl(var(--doju-navy)) 1px, transparent 1px)',
               backgroundSize: '40px 40px',
             }}
           />
           
           {/* Floating shapes */}
           <motion.div 
-            className="absolute top-20 left-10 w-72 h-72 bg-doju-lime/20 rounded-full blur-3xl"
+            className="absolute top-20 left-10 w-72 h-72 bg-doju-lime/10 rounded-full blur-3xl"
             animate={{ 
               scale: [1, 1.2, 1],
-              opacity: [0.2, 0.3, 0.2],
+              opacity: [0.1, 0.2, 0.1],
             }}
             transition={{ duration: 8, repeat: Infinity }}
           />
           <motion.div 
-            className="absolute bottom-20 right-10 w-96 h-96 bg-doju-lime/10 rounded-full blur-3xl"
+            className="absolute bottom-20 right-10 w-96 h-96 bg-doju-navy/5 rounded-full blur-3xl"
             animate={{ 
               scale: [1.2, 1, 1.2],
-              opacity: [0.1, 0.2, 0.1],
+              opacity: [0.05, 0.1, 0.05],
             }}
             transition={{ duration: 10, repeat: Infinity }}
           />
@@ -135,12 +135,12 @@ const Index = () => {
                 >
                   <Badge className="bg-doju-lime/20 text-doju-lime border-doju-lime/30 mb-4 py-2 px-4">
                     <Star className="h-3 w-3 mr-1 fill-doju-lime" />
-                    Nigeria's #1 Medical Equipment Marketplace
+                    Nigeria's Trusted Medical Supply Store
                   </Badge>
                 </motion.div>
                 
                 <motion.h1 
-                  className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground leading-tight"
+                  className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.6 }}
@@ -150,12 +150,12 @@ const Index = () => {
                 </motion.h1>
                 
                 <motion.p 
-                  className="text-xl text-primary-foreground/80 max-w-lg"
+                  className="text-xl text-muted-foreground max-w-lg"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3, duration: 0.6 }}
                 >
-                  Shop certified medical equipment from verified sellers. 
+                  Shop certified medical equipment directly from DOJU. 
                   Fast delivery, secure payments, and expert support — all in one place.
                 </motion.p>
                 
@@ -165,9 +165,9 @@ const Index = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.6 }}
                 >
-                  <Link to="/marketplace">
+                  <Link to="/onboarding/buyer">
                     <Button size="xl" className="bg-doju-lime text-doju-navy hover:bg-doju-lime-light font-bold gap-2 group">
-                      Start Shopping
+                      Buy from Us
                       <motion.span
                         animate={{ x: [0, 5, 0] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
@@ -177,8 +177,8 @@ const Index = () => {
                     </Button>
                   </Link>
                   <Link to="/onboarding/seller">
-                    <Button size="xl" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-                      Become a Seller
+                    <Button size="xl" variant="outline" className="border-doju-navy/30 text-doju-navy hover:bg-doju-navy/5 bg-background">
+                      Sell Through Us
                     </Button>
                   </Link>
                 </motion.div>
@@ -193,9 +193,9 @@ const Index = () => {
                   {[
                     { icon: Shield, text: 'Secure Payments' },
                     { icon: Truck, text: 'Fast Delivery' },
-                    { icon: BadgeCheck, text: 'Verified Sellers' },
+                    { icon: BadgeCheck, text: 'Quality Guaranteed' },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-2 text-primary-foreground/70">
+                    <div key={i} className="flex items-center gap-2 text-muted-foreground">
                       <item.icon className="h-4 w-4 text-doju-lime" />
                       <span className="text-sm">{item.text}</span>
                     </div>
@@ -219,7 +219,7 @@ const Index = () => {
                     alt="Medical equipment"
                     className="w-full h-auto object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-doju-navy/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
                 </motion.div>
 
                 {/* Floating stat cards */}
@@ -232,11 +232,11 @@ const Index = () => {
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 rounded-xl bg-doju-lime-pale flex items-center justify-center">
-                      <Users className="h-6 w-6 text-doju-lime" />
+                      <Package className="h-6 w-6 text-doju-lime" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-foreground">500+</p>
-                      <p className="text-sm text-muted-foreground">Verified Sellers</p>
+                      <p className="text-2xl font-bold text-foreground">10K+</p>
+                      <p className="text-sm text-muted-foreground">Products Available</p>
                     </div>
                   </div>
                 </motion.div>
@@ -253,8 +253,8 @@ const Index = () => {
                       <CheckCircle className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-foreground">10K+</p>
-                      <p className="text-sm text-muted-foreground">Products Listed</p>
+                      <p className="text-2xl font-bold text-foreground">50K+</p>
+                      <p className="text-sm text-muted-foreground">Happy Customers</p>
                     </div>
                   </div>
                 </motion.div>
@@ -338,7 +338,7 @@ const Index = () => {
                 Why Choose DOJU?
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                We're not just a marketplace — we're your trusted partner in healthcare procurement.
+                We're your trusted partner in healthcare procurement — quality products, reliable service, one source.
               </p>
             </motion.div>
 
