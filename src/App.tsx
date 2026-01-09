@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Auth from "./pages/Auth";
@@ -40,9 +41,21 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/categories" element={<Marketplace />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/marketplace" element={
+                <ProtectedRoute>
+                  <Marketplace />
+                </ProtectedRoute>
+              } />
+              <Route path="/categories" element={
+                <ProtectedRoute>
+                  <Marketplace />
+                </ProtectedRoute>
+              } />
+              <Route path="/product/:id" element={
+                <ProtectedRoute>
+                  <ProductDetail />
+                </ProtectedRoute>
+              } />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/track-order" element={<OrderTracking />} />
@@ -50,6 +63,7 @@ const App = () => (
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/onboarding/buyer" element={<BuyerOnboarding />} />
               <Route path="/onboarding/seller" element={<SellerOnboarding />} />
+              <Route path="/seller-onboarding" element={<SellerOnboarding />} />
               <Route path="/about" element={<About />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/press" element={<Press />} />

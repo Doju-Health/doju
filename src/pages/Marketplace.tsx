@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -9,14 +10,30 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { allProducts, categories } from '@/data/mockData';
-import { Search, Filter, ChevronDown, X, SlidersHorizontal } from 'lucide-react';
+import { Search, ChevronDown, X, SlidersHorizontal } from 'lucide-react';
 
 const Marketplace = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Initialize state from URL params
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('category') || null);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Sync URL params to state
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    const urlCategory = searchParams.get('category');
+    
+    if (urlSearch !== null) {
+      setSearchQuery(urlSearch);
+    }
+    if (urlCategory !== null) {
+      setSelectedCategory(urlCategory);
+    }
+  }, [searchParams]);
 
   // Get unique brands from products
   const brands = useMemo(() => {
@@ -29,7 +46,12 @@ const Marketplace = () => {
     return Math.max(...allProducts.map(p => p.price));
   }, []);
 
-  const filteredProducts = allProducts.filter(product => {
+  // Filter only approved products for display
+  const approvedProducts = useMemo(() => {
+    return allProducts.filter(p => p.approvalStatus === 'approved');
+  }, []);
+
+  const filteredProducts = approvedProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -52,6 +74,7 @@ const Marketplace = () => {
     setSelectedCategory(null);
     setSelectedBrands([]);
     setPriceRange([0, maxPrice]);
+    setSearchParams({});
   };
 
   const formatPrice = (price: number) => {
@@ -161,7 +184,7 @@ const Marketplace = () => {
                       }`}
                     >
                       <span>All Categories</span>
-                      <span className="text-xs">{allProducts.length}</span>
+                      <span className="text-xs">{approvedProducts.length}</span>
                     </motion.button>
                     {categories.map((category) => (
                       <motion.button
@@ -203,7 +226,7 @@ const Marketplace = () => {
                       >
                         <span>{brand}</span>
                         <span className="text-xs">
-                          {allProducts.filter(p => p.brand === brand).length}
+                          {approvedProducts.filter(p => p.brand === brand).length}
                         </span>
                       </motion.button>
                     ))}
