@@ -6,13 +6,17 @@ import CartCheckoutBar from '@/components/cart/CartCheckoutBar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { allProducts, featuredProducts } from '@/data/mockData';
 import ProductCard from '@/components/products/ProductCard';
-import { Shield, Truck, RotateCcw, Heart, ChevronRight } from 'lucide-react';
+import { Shield, Truck, RotateCcw, Heart, ChevronRight, LogIn } from 'lucide-react';
+import { toast } from 'sonner';
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const [quantity, setQuantity] = useState(1);
 
   const product = allProducts.find(p => p.id === id);
@@ -162,13 +166,27 @@ const ProductDetail = () => {
                       <Heart className="h-4 w-4 mr-2" />
                       Add to wishlist
                     </Button>
-                    <Button
-                      variant="doju-primary"
-                      className="flex-1"
-                      onClick={() => addToCart(product, quantity)}
-                    >
-                      Add to cart
-                    </Button>
+                    {user ? (
+                      <Button
+                        variant="doju-primary"
+                        className="flex-1"
+                        onClick={() => addToCart(product, quantity)}
+                      >
+                        Add to cart
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="doju-primary"
+                        className="flex-1 gap-2"
+                        onClick={() => {
+                          toast.info("Sign in to add items to your cart");
+                          navigate(`/auth?returnTo=/product/${id}`);
+                        }}
+                      >
+                        <LogIn className="h-4 w-4" />
+                        Sign in to buy
+                      </Button>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
