@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { useCart } from '@/contexts/CartContext';
-import { ArrowLeft, ArrowRight, Check, Phone, MapPin, CreditCard, MessageSquare, ShoppingBag, Shield, Landmark, Copy, CheckCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Phone, MapPin, CreditCard, MessageSquare, ShoppingBag, Shield, Landmark, Copy, CheckCircle, Package } from 'lucide-react';
 import dojuLogo from '@/assets/doju-logo.jpg';
 
 type PaymentMethod = 'card' | 'bank_transfer' | null;
@@ -139,8 +139,29 @@ const Checkout = () => {
     exit: { opacity: 0, x: -20 },
   };
 
+  // Generate order ID
+  const orderId = useMemo(() => {
+    return `DJ-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  }, []);
+
   // Order complete screen with delivery code
   if (isComplete) {
+    // Create order data to pass to tracking page
+    const orderData = {
+      id: orderId,
+      deliveryCode,
+      phone: formData.phone,
+      address: formData.address,
+      items: items.map(item => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.product.price,
+        image: item.product.images[0] || '/placeholder.svg',
+      })),
+      total,
+      createdAt: new Date().toISOString(),
+    };
+
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="border-b border-border bg-card">
@@ -159,67 +180,60 @@ const Checkout = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
+            {/* Success Icon */}
             <motion.div 
               className="flex justify-center mb-6"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
             >
-              <div className="h-20 w-20 rounded-full bg-doju-lime flex items-center justify-center">
-                <Check className="h-10 w-10 text-doju-navy" />
+              <div className="h-24 w-24 rounded-full bg-doju-lime flex items-center justify-center">
+                <Check className="h-12 w-12 text-doju-navy" />
               </div>
             </motion.div>
             
+            {/* Success Message */}
             <motion.h1 
-              className="text-3xl font-bold text-foreground mb-4"
+              className="text-3xl md:text-4xl font-bold text-foreground mb-3"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              Order placed successfully!
+              Order Placed Successfully!
             </motion.h1>
             
             <motion.p 
-              className="text-muted-foreground mb-4"
+              className="text-muted-foreground mb-6"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              Thank you for shopping with DOJU. We'll call you at <strong>{formData.phone}</strong> to confirm delivery.
-            </motion.p>
-            
-            <motion.p 
-              className="text-lg font-semibold text-foreground mb-6"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              Order #DJ-{Math.random().toString(36).substr(2, 9).toUpperCase()}
+              Thank you for shopping with DOJU. Your order is confirmed and we'll start processing it right away.
             </motion.p>
 
-            {/* Secure Delivery Code */}
+            {/* Order Code Display */}
             <motion.div 
               className="rounded-xl border-2 border-doju-lime/30 bg-doju-lime/5 p-6 mb-6"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 0.5 }}
             >
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Shield className="h-5 w-5 text-doju-lime" />
-                <h3 className="font-semibold text-foreground">Your Secure Delivery Code</h3>
+                <h3 className="font-semibold text-foreground">Your 5-Digit Order Code</h3>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Share this code with your delivery driver to confirm receipt
+                Share this code with the delivery driver to confirm receipt
               </p>
               <div className="flex items-center justify-center gap-3">
-                <div className="flex gap-1">
+                <div className="flex gap-1.5">
                   {deliveryCode.split('').map((digit, i) => (
                     <motion.span 
                       key={i}
-                      className="w-12 h-14 flex items-center justify-center bg-card border-2 border-doju-lime rounded-lg text-2xl font-bold text-foreground"
+                      className="w-12 h-14 md:w-14 md:h-16 flex items-center justify-center bg-card border-2 border-doju-lime rounded-xl text-2xl md:text-3xl font-bold text-foreground shadow-sm"
                       initial={{ scale: 0, rotateY: 180 }}
                       animate={{ scale: 1, rotateY: 0 }}
-                      transition={{ delay: 0.7 + i * 0.1, type: 'spring' }}
+                      transition={{ delay: 0.6 + i * 0.1, type: 'spring' }}
                     >
                       {digit}
                     </motion.span>
@@ -238,22 +252,32 @@ const Checkout = () => {
                   )}
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                Order ID: <span className="font-medium">{orderId}</span>
+              </p>
             </motion.div>
             
+            {/* Action Buttons - Two Large Buttons */}
             <motion.div 
               className="space-y-3"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9 }}
             >
-              <Link to="/marketplace">
-                <Button variant="doju-primary" size="lg" className="w-full">
-                  Continue shopping
+              <Link 
+                to="/order-tracking" 
+                state={{ orderData }}
+                className="block"
+              >
+                <Button variant="doju-primary" size="xl" className="w-full gap-2">
+                  <Package className="h-5 w-5" />
+                  Track Order
                 </Button>
               </Link>
-              <Link to="/">
-                <Button variant="ghost" className="w-full">
-                  Back to home
+              <Link to="/marketplace" className="block">
+                <Button variant="doju-outline" size="xl" className="w-full gap-2">
+                  <ShoppingBag className="h-5 w-5" />
+                  Continue Shopping
                 </Button>
               </Link>
             </motion.div>
