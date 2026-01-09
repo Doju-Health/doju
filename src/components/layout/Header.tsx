@@ -1,14 +1,24 @@
-import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, Package } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, ShoppingCart, User, Menu, LogOut, Shield, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import dojuLogo from '@/assets/doju-logo.jpg';
 
 const Header = () => {
   const { totalItems } = useCart();
+  const { user, isAdmin, isSeller, signOut } = useAuth();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
   const navLinks = [
@@ -17,6 +27,11 @@ const Header = () => {
     { label: 'Products', href: '/marketplace' },
     { label: 'Track Order', href: '/track-order' },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
@@ -58,12 +73,46 @@ const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <Link to="/login">
-            <Button variant="ghost" size="sm" className="hidden sm:flex gap-2">
-              <User className="h-4 w-4" />
-              Sign in
-            </Button>
-          </Link>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="hidden sm:flex gap-2">
+                  <User className="h-4 w-4" />
+                  Account
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem className="text-muted-foreground text-xs">
+                  {user.email}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => navigate('/admin/dashboard')}>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Admin Dashboard
+                  </DropdownMenuItem>
+                )}
+                {isSeller && (
+                  <DropdownMenuItem onClick={() => navigate('/seller/dashboard')}>
+                    <Store className="h-4 w-4 mr-2" />
+                    Seller Dashboard
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link to="/auth">
+              <Button variant="ghost" size="sm" className="hidden sm:flex gap-2">
+                <User className="h-4 w-4" />
+                Sign in
+              </Button>
+            </Link>
+          )}
           
           <Link to="/cart">
             <Button variant="ghost" size="sm" className="relative">
@@ -106,16 +155,43 @@ const Header = () => {
                   ))}
                 </nav>
                 <div className="border-t pt-4 space-y-2">
-                  <Link to="/login">
-                    <Button variant="doju-outline" className="w-full">
-                      Sign in
-                    </Button>
-                  </Link>
-                  <Link to="/onboarding/buyer">
-                    <Button variant="doju-primary" className="w-full">
-                      Create account
-                    </Button>
-                  </Link>
+                  {user ? (
+                    <>
+                      {isAdmin && (
+                        <Link to="/admin/dashboard">
+                          <Button variant="doju-outline" className="w-full gap-2">
+                            <Shield className="h-4 w-4" />
+                            Admin Dashboard
+                          </Button>
+                        </Link>
+                      )}
+                      {isSeller && (
+                        <Link to="/seller/dashboard">
+                          <Button variant="doju-outline" className="w-full gap-2">
+                            <Store className="h-4 w-4" />
+                            Seller Dashboard
+                          </Button>
+                        </Link>
+                      )}
+                      <Button variant="ghost" className="w-full" onClick={handleSignOut}>
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign out
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/auth">
+                        <Button variant="doju-outline" className="w-full">
+                          Sign in
+                        </Button>
+                      </Link>
+                      <Link to="/auth">
+                        <Button variant="doju-primary" className="w-full">
+                          Create account
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </SheetContent>
