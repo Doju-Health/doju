@@ -14,6 +14,7 @@ import {
   ArrowRight, Star, Users, Package
 } from 'lucide-react';
 import heroImage from '@/assets/hero-medical.jpg';
+import dojuLogo from '@/assets/doju-logo.jpg';
 import { useRef } from 'react';
 
 const Index = () => {
@@ -123,6 +124,45 @@ const Index = () => {
           />
 
           <div className="container relative z-10 py-16 md:py-24">
+            {/* Animated Logo Section */}
+            <motion.div 
+              className="flex justify-center mb-12 md:mb-16"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <motion.div
+                className="relative"
+                animate={{ 
+                  y: [0, -8, 0],
+                  scale: [1, 1.02, 1],
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-doju-lime/20 rounded-full blur-2xl"
+                  animate={{ 
+                    scale: [1, 1.3, 1],
+                    opacity: [0.3, 0.5, 0.3],
+                  }}
+                  transition={{ 
+                    duration: 3, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  }}
+                />
+                <img 
+                  src={dojuLogo} 
+                  alt="DOJU Logo" 
+                  className="relative w-28 h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 rounded-full object-cover shadow-2xl border-4 border-background"
+                />
+              </motion.div>
+            </motion.div>
+
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <motion.div 
                 className="space-y-8"
@@ -131,7 +171,7 @@ const Index = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
                 >
                   <Badge className="bg-doju-lime/20 text-doju-lime border-doju-lime/30 mb-4 py-2 px-4">
                     <Star className="h-3 w-3 mr-1 fill-doju-lime" />
@@ -143,21 +183,25 @@ const Index = () => {
                   className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.6 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
                 >
                   Your complete medical supply store,{' '}
                   <span className="text-doju-lime">in one app.</span>
                 </motion.h1>
                 
-                <motion.p 
-                  className="text-xl text-muted-foreground max-w-lg"
+                <motion.div 
+                  className="space-y-3 max-w-lg"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
+                  transition={{ delay: 0.5, duration: 0.6 }}
                 >
-                  Shop certified medical equipment directly from DOJU. 
-                  Fast delivery, secure payments, and expert support — all in one place.
-                </motion.p>
+                  <p className="text-xl md:text-2xl text-foreground/90 font-medium leading-relaxed">
+                    Durable medical equipment. Fast delivery. Secure payments. Expert support.
+                  </p>
+                  <p className="text-lg text-doju-lime font-semibold">
+                    All from DOJU.
+                  </p>
+                </motion.div>
                 
                 <motion.div 
                   className="flex flex-wrap gap-4"
