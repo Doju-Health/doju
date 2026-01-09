@@ -90,26 +90,20 @@ const Index = () => {
       <Header />
       
       <main className="flex-1">
-        {/* Hero Section - Enhanced */}
-        <section className="relative bg-background overflow-hidden min-h-[90vh] flex items-center">
-          {/* Animated background elements */}
-          <motion.div 
-            className="absolute inset-0 opacity-5"
-            animate={{ 
-              backgroundPosition: ['0% 0%', '100% 100%'],
-            }}
-            transition={{ 
-              duration: 30, 
-              repeat: Infinity, 
-              repeatType: 'reverse' 
-            }}
-            style={{
-              backgroundImage: 'radial-gradient(circle, hsl(var(--doju-navy)) 1px, transparent 1px)',
-              backgroundSize: '40px 40px',
-            }}
-          />
+        {/* Hero Section - Full Background */}
+        <section className="relative overflow-hidden min-h-[90vh] flex items-center">
+          {/* Full-width hospital background image */}
+          <div className="absolute inset-0">
+            <img 
+              src={heroHospitalBg} 
+              alt="" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/60" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40" />
+          </div>
           
-          {/* Floating shapes */}
+          {/* Animated overlay elements */}
           <motion.div 
             className="absolute top-20 left-10 w-72 h-72 bg-doju-lime/10 rounded-full blur-3xl"
             animate={{ 
@@ -128,7 +122,7 @@ const Index = () => {
           />
 
           <div className="container relative z-10 py-16 md:py-24">
-            {/* Animated Logo Section with Hospital Background */}
+            {/* Animated Logo Section */}
             <motion.div 
               className="flex justify-center mb-12 md:mb-16"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -147,24 +141,9 @@ const Index = () => {
                   ease: "easeInOut" 
                 }}
               >
-                {/* Hospital background image */}
-                <motion.div
-                  className="absolute -inset-8 md:-inset-12 rounded-3xl overflow-hidden"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 1.2 }}
-                >
-                  <img 
-                    src={heroHospitalBg} 
-                    alt="" 
-                    className="w-full h-full object-cover opacity-30 blur-[2px]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-background/60" />
-                </motion.div>
-                
                 {/* Glow effect */}
                 <motion.div
-                  className="absolute inset-0 bg-doju-lime/20 rounded-full blur-2xl"
+                  className="absolute inset-0 bg-doju-lime/30 rounded-full blur-2xl"
                   animate={{ 
                     scale: [1, 1.3, 1],
                     opacity: [0.3, 0.5, 0.3],
@@ -231,18 +210,13 @@ const Index = () => {
                 >
                   <Link to="/onboarding/buyer">
                     <Button size="xl" className="bg-doju-lime text-doju-navy hover:bg-doju-lime-light font-bold gap-2 group">
-                      Buy from Us
+                      Buy from Us Now
                       <motion.span
                         animate={{ x: [0, 5, 0] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
                       >
                         <ArrowRight className="h-5 w-5" />
                       </motion.span>
-                    </Button>
-                  </Link>
-                  <Link to="/onboarding/seller">
-                    <Button size="xl" variant="outline" className="border-doju-navy/30 text-doju-navy hover:bg-doju-navy/5 bg-background">
-                      Sell Through Us
                     </Button>
                   </Link>
                 </motion.div>

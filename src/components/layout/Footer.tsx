@@ -29,8 +29,8 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="font-semibold text-foreground">Contact</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>support@doju.example</p>
-              <p>+1 (555) 010-2400</p>
+              <p>dojuhealthltd@gmail.com</p>
+              <p>+234 13 456 689</p>
               <p>Mon–Fri, 9am–6pm</p>
             </div>
           </div>
@@ -57,6 +57,9 @@ const Footer = () => {
             <div className="flex flex-col gap-2 text-sm">
               <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
                 About
+              </Link>
+              <Link to="/track-order" className="text-muted-foreground hover:text-foreground transition-colors">
+                Track Order
               </Link>
               <Link to="/careers" className="text-muted-foreground hover:text-foreground transition-colors">
                 Careers

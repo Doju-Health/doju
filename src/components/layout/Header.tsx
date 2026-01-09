@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/CartContext';
@@ -15,6 +15,7 @@ const Header = () => {
     { label: 'Home', href: '/' },
     { label: 'Categories', href: '/categories' },
     { label: 'Products', href: '/marketplace' },
+    { label: 'Track Order', href: '/track-order' },
   ];
 
   return (
