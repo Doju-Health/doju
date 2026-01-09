@@ -17,10 +17,10 @@ const Footer = () => {
               Your trusted source for clinical-grade medical equipment and supplies.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Twitter
               </a>
-              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 LinkedIn
               </a>
             </div>
@@ -40,15 +40,15 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="font-semibold text-foreground">Legal</h4>
             <div className="flex flex-col gap-2 text-sm">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
                 Terms of Service
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              </Link>
+              <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
                 Privacy Policy
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              </Link>
+              <Link to="/return-policy" className="text-muted-foreground hover:text-foreground transition-colors">
                 Return Policy
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -56,15 +56,15 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="font-semibold text-foreground">Company</h4>
             <div className="flex flex-col gap-2 text-sm">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
                 About
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              </Link>
+              <Link to="/careers" className="text-muted-foreground hover:text-foreground transition-colors">
                 Careers
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              </Link>
+              <Link to="/press" className="text-muted-foreground hover:text-foreground transition-colors">
                 Press
-              </a>
+              </Link>
             </div>
           </div>
         </div>
