@@ -1,19 +1,73 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 import { useCart } from '@/contexts/CartContext';
-import { ArrowLeft, Shield, Truck, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Phone, MapPin, CreditCard, MessageSquare, ShoppingBag, Shield } from 'lucide-react';
+import dojuLogo from '@/assets/doju-logo.jpg';
+
+interface CheckoutStep {
+  id: string;
+  question: string;
+  placeholder: string;
+  type: 'text' | 'tel' | 'textarea';
+  icon: React.ReactNode;
+  required: boolean;
+}
+
+const steps: CheckoutStep[] = [
+  { 
+    id: 'phone', 
+    question: "What's the best number to reach you?", 
+    placeholder: "+234 800 000 0000", 
+    type: 'tel',
+    icon: <Phone className="h-6 w-6" />,
+    required: true,
+  },
+  { 
+    id: 'address', 
+    question: "Where should we deliver your order?", 
+    placeholder: "Enter your full delivery address", 
+    type: 'text',
+    icon: <MapPin className="h-6 w-6" />,
+    required: true,
+  },
+  { 
+    id: 'payment', 
+    question: "How would you like to pay?", 
+    placeholder: "Card number", 
+    type: 'text',
+    icon: <CreditCard className="h-6 w-6" />,
+    required: true,
+  },
+  { 
+    id: 'notes', 
+    question: "Anything else you want us to know?", 
+    placeholder: "Special delivery instructions, gate codes, landmarks... (optional)", 
+    type: 'textarea',
+    icon: <MessageSquare className="h-6 w-6" />,
+    required: false,
+  },
+];
 
 const Checkout = () => {
   const { items, totalAmount, clearCart } = useCart();
   const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [showReview, setShowReview] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
-  const shipping = totalAmount > 150 ? 0 : 10;
-  const tax = totalAmount * 0.08;
+  const shipping = totalAmount > 50000 ? 0 : 2500;
+  const tax = totalAmount * 0.075;
   const total = totalAmount + shipping + tax;
+
+  const progress = showReview 
+    ? 100 
+    : ((currentStep + 1) / (steps.length + 1)) * 100;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-NG', {
@@ -24,42 +78,113 @@ const Checkout = () => {
     }).format(price);
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, this would process the payment
+  const handleNext = () => {
+    const step = steps[currentStep];
+    if (step.required && !formData[step.id]) return;
+    
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      setShowReview(true);
+    }
+  };
+
+  const handleBack = () => {
+    if (showReview) {
+      setShowReview(false);
+    } else if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    } else {
+      navigate('/cart');
+    }
+  };
+
+  const handleInputChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [steps[currentStep].id]: value,
+    }));
+  };
+
+  const handlePlaceOrder = () => {
     setIsComplete(true);
     clearCart();
   };
 
+  const currentValue = formData[steps[currentStep]?.id] || '';
+  const currentStepData = steps[currentStep];
+  const isValid = currentStepData?.required ? currentValue.length > 0 : true;
+
+  const pageVariants = {
+    initial: { opacity: 0, x: 20 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -20 },
+  };
+
+  // Order complete screen
   if (isComplete) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="border-b border-border bg-card">
           <div className="container flex h-16 items-center justify-center">
             <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-doju-navy">
-                <span className="text-sm font-bold text-primary-foreground">DJ</span>
-              </div>
-              <span className="text-xl font-bold text-foreground">Doju</span>
+              <img src={dojuLogo} alt="DOJU" className="h-8 w-8 rounded-full object-cover" />
+              <span className="text-xl font-bold text-foreground">DOJU</span>
             </Link>
           </div>
         </header>
 
         <main className="flex-1 flex items-center justify-center p-4">
-          <div className="w-full max-w-md text-center">
-            <div className="flex justify-center mb-6">
+          <motion.div 
+            className="w-full max-w-md text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.div 
+              className="flex justify-center mb-6"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            >
               <div className="h-20 w-20 rounded-full bg-doju-lime flex items-center justify-center">
                 <Check className="h-10 w-10 text-doju-navy" />
               </div>
-            </div>
-            <h1 className="text-3xl font-bold text-foreground mb-4">Order placed!</h1>
-            <p className="text-muted-foreground mb-8">
-              Thank you for your order. We've sent a confirmation email with your order details and tracking information.
-            </p>
-            <p className="text-lg font-semibold text-foreground mb-8">
+            </motion.div>
+            
+            <motion.h1 
+              className="text-3xl font-bold text-foreground mb-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              Order placed successfully!
+            </motion.h1>
+            
+            <motion.p 
+              className="text-muted-foreground mb-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              Thank you for shopping with DOJU. We'll call you at <strong>{formData.phone}</strong> to confirm delivery.
+            </motion.p>
+            
+            <motion.p 
+              className="text-lg font-semibold text-foreground mb-8"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
               Order #DJ-{Math.random().toString(36).substr(2, 9).toUpperCase()}
-            </p>
-            <div className="space-y-3">
+            </motion.p>
+            
+            <motion.div 
+              className="space-y-3"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
               <Link to="/marketplace">
                 <Button variant="doju-primary" size="lg" className="w-full">
                   Continue shopping
@@ -70,136 +195,67 @@ const Checkout = () => {
                   Back to home
                 </Button>
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </main>
       </div>
     );
   }
 
-  if (items.length === 0) {
+  // Empty cart redirect
+  if (items.length === 0 && !isComplete) {
     navigate('/cart');
     return null;
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-doju-navy">
-              <span className="text-sm font-bold text-primary-foreground">DJ</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">Doju</span>
-          </Link>
-          <div className="flex gap-2">
-            <Link to="/cart">
-              <Button variant="doju-outline" size="sm">Back to cart</Button>
+  // Order review screen
+  if (showReview) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="border-b border-border bg-card">
+          <div className="container flex h-16 items-center justify-between">
+            <button onClick={handleBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </button>
+            <Link to="/" className="flex items-center gap-2">
+              <img src={dojuLogo} alt="DOJU" className="h-8 w-8 rounded-full object-cover" />
+              <span className="text-xl font-bold text-foreground">DOJU</span>
             </Link>
-            <Button variant="ghost" size="sm">Need help?</Button>
+            <div className="w-16" />
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="container py-8">
-        <form onSubmit={handlePlaceOrder}>
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Form */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Contact */}
-              <div className="rounded-xl border border-border bg-card p-6">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Contact information</h2>
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="name@example.com" className="h-12" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" type="tel" placeholder="(555) 123-4567" className="h-12" required />
-                  </div>
-                </div>
-              </div>
+        <main className="flex-1 p-4">
+          <div className="max-w-lg mx-auto">
+            <motion.div 
+              className="mb-6"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Progress value={100} className="h-2" />
+              <p className="text-sm text-muted-foreground mt-2 text-center">Review your order</p>
+            </motion.div>
 
-              {/* Shipping */}
-              <div className="rounded-xl border border-border bg-card p-6">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Shipping address</h2>
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full name</Label>
-                    <Input id="fullName" placeholder="Alex Johnson" className="h-12" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input id="address" placeholder="1234 Wellness Ave" className="h-12" required />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input id="city" placeholder="San Francisco" className="h-12" required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="state">State</Label>
-                      <Input id="state" placeholder="CA" className="h-12" required />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="postal">Postal code</Label>
-                      <Input id="postal" placeholder="94107" className="h-12" required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="country">Country</Label>
-                      <Input id="country" placeholder="United States" className="h-12" required />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 mt-4 p-3 rounded-lg bg-doju-lime text-doju-navy">
-                  <Truck className="h-5 w-5" />
-                  <span className="text-sm font-medium">Estimated delivery in 3-5 days</span>
-                </div>
-              </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-6 text-center">
+                Almost there! Review your order
+              </h1>
 
-              {/* Payment */}
-              <div className="rounded-xl border border-border bg-card p-6">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Payment</h2>
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="cardName">Cardholder name</Label>
-                    <Input id="cardName" placeholder="Alex Johnson" className="h-12" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cardNumber">Card number</Label>
-                    <Input id="cardNumber" placeholder="•••• •••• •••• 4242" className="h-12" required />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="expiry">Expiry</Label>
-                      <Input id="expiry" placeholder="08 / 28" className="h-12" required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="cvc">CVC</Label>
-                      <Input id="cvc" placeholder="•••" className="h-12" required />
-                    </div>
-                  </div>
+              {/* Order Items */}
+              <div className="rounded-xl border border-border bg-card p-4 mb-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <ShoppingBag className="h-5 w-5 text-doju-lime" />
+                  <h2 className="font-semibold text-foreground">Your items</h2>
                 </div>
-                <div className="flex items-center gap-2 mt-4 text-muted-foreground">
-                  <Shield className="h-4 w-4" />
-                  <span className="text-xs">Payments are encrypted and PCI compliant</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Order Summary */}
-            <div className="lg:col-span-1">
-              <div className="rounded-xl border border-border bg-card p-6 sticky top-8">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Order summary</h2>
-
-                <div className="space-y-4 mb-6">
+                <div className="space-y-3">
                   {items.map((item) => (
                     <div key={item.product.id} className="flex gap-3">
-                      <div className="h-16 w-16 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                      <div className="h-14 w-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                         <img
                           src={item.product.images[0] || '/placeholder.svg'}
                           alt={item.product.name}
@@ -207,9 +263,8 @@ const Checkout = () => {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground">{item.product.brand}</p>
                         <p className="text-sm font-medium text-foreground line-clamp-1">{item.product.name}</p>
-                        <p className="text-xs text-muted-foreground">SKU: {item.product.sku} • Qty: {item.quantity}</p>
+                        <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                       </div>
                       <p className="text-sm font-semibold text-foreground">
                         {formatPrice(item.product.price * item.quantity)}
@@ -217,8 +272,28 @@ const Checkout = () => {
                     </div>
                   ))}
                 </div>
+              </div>
 
-                <div className="border-t border-border pt-4 space-y-2 text-sm">
+              {/* Delivery Info */}
+              <div className="rounded-xl border border-border bg-card p-4 mb-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <MapPin className="h-5 w-5 text-doju-lime" />
+                  <h2 className="font-semibold text-foreground">Delivery</h2>
+                </div>
+                <p className="text-sm text-muted-foreground">{formData.address}</p>
+                <p className="text-sm text-muted-foreground mt-1">{formData.phone}</p>
+                {formData.notes && (
+                  <p className="text-sm text-muted-foreground mt-2 italic">"{formData.notes}"</p>
+                )}
+              </div>
+
+              {/* Payment Summary */}
+              <div className="rounded-xl border border-border bg-card p-4 mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <CreditCard className="h-5 w-5 text-doju-lime" />
+                  <h2 className="font-semibold text-foreground">Payment</h2>
+                </div>
+                <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span className="text-foreground">{formatPrice(totalAmount)}</span>
@@ -226,40 +301,180 @@ const Checkout = () => {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Shipping</span>
                     <span className="text-foreground">
-                      {shipping === 0 ? 'Free over $150' : formatPrice(shipping)}
+                      {shipping === 0 ? 'Free' : formatPrice(shipping)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Tax</span>
                     <span className="text-foreground">{formatPrice(tax)}</span>
                   </div>
-                </div>
-
-                <div className="border-t border-border mt-4 pt-4">
+                  <div className="border-t border-border my-2" />
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total</span>
-                    <span>{formatPrice(total)}</span>
+                    <span className="text-doju-lime">{formatPrice(total)}</span>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex gap-2 mt-6">
-                  <Input placeholder="Enter promo code" className="flex-1" />
-                  <Button type="button" variant="outline">Apply</Button>
+              {/* Confirm Button */}
+              <Button
+                variant="doju-primary"
+                size="lg"
+                className="w-full"
+                onClick={handlePlaceOrder}
+              >
+                Confirm & Pay {formatPrice(total)}
+              </Button>
+
+              <div className="flex items-center justify-center gap-2 mt-4 text-muted-foreground">
+                <Shield className="h-4 w-4" />
+                <span className="text-xs">Secure checkout powered by DOJU</span>
+              </div>
+            </motion.div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Step-by-step checkout
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="border-b border-border bg-card">
+        <div className="container flex h-16 items-center justify-between">
+          <button onClick={handleBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </button>
+          <Link to="/" className="flex items-center gap-2">
+            <img src={dojuLogo} alt="DOJU" className="h-8 w-8 rounded-full object-cover" />
+            <span className="text-xl font-bold text-foreground">DOJU</span>
+          </Link>
+          <div className="w-16" />
+        </div>
+      </header>
+
+      <main className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <motion.div 
+            className="mb-8"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Progress value={progress} className="h-2" />
+            <p className="text-sm text-muted-foreground mt-2 text-center">
+              Step {currentStep + 1} of {steps.length}
+            </p>
+          </motion.div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              {/* Step Icon */}
+              <motion.div 
+                className="flex justify-center mb-6"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              >
+                <div className="h-16 w-16 rounded-full bg-doju-lime/20 flex items-center justify-center text-doju-lime">
+                  {currentStepData.icon}
                 </div>
+              </motion.div>
 
-                <Button type="submit" variant="doju-primary" size="lg" className="w-full mt-4">
-                  Place order
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-6 text-center">
+                {currentStepData.question}
+              </h1>
+
+              {currentStepData.type === 'textarea' ? (
+                <Textarea
+                  placeholder={currentStepData.placeholder}
+                  value={currentValue}
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  className="text-lg min-h-[120px] mb-6"
+                  autoFocus
+                />
+              ) : (
+                <Input
+                  type={currentStepData.type}
+                  placeholder={currentStepData.placeholder}
+                  value={currentValue}
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  className="text-lg h-14 mb-6"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && isValid) {
+                      handleNext();
+                    }
+                  }}
+                />
+              )}
+
+              {/* Extra payment fields */}
+              {currentStepData.id === 'payment' && (
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <Input
+                    type="text"
+                    placeholder="MM/YY"
+                    className="h-12"
+                  />
+                  <Input
+                    type="text"
+                    placeholder="CVV"
+                    className="h-12"
+                  />
+                </div>
+              )}
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Button
+                  variant="doju-primary"
+                  size="lg"
+                  className="w-full"
+                  disabled={currentStepData.required && !isValid}
+                  onClick={handleNext}
+                >
+                  {currentStep === steps.length - 1 ? 'Review Order' : 'Continue'}
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
 
-                <Link to="/marketplace">
-                  <Button type="button" variant="ghost" className="w-full mt-2">
-                    Continue shopping
+                {!currentStepData.required && (
+                  <Button
+                    variant="ghost"
+                    className="w-full mt-2"
+                    onClick={handleNext}
+                  >
+                    Skip this step
                   </Button>
-                </Link>
+                )}
+              </motion.div>
+
+              {/* Step indicators */}
+              <div className="flex justify-center gap-2 mt-8">
+                {steps.map((_, index) => (
+                  <motion.div
+                    key={index}
+                    className={`h-2 w-2 rounded-full transition-colors ${
+                      index <= currentStep ? 'bg-doju-lime' : 'bg-muted'
+                    }`}
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: index === currentStep ? 1.2 : 1 }}
+                  />
+                ))}
               </div>
-            </div>
-          </div>
-        </form>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
     </div>
   );
