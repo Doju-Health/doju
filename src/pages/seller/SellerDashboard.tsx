@@ -1,17 +1,18 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Package, TrendingUp, Eye, DollarSign, Plus, 
   Upload, X, Edit, Trash2, MoreVertical, Image,
   Video, BarChart3, ShoppingCart, Users, ArrowUpRight,
-  Home, Store, Settings, LogOut, Menu
+  Home, Store, Settings, LogOut, Menu, Clock, CheckCircle, XCircle
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
@@ -22,65 +23,35 @@ import {
 } from '@/components/ui/dropdown-menu';
 import dojuLogo from '@/assets/doju-logo.jpg';
 
-// Mock data for seller dashboard
-const mockStats = {
-  totalRevenue: 2450000,
-  totalSales: 156,
-  totalViews: 3420,
-  productsListed: 12,
-  revenueChange: 12.5,
-  salesChange: 8.3,
-  viewsChange: 15.2,
-};
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  stock: number;
+  category: string | null;
+  status: string;
+  created_at: string;
+  media?: { id: string; url: string; type: string }[];
+}
 
-const mockProducts = [
-  {
-    id: '1',
-    name: 'Classic Stethoscope III',
-    price: 85000,
-    stock: 24,
-    views: 580,
-    sales: 32,
-    status: 'active',
-    image: '/placeholder.svg',
-  },
-  {
-    id: '2',
-    name: 'Automatic BP Monitor',
-    price: 52000,
-    stock: 45,
-    views: 420,
-    sales: 28,
-    status: 'active',
-    image: '/placeholder.svg',
-  },
-  {
-    id: '3',
-    name: 'LED Otoscope Kit',
-    price: 38500,
-    stock: 0,
-    views: 310,
-    sales: 15,
-    status: 'out_of_stock',
-    image: '/placeholder.svg',
-  },
-];
-
-const mockSalesData = [
-  { day: 'Mon', sales: 12 },
-  { day: 'Tue', sales: 19 },
-  { day: 'Wed', sales: 15 },
-  { day: 'Thu', sales: 22 },
-  { day: 'Fri', sales: 28 },
-  { day: 'Sat', sales: 35 },
-  { day: 'Sun', sales: 25 },
-];
+interface UploadedMedia {
+  file: File;
+  preview: string;
+  type: 'image' | 'video';
+}
 
 const SellerDashboard = () => {
+  const navigate = useNavigate();
+  const { user, isSeller, loading: authLoading, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [uploadedVideos, setUploadedVideos] = useState<string[]>([]);
+  const [uploadedMedia, setUploadedMedia] = useState<UploadedMedia[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
@@ -88,6 +59,54 @@ const SellerDashboard = () => {
     stock: '',
     category: '',
   });
+
+  // Redirect if not seller
+  useEffect(() => {
+    if (!authLoading && (!user || !isSeller)) {
+      navigate('/auth');
+    }
+  }, [user, isSeller, authLoading, navigate]);
+
+  // Fetch seller products
+  useEffect(() => {
+    if (user && isSeller) {
+      fetchProducts();
+    }
+  }, [user, isSeller]);
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('seller_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch media for each product
+      if (data && data.length > 0) {
+        const productIds = data.map(p => p.id);
+        const { data: mediaData } = await supabase
+          .from('product_media')
+          .select('*')
+          .in('product_id', productIds);
+
+        const productsWithMedia = data.map(product => ({
+          ...product,
+          media: mediaData?.filter(m => m.product_id === product.id) || []
+        }));
+        setProducts(productsWithMedia);
+      } else {
+        setProducts([]);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast.error('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-NG', {
@@ -98,34 +117,144 @@ const SellerDashboard = () => {
     }).format(price);
   };
 
-  const handleImageUpload = () => {
-    // Simulate image upload
-    setUploadedImages(prev => [...prev, `/placeholder.svg?${Date.now()}`]);
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const preview = URL.createObjectURL(file);
+          setUploadedMedia(prev => [...prev, { file, preview, type: 'image' }]);
+        }
+      });
+    }
+    if (imageInputRef.current) imageInputRef.current.value = '';
   };
 
-  const handleVideoUpload = () => {
-    // Simulate video upload
-    setUploadedVideos(prev => [...prev, `video-${Date.now()}.mp4`]);
+  const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach(file => {
+        if (file.type.startsWith('video/')) {
+          const preview = URL.createObjectURL(file);
+          setUploadedMedia(prev => [...prev, { file, preview, type: 'video' }]);
+        }
+      });
+    }
+    if (videoInputRef.current) videoInputRef.current.value = '';
   };
 
-  const removeImage = (index: number) => {
-    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  const removeMedia = (index: number) => {
+    setUploadedMedia(prev => {
+      const item = prev[index];
+      URL.revokeObjectURL(item.preview);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
-  const removeVideo = (index: number) => {
-    setUploadedVideos(prev => prev.filter((_, i) => i !== index));
+  const handleAddProduct = async () => {
+    if (!user || !newProduct.name || !newProduct.price) return;
+    
+    setSubmitting(true);
+    try {
+      // Insert product
+      const { data: product, error: productError } = await supabase
+        .from('products')
+        .insert({
+          seller_id: user.id,
+          name: newProduct.name,
+          description: newProduct.description || null,
+          price: parseFloat(newProduct.price),
+          stock: parseInt(newProduct.stock) || 0,
+          category: newProduct.category || null,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (productError) throw productError;
+
+      // Upload media files
+      for (const media of uploadedMedia) {
+        const fileExt = media.file.name.split('.').pop();
+        const fileName = `${user.id}/${product.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('product-media')
+          .upload(fileName, media.file);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          continue;
+        }
+
+        const { data: publicUrl } = supabase.storage
+          .from('product-media')
+          .getPublicUrl(fileName);
+
+        // Insert media record
+        await supabase
+          .from('product_media')
+          .insert({
+            product_id: product.id,
+            url: publicUrl.publicUrl,
+            type: media.type
+          });
+      }
+
+      toast.success('Product submitted for approval!', {
+        description: 'An admin will review your product shortly.'
+      });
+
+      // Reset form
+      setShowAddProduct(false);
+      setNewProduct({ name: '', description: '', price: '', stock: '', category: '' });
+      uploadedMedia.forEach(m => URL.revokeObjectURL(m.preview));
+      setUploadedMedia([]);
+      
+      // Refresh products
+      fetchProducts();
+    } catch (error: any) {
+      console.error('Error adding product:', error);
+      toast.error('Failed to add product', { description: error.message });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleAddProduct = () => {
-    // Handle product submission
-    console.log({ ...newProduct, images: uploadedImages, videos: uploadedVideos });
-    setShowAddProduct(false);
-    setNewProduct({ name: '', description: '', price: '', stock: '', category: '' });
-    setUploadedImages([]);
-    setUploadedVideos([]);
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+      
+      toast.success('Product deleted');
+      fetchProducts();
+    } catch (error: any) {
+      toast.error('Failed to delete product', { description: error.message });
+    }
   };
 
-  const maxSales = Math.max(...mockSalesData.map(d => d.sales));
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <Badge className="bg-green-100 text-green-700 gap-1"><CheckCircle className="h-3 w-3" />Approved</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-100 text-red-700 gap-1"><XCircle className="h-3 w-3" />Rejected</Badge>;
+      default:
+        return <Badge className="bg-yellow-100 text-yellow-700 gap-1"><Clock className="h-3 w-3" />Pending</Badge>;
+    }
+  };
+
+  const pendingCount = products.filter(p => p.status === 'pending').length;
+  const approvedCount = products.filter(p => p.status === 'approved').length;
 
   const sidebarLinks = [
     { icon: BarChart3, label: 'Overview', value: 'overview' },
@@ -170,7 +299,10 @@ const SellerDashboard = () => {
             Back to Store
           </button>
         </Link>
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+        <button 
+          onClick={handleSignOut}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
           <LogOut className="h-5 w-5" />
           Sign Out
         </button>
@@ -178,8 +310,34 @@ const SellerDashboard = () => {
     </div>
   );
 
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doju-lime"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex">
+      {/* Hidden file inputs */}
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleImageSelect}
+        className="hidden"
+      />
+      <input
+        ref={videoInputRef}
+        type="file"
+        accept="video/*"
+        multiple
+        onChange={handleVideoSelect}
+        className="hidden"
+      />
+
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 border-r border-border bg-card flex-col">
         <SidebarContent />
@@ -240,17 +398,14 @@ const SellerDashboard = () => {
                   className="rounded-2xl border border-border bg-card p-4 lg:p-6"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div className="h-10 w-10 rounded-xl bg-doju-lime/10 flex items-center justify-center">
-                      <DollarSign className="h-5 w-5 text-doju-lime" />
+                    <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                      <Package className="h-5 w-5 text-orange-600" />
                     </div>
-                    <Badge className="bg-green-100 text-green-700 text-xs">
-                      +{mockStats.revenueChange}%
-                    </Badge>
                   </div>
                   <p className="text-2xl lg:text-3xl font-bold text-foreground">
-                    {formatPrice(mockStats.totalRevenue)}
+                    {products.length}
                   </p>
-                  <p className="text-sm text-muted-foreground">Total Revenue</p>
+                  <p className="text-sm text-muted-foreground">Total Products</p>
                 </motion.div>
 
                 <motion.div
@@ -260,17 +415,14 @@ const SellerDashboard = () => {
                   className="rounded-2xl border border-border bg-card p-4 lg:p-6"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                      <ShoppingCart className="h-5 w-5 text-blue-600" />
+                    <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
                     </div>
-                    <Badge className="bg-green-100 text-green-700 text-xs">
-                      +{mockStats.salesChange}%
-                    </Badge>
                   </div>
                   <p className="text-2xl lg:text-3xl font-bold text-foreground">
-                    {mockStats.totalSales}
+                    {approvedCount}
                   </p>
-                  <p className="text-sm text-muted-foreground">Total Sales</p>
+                  <p className="text-sm text-muted-foreground">Approved</p>
                 </motion.div>
 
                 <motion.div
@@ -280,17 +432,14 @@ const SellerDashboard = () => {
                   className="rounded-2xl border border-border bg-card p-4 lg:p-6"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div className="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center">
-                      <Eye className="h-5 w-5 text-purple-600" />
+                    <div className="h-10 w-10 rounded-xl bg-yellow-100 flex items-center justify-center">
+                      <Clock className="h-5 w-5 text-yellow-600" />
                     </div>
-                    <Badge className="bg-green-100 text-green-700 text-xs">
-                      +{mockStats.viewsChange}%
-                    </Badge>
                   </div>
                   <p className="text-2xl lg:text-3xl font-bold text-foreground">
-                    {mockStats.totalViews.toLocaleString()}
+                    {pendingCount}
                   </p>
-                  <p className="text-sm text-muted-foreground">Product Views</p>
+                  <p className="text-sm text-muted-foreground">Pending Approval</p>
                 </motion.div>
 
                 <motion.div
@@ -300,92 +449,75 @@ const SellerDashboard = () => {
                   className="rounded-2xl border border-border bg-card p-4 lg:p-6"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center">
-                      <Package className="h-5 w-5 text-orange-600" />
+                    <div className="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                      <Eye className="h-5 w-5 text-purple-600" />
                     </div>
                   </div>
                   <p className="text-2xl lg:text-3xl font-bold text-foreground">
-                    {mockStats.productsListed}
+                    0
                   </p>
-                  <p className="text-sm text-muted-foreground">Products Listed</p>
+                  <p className="text-sm text-muted-foreground">Product Views</p>
                 </motion.div>
               </div>
 
-              {/* Sales Chart */}
+              {/* Recent Products */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
                 className="rounded-2xl border border-border bg-card p-4 lg:p-6"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="font-semibold text-foreground">Sales This Week</h3>
-                    <p className="text-sm text-muted-foreground">Daily breakdown</p>
-                  </div>
-                  <Badge className="bg-doju-lime/10 text-doju-lime">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    Trending Up
-                  </Badge>
-                </div>
-
-                {/* Simple Bar Chart */}
-                <div className="flex items-end justify-between gap-2 h-40">
-                  {mockSalesData.map((day, index) => (
-                    <div key={day.day} className="flex-1 flex flex-col items-center gap-2">
-                      <motion.div
-                        className="w-full bg-doju-lime/20 rounded-t-lg relative overflow-hidden"
-                        initial={{ height: 0 }}
-                        animate={{ height: `${(day.sales / maxSales) * 100}%` }}
-                        transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
-                      >
-                        <div 
-                          className="absolute bottom-0 left-0 right-0 bg-doju-lime rounded-t-lg"
-                          style={{ height: '100%' }}
-                        />
-                      </motion.div>
-                      <span className="text-xs text-muted-foreground">{day.day}</span>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Top Products */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="rounded-2xl border border-border bg-card p-4 lg:p-6"
-              >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Top Products</h3>
+                  <h3 className="font-semibold text-foreground">Recent Products</h3>
                   <Button variant="ghost" size="sm" onClick={() => setActiveTab('products')}>
                     View All
                     <ArrowUpRight className="h-4 w-4 ml-1" />
                   </Button>
                 </div>
 
-                <div className="space-y-3">
-                  {mockProducts.slice(0, 3).map((product, index) => (
-                    <div 
-                      key={product.id}
-                      className="flex items-center gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                {products.length > 0 ? (
+                  <div className="space-y-3">
+                    {products.slice(0, 3).map((product) => (
+                      <div 
+                        key={product.id}
+                        className="flex items-center gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                      >
+                        <div className="h-12 w-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                          {product.media && product.media.length > 0 ? (
+                            <img 
+                              src={product.media[0].url} 
+                              alt={product.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center">
+                              <Package className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-foreground truncate">{product.name}</p>
+                          <div className="flex items-center gap-2">
+                            {getStatusBadge(product.status)}
+                          </div>
+                        </div>
+                        <p className="font-semibold text-foreground">{formatPrice(product.price)}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Package className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">No products yet</p>
+                    <Button 
+                      variant="doju-primary" 
+                      className="mt-4"
+                      onClick={() => setShowAddProduct(true)}
                     >
-                      <div className="h-12 w-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-                        <img 
-                          src={product.image} 
-                          alt={product.name}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">{product.name}</p>
-                        <p className="text-sm text-muted-foreground">{product.sales} sales</p>
-                      </div>
-                      <p className="font-semibold text-foreground">{formatPrice(product.price)}</p>
-                    </div>
-                  ))}
-                </div>
+                      Add Your First Product
+                    </Button>
+                  </div>
+                )}
               </motion.div>
             </div>
           )}
@@ -396,7 +528,7 @@ const SellerDashboard = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">Your Products</h2>
-                  <p className="text-sm text-muted-foreground">{mockProducts.length} products listed</p>
+                  <p className="text-sm text-muted-foreground">{products.length} products listed</p>
                 </div>
                 <Button 
                   variant="doju-primary" 
@@ -408,70 +540,84 @@ const SellerDashboard = () => {
                 </Button>
               </div>
 
-              <div className="grid gap-4">
-                {mockProducts.map((product, index) => (
-                  <motion.div
-                    key={product.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="rounded-2xl border border-border bg-card p-4 hover:border-doju-lime/40 transition-colors"
+              {products.length > 0 ? (
+                <div className="grid gap-4">
+                  {products.map((product, index) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="rounded-2xl border border-border bg-card p-4 hover:border-doju-lime/40 transition-colors"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="h-20 w-20 rounded-xl bg-muted overflow-hidden flex-shrink-0">
+                          {product.media && product.media.length > 0 ? (
+                            <img 
+                              src={product.media[0].url} 
+                              alt={product.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center">
+                              <Package className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <h3 className="font-semibold text-foreground">{product.name}</h3>
+                              <p className="text-lg font-bold text-doju-lime">{formatPrice(product.price)}</p>
+                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem 
+                                  className="text-red-600"
+                                  onClick={() => handleDeleteProduct(product.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-4 mt-3 text-sm">
+                            {getStatusBadge(product.status)}
+                            <span className="text-muted-foreground">Stock: {product.stock}</span>
+                            {product.category && (
+                              <span className="text-muted-foreground">{product.category}</span>
+                            )}
+                          </div>
+                          {product.description && (
+                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                              {product.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No products yet</h3>
+                  <p className="text-muted-foreground mb-4">Start by adding your first product</p>
+                  <Button 
+                    variant="doju-primary"
+                    onClick={() => setShowAddProduct(true)}
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="h-20 w-20 rounded-xl bg-muted overflow-hidden flex-shrink-0">
-                        <img 
-                          src={product.image} 
-                          alt={product.name}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h3 className="font-semibold text-foreground">{product.name}</h3>
-                            <p className="text-lg font-bold text-doju-lime">{formatPrice(product.price)}</p>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600">
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-4 mt-3 text-sm">
-                          <div className="flex items-center gap-1.5">
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">{product.views} views</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">{product.sales} sales</span>
-                          </div>
-                          <Badge className={
-                            product.status === 'active' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-red-100 text-red-700'
-                          }>
-                            {product.status === 'active' ? 'Active' : 'Out of Stock'}
-                          </Badge>
-                          <span className="text-muted-foreground">Stock: {product.stock}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Product
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
@@ -498,7 +644,7 @@ const SellerDashboard = () => {
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">Email</label>
-                    <Input defaultValue="business@example.com" className="mt-1" />
+                    <Input defaultValue={user?.email || ''} className="mt-1" />
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">Phone</label>
@@ -521,7 +667,10 @@ const SellerDashboard = () => {
             className="w-full max-w-lg max-h-[90vh] overflow-auto rounded-2xl border border-border bg-card p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-foreground">Add New Product</h2>
+              <div>
+                <h2 className="text-xl font-bold text-foreground">Add New Product</h2>
+                <p className="text-sm text-muted-foreground">Products require admin approval</p>
+              </div>
               <Button 
                 variant="ghost" 
                 size="icon"
@@ -538,11 +687,11 @@ const SellerDashboard = () => {
                   Product Images
                 </label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {uploadedImages.map((img, index) => (
+                  {uploadedMedia.filter(m => m.type === 'image').map((media, index) => (
                     <div key={index} className="relative h-20 w-20 rounded-lg overflow-hidden bg-muted">
-                      <img src={img} alt="" className="h-full w-full object-cover" />
+                      <img src={media.preview} alt="" className="h-full w-full object-cover" />
                       <button
-                        onClick={() => removeImage(index)}
+                        onClick={() => removeMedia(uploadedMedia.indexOf(media))}
                         className="absolute top-1 right-1 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center"
                       >
                         <X className="h-3 w-3" />
@@ -550,7 +699,7 @@ const SellerDashboard = () => {
                     </div>
                   ))}
                   <button
-                    onClick={handleImageUpload}
+                    onClick={() => imageInputRef.current?.click()}
                     className="h-20 w-20 rounded-lg border-2 border-dashed border-border hover:border-doju-lime flex flex-col items-center justify-center gap-1 transition-colors"
                   >
                     <Image className="h-5 w-5 text-muted-foreground" />
@@ -565,11 +714,11 @@ const SellerDashboard = () => {
                   Product Videos (optional)
                 </label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {uploadedVideos.map((vid, index) => (
-                    <div key={index} className="relative h-20 w-32 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                      <Video className="h-6 w-6 text-muted-foreground" />
+                  {uploadedMedia.filter(m => m.type === 'video').map((media, index) => (
+                    <div key={index} className="relative h-20 w-32 rounded-lg overflow-hidden bg-muted">
+                      <video src={media.preview} className="h-full w-full object-cover" />
                       <button
-                        onClick={() => removeVideo(index)}
+                        onClick={() => removeMedia(uploadedMedia.indexOf(media))}
                         className="absolute top-1 right-1 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center"
                       >
                         <X className="h-3 w-3" />
@@ -577,7 +726,7 @@ const SellerDashboard = () => {
                     </div>
                   ))}
                   <button
-                    onClick={handleVideoUpload}
+                    onClick={() => videoInputRef.current?.click()}
                     className="h-20 w-32 rounded-lg border-2 border-dashed border-border hover:border-doju-lime flex flex-col items-center justify-center gap-1 transition-colors"
                   >
                     <Video className="h-5 w-5 text-muted-foreground" />
@@ -652,9 +801,13 @@ const SellerDashboard = () => {
                   variant="doju-primary" 
                   className="flex-1"
                   onClick={handleAddProduct}
-                  disabled={!newProduct.name || !newProduct.price}
+                  disabled={!newProduct.name || !newProduct.price || submitting}
                 >
-                  Add Product
+                  {submitting ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-doju-navy"></div>
+                  ) : (
+                    'Submit for Approval'
+                  )}
                 </Button>
               </div>
             </div>
