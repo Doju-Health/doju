@@ -8,8 +8,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center">
-              <img src={dojuLogo} alt="Doju" className="h-10 w-auto object-contain" />
+            <Link to="/" className="flex items-center gap-3">
+              <img src={dojuLogo} alt="Doju" className="h-10 w-10 rounded-full object-cover shadow-md" />
+              <span className="text-xl font-bold text-foreground">Doju</span>
             </Link>
             <p className="text-sm text-muted-foreground">
               Your trusted source for clinical-grade medical equipment and supplies.

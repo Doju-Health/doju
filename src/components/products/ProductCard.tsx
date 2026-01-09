@@ -32,12 +32,12 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
       className="group rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-doju-lime/40"
     >
       {/* Image */}
-      <div className="relative aspect-square bg-muted overflow-hidden">
+      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         <motion.img
           src={product.images[0] || '/placeholder.svg'}
           alt={product.name}
-          className="h-full w-full object-cover"
-          whileHover={{ scale: 1.08 }}
+          className="h-full w-full object-contain p-2"
+          whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.4 }}
         />
         

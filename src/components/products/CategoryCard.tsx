@@ -17,7 +17,7 @@ const CategoryCard = ({ category, index = 0 }: CategoryCardProps) => {
         transition={{ duration: 0.4, delay: index * 0.08 }}
         whileHover={{ y: -6, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="group relative rounded-2xl overflow-hidden cursor-pointer h-64"
+        className="group relative rounded-2xl overflow-hidden cursor-pointer h-56 sm:h-64"
       >
         {/* Background Image */}
         <div className="absolute inset-0">
@@ -25,8 +25,8 @@ const CategoryCard = ({ category, index = 0 }: CategoryCardProps) => {
             <motion.img
               src={category.image}
               alt={category.name}
-              className="h-full w-full object-cover"
-              whileHover={{ scale: 1.1 }}
+              className="h-full w-full object-cover object-center"
+              whileHover={{ scale: 1.08 }}
               transition={{ duration: 0.6 }}
             />
           ) : (
