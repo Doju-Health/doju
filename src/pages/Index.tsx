@@ -209,15 +209,21 @@ const Index = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.6 }}
                 >
-                  <Link to="/onboarding/buyer">
+                  <Link to="/marketplace">
                     <Button size="xl" className="bg-doju-lime text-doju-navy hover:bg-doju-lime-light font-bold gap-2 group">
-                      Buy from Us Now
+                      Buy from Us Now!
                       <motion.span
                         animate={{ x: [0, 5, 0] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
                       >
                         <ArrowRight className="h-5 w-5" />
                       </motion.span>
+                    </Button>
+                  </Link>
+                  <Link to="/onboarding/seller">
+                    <Button size="xl" variant="outline" className="border-primary-foreground/30 text-foreground hover:bg-primary-foreground/10 font-bold gap-2">
+                      Sell Through Us
+                      <ArrowRight className="h-5 w-5" />
                     </Button>
                   </Link>
                 </motion.div>
@@ -556,6 +562,26 @@ const Index = () => {
                   <Button size="xl" className="bg-doju-lime text-doju-navy hover:bg-doju-lime-light font-bold gap-2">
                     Buy from Us Now!
                     <ArrowRight className="h-5 w-5" />
+                  </Button>
+                </Link>
+              </motion.div>
+
+              {/* Admin Login - positioned at the bottom */}
+              <motion.div 
+                className="mt-12 pt-8 border-t border-primary-foreground/10"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+              >
+                <Link to="/auth?admin=true">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-primary-foreground/50 hover:text-primary-foreground hover:bg-primary-foreground/10 gap-2"
+                  >
+                    <Shield className="h-4 w-4" />
+                    Admin Login
                   </Button>
                 </Link>
               </motion.div>
