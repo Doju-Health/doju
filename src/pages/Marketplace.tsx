@@ -105,9 +105,9 @@ const Marketplace = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          <div className="container py-10">
+          <div className="container py-6 sm:py-10 px-4 sm:px-6">
             <motion.nav 
-              className="flex items-center gap-2 text-sm mb-4"
+              className="flex items-center gap-2 text-xs sm:text-sm mb-3 sm:mb-4"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -116,36 +116,34 @@ const Marketplace = () => {
               <span className="text-primary-foreground">Products</span>
             </motion.nav>
             <motion.div 
-              className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-primary-foreground">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-foreground">
                   {selectedCategory || 'All Products'}
                 </h1>
-                <p className="text-primary-foreground/70 mt-1">{filteredProducts.length} products available</p>
+                <p className="text-primary-foreground/70 mt-1 text-sm sm:text-base">{filteredProducts.length} products available</p>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <motion.div whileTap={{ scale: 0.95 }}>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20"
-                    onClick={() => setShowFilters(!showFilters)}
-                  >
-                    <SlidersHorizontal className="h-4 w-4 mr-2" />
-                    Filters
-                  </Button>
-                </motion.div>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20 h-9 sm:h-10 text-xs sm:text-sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <SlidersHorizontal className="h-4 w-4 mr-1.5 sm:mr-2" />
+                  Filters
+                </Button>
               </div>
             </motion.div>
           </div>
         </motion.div>
 
-        <div className="container py-8">
-          <div className="grid lg:grid-cols-4 gap-8">
+        <div className="container py-4 sm:py-8 px-4 sm:px-6">
+          <div className="grid lg:grid-cols-4 gap-4 sm:gap-8">
             {/* Sidebar Filters */}
             <AnimatePresence>
               <motion.aside 
@@ -336,7 +334,7 @@ const Marketplace = () => {
 
               {filteredProducts.length > 0 ? (
                 <motion.div 
-                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+                  className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-6"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"

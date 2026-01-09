@@ -32,133 +32,117 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   };
 
   return (
-<motion.div
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
-      whileHover={{ y: -8 }}
+      transition={{ duration: 0.4, delay: index * 0.05 }}
+      whileHover={{ y: -4 }}
+      whileTap={{ scale: 0.98 }}
       onClick={handleProductClick}
-      className="group rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-doju-lime/40 cursor-pointer"
+      className="group rounded-xl sm:rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-doju-lime/40 cursor-pointer active:scale-[0.98]"
     >
       {/* Image */}
-      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-        <motion.img
+      <div className="relative aspect-square sm:aspect-[4/3] bg-muted overflow-hidden">
+        <img
           src={product.images[0] || '/placeholder.svg'}
           alt={product.name}
-          className="h-full w-full object-contain p-2"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.4 }}
+          className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-105"
         />
         
-        {/* Overlay on hover */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-t from-doju-navy/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4"
-        >
-          <p className="text-primary-foreground text-sm line-clamp-2">{product.description}</p>
-        </motion.div>
+        {/* Overlay on hover - hidden on mobile for performance */}
+        <div className="absolute inset-0 bg-gradient-to-t from-doju-navy/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-end p-3 sm:p-4 hidden sm:flex">
+          <p className="text-primary-foreground text-xs sm:text-sm line-clamp-2">{product.description}</p>
+        </div>
 
         {product.stock > 0 && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2 + index * 0.1, type: 'spring' }}
-          >
-            <Badge className="absolute top-3 right-3 bg-doju-lime text-doju-navy font-semibold shadow-lg">
-              In stock
-            </Badge>
-          </motion.div>
+          <Badge className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-doju-lime text-doju-navy font-semibold shadow-lg text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5">
+            In stock
+          </Badge>
         )}
 
-        {/* Quick view button */}
-        <motion.button
+        {/* Quick view button - visible on hover desktop only */}
+        <button
           onClick={handleProductClick}
-          className="absolute top-3 left-3 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-doju-lime hover:text-doju-navy"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+          className="absolute top-2 left-2 sm:top-3 sm:left-3 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-card/90 backdrop-blur-sm items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-doju-lime hover:text-doju-navy hidden sm:flex"
         >
-          <Eye className="h-5 w-5" />
-        </motion.button>
+          <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+        </button>
       </div>
 
       {/* Content */}
-      <div className="p-5 space-y-3">
-        <div className="space-y-1">
+      <div className="p-3 sm:p-5 space-y-2 sm:space-y-3">
+        <div className="space-y-0.5 sm:space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-doju-lime">{product.brand}</span>
-            <div className="flex items-center gap-1">
+            <span className="text-[10px] sm:text-xs font-medium text-doju-lime truncate">{product.brand}</span>
+            <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
               <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-              <span className="text-xs text-muted-foreground">4.8</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">4.8</span>
             </div>
           </div>
-          <h3 className="font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-doju-lime transition-colors">
+          <h3 className="font-semibold text-foreground text-sm sm:text-base line-clamp-2 leading-snug group-hover:text-doju-lime transition-colors">
             {product.name}
           </h3>
-          <p className="text-xs text-muted-foreground">SKU: {product.sku}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">SKU: {product.sku}</p>
         </div>
 
         {/* Weekly purchases indicator */}
         {product.weeklyPurchases && product.weeklyPurchases > 0 && (
-          <motion.div 
-            className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 rounded-full px-2.5 py-1 w-fit"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 + index * 0.1 }}
-          >
-            <Users className="h-3 w-3 text-doju-lime" />
-            <span>{product.weeklyPurchases} bought this week</span>
-          </motion.div>
+          <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-muted-foreground bg-muted/50 rounded-full px-2 sm:px-2.5 py-0.5 sm:py-1 w-fit">
+            <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-doju-lime flex-shrink-0" />
+            <span className="truncate">{product.weeklyPurchases} bought this week</span>
+          </div>
         )}
 
-        <div className="flex items-center justify-between pt-2">
-          <motion.span 
-            className="text-xl font-bold text-foreground"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
+        <div className="flex items-center justify-between pt-1 sm:pt-2">
+          <span className="text-lg sm:text-xl font-bold text-foreground">
             {formatPrice(product.price)}
-          </motion.span>
+          </span>
         </div>
 
-        <div className="flex gap-2 pt-2">
-          <motion.div className="flex-1" whileTap={{ scale: 0.95 }}>
+        <div className="flex gap-1.5 sm:gap-2 pt-1 sm:pt-2">
+          <div className="flex-1">
             {user ? (
               <Button
                 variant="doju-outline"
                 size="sm"
-                className="w-full gap-2"
+                className="w-full gap-1 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-3"
                 onClick={(e) => {
                   e.stopPropagation();
                   addToCart(product);
                 }}
               >
-                <ShoppingCart className="h-4 w-4" />
-                Add
+                <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Add</span>
               </Button>
             ) : (
               <Button
                 variant="doju-outline"
                 size="sm"
-                className="w-full gap-2"
+                className="w-full gap-1 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-3"
                 onClick={(e) => {
                   e.stopPropagation();
                   toast.info("Sign in to add items to your cart");
                   navigate(`/auth?returnTo=/product/${product.id}`);
                 }}
               >
-                <LogIn className="h-4 w-4" />
-                Sign in
+                <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Sign in</span>
               </Button>
             )}
-          </motion.div>
-          <motion.div className="flex-1" whileTap={{ scale: 0.95 }}>
-            <Button variant="doju-primary" size="sm" className="w-full" onClick={(e) => {
-              e.stopPropagation();
-              handleProductClick();
-            }}>
+          </div>
+          <div className="flex-1">
+            <Button 
+              variant="doju-primary" 
+              size="sm" 
+              className="w-full h-9 sm:h-10 text-xs sm:text-sm" 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleProductClick();
+              }}
+            >
               View
             </Button>
-          </motion.div>
+          </div>
         </div>
       </div>
     </motion.div>
