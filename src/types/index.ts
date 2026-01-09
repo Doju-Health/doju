@@ -44,6 +44,7 @@ export interface Product {
   sellerId: string;
   approvalStatus: 'pending' | 'approved' | 'rejected';
   createdAt: Date;
+  weeklyPurchases?: number;
 }
 
 export interface CartItem {

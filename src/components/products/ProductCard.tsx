@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Eye, Star } from 'lucide-react';
+import { ShoppingCart, Eye, Star, Users } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -87,6 +87,19 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           </h3>
           <p className="text-xs text-muted-foreground">SKU: {product.sku}</p>
         </div>
+
+        {/* Weekly purchases indicator */}
+        {product.weeklyPurchases && product.weeklyPurchases > 0 && (
+          <motion.div 
+            className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 rounded-full px-2.5 py-1 w-fit"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 + index * 0.1 }}
+          >
+            <Users className="h-3 w-3 text-doju-lime" />
+            <span>{product.weeklyPurchases} bought this week</span>
+          </motion.div>
+        )}
 
         <div className="flex items-center justify-between pt-2">
           <motion.span 
