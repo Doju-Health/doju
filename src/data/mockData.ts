@@ -46,6 +46,7 @@ export const featuredProducts: Product[] = [
     sellerId: 'seller1',
     approvalStatus: 'approved',
     createdAt: new Date(),
+    weeklyPurchases: 127,
   },
   {
     id: '2',
@@ -60,6 +61,7 @@ export const featuredProducts: Product[] = [
     sellerId: 'seller2',
     approvalStatus: 'approved',
     createdAt: new Date(),
+    weeklyPurchases: 89,
   },
   {
     id: '3',
@@ -74,6 +76,7 @@ export const featuredProducts: Product[] = [
     sellerId: 'seller1',
     approvalStatus: 'approved',
     createdAt: new Date(),
+    weeklyPurchases: 64,
   },
   {
     id: '4',
@@ -88,6 +91,7 @@ export const featuredProducts: Product[] = [
     sellerId: 'seller3',
     approvalStatus: 'approved',
     createdAt: new Date(),
+    weeklyPurchases: 203,
   },
   {
     id: '5',
@@ -102,6 +106,7 @@ export const featuredProducts: Product[] = [
     sellerId: 'seller1',
     approvalStatus: 'approved',
     createdAt: new Date(),
+    weeklyPurchases: 156,
   },
   {
     id: '6',
@@ -116,6 +121,7 @@ export const featuredProducts: Product[] = [
     sellerId: 'seller2',
     approvalStatus: 'approved',
     createdAt: new Date(),
+    weeklyPurchases: 23,
   },
 ];
 

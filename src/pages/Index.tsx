@@ -15,7 +15,11 @@ import {
 } from 'lucide-react';
 import heroImage from '@/assets/hero-medical.jpg';
 import dojuLogo from '@/assets/doju-logo.jpg';
+import heroHospitalBg from '@/assets/hero-hospital-bg.jpg';
 import { useRef } from 'react';
+
+// Top 4 products for homepage
+const topProducts = featuredProducts.slice(0, 4);
 
 const Index = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -124,7 +128,7 @@ const Index = () => {
           />
 
           <div className="container relative z-10 py-16 md:py-24">
-            {/* Animated Logo Section */}
+            {/* Animated Logo Section with Hospital Background */}
             <motion.div 
               className="flex justify-center mb-12 md:mb-16"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -143,6 +147,22 @@ const Index = () => {
                   ease: "easeInOut" 
                 }}
               >
+                {/* Hospital background image */}
+                <motion.div
+                  className="absolute -inset-8 md:-inset-12 rounded-3xl overflow-hidden"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1.2 }}
+                >
+                  <img 
+                    src={heroHospitalBg} 
+                    alt="" 
+                    className="w-full h-full object-cover opacity-30 blur-[2px]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-background/60" />
+                </motion.div>
+                
+                {/* Glow effect */}
                 <motion.div
                   className="absolute inset-0 bg-doju-lime/20 rounded-full blur-2xl"
                   animate={{ 
@@ -417,7 +437,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Featured Products */}
+        {/* Featured Products - Top 4 */}
         <section className="py-20 bg-muted/30">
           <div className="container">
             <motion.div 
@@ -428,13 +448,13 @@ const Index = () => {
             >
               <div>
                 <Badge className="mb-3 bg-doju-lime/10 text-doju-lime border-doju-lime/20">
-                  Featured
+                  Best Sellers
                 </Badge>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                  Top-Rated Products
+                  Top-Selling Products
                 </h2>
                 <p className="text-muted-foreground mt-2">
-                  Best sellers from verified brands with full details and transparent pricing.
+                  Our most popular items this week — trusted by healthcare professionals.
                 </p>
               </div>
               <Link to="/marketplace">
@@ -446,7 +466,7 @@ const Index = () => {
             </motion.div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map((product, index) => (
+              {topProducts.map((product, index) => (
                 <ProductCard key={product.id} product={product} index={index} />
               ))}
             </div>
