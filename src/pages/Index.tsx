@@ -6,6 +6,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/products/ProductCard';
 import CategoryCard from '@/components/products/CategoryCard';
+import AnimatedStat from '@/components/home/AnimatedStat';
 import { categories, featuredProducts } from '@/data/mockData';
 import { 
   Shield, Truck, BadgeCheck, Headphones, 
@@ -139,13 +140,13 @@ const Index = () => {
                 </motion.div>
                 
                 <motion.h1 
-                  className="text-4xl md:text-6xl lg:text-7xl font-bold text-primary-foreground leading-tight"
+                  className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground leading-tight"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.6 }}
                 >
-                  Quality Healthcare,{' '}
-                  <span className="text-doju-lime">Delivered</span>
+                  Your complete medical supply store,{' '}
+                  <span className="text-doju-lime">in one app.</span>
                 </motion.h1>
                 
                 <motion.p 
@@ -273,28 +274,13 @@ const Index = () => {
               variants={containerVariants}
             >
               {stats.map((stat, index) => (
-                <motion.div
+                <AnimatedStat
                   key={stat.label}
-                  variants={itemVariants}
-                  className="text-center"
-                >
-                  <motion.div
-                    className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-doju-lime-pale text-doju-lime mb-3"
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                  >
-                    <stat.icon className="h-6 w-6" />
-                  </motion.div>
-                  <motion.p 
-                    className="text-3xl md:text-4xl font-bold text-foreground"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1, type: 'spring' }}
-                  >
-                    {stat.value}
-                  </motion.p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </motion.div>
+                  value={stat.value}
+                  label={stat.label}
+                  icon={stat.icon}
+                  index={index}
+                />
               ))}
             </motion.div>
           </div>

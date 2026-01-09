@@ -22,7 +22,7 @@ const Header = () => {
       <div className="container flex h-16 items-center justify-between gap-4">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-          <img src={dojuLogo} alt="Doju" className="h-10 w-auto object-contain" />
+          <img src={dojuLogo} alt="Doju" className="h-10 w-10 rounded-full object-cover shadow-md" />
         </Link>
 
         {/* Desktop Navigation */}
