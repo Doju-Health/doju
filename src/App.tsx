@@ -41,23 +41,19 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/marketplace" element={
+              <Route path="/marketplace" element={<Marketplace />} />
+              <Route path="/categories" element={<Marketplace />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={
                 <ProtectedRoute>
-                  <Marketplace />
+                  <Cart />
                 </ProtectedRoute>
               } />
-              <Route path="/categories" element={
+              <Route path="/checkout" element={
                 <ProtectedRoute>
-                  <Marketplace />
+                  <Checkout />
                 </ProtectedRoute>
               } />
-              <Route path="/product/:id" element={
-                <ProtectedRoute>
-                  <ProductDetail />
-                </ProtectedRoute>
-              } />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
               <Route path="/track-order" element={<OrderTracking />} />
               <Route path="/seller/dashboard" element={<SellerDashboard />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
