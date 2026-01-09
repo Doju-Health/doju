@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/CartContext';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import dojuLogo from '@/assets/doju-logo.jpg';
 
 const Header = () => {
   const { totalItems } = useCart();
@@ -20,11 +21,8 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <div className="container flex h-16 items-center justify-between gap-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-doju-navy">
-            <span className="text-sm font-bold text-primary-foreground">DJ</span>
-          </div>
-          <span className="text-xl font-bold text-foreground">Doju</span>
+        <Link to="/" className="flex items-center">
+          <img src={dojuLogo} alt="Doju" className="h-10 w-auto object-contain" />
         </Link>
 
         {/* Desktop Navigation */}
