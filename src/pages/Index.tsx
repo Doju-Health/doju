@@ -16,6 +16,7 @@ import {
 import heroImage from '@/assets/hero-medical.jpg';
 import dojuLogo from '@/assets/doju-logo.jpg';
 import heroHospitalBg from '@/assets/hero-hospital-bg.jpg';
+import CartCheckoutBar from '@/components/cart/CartCheckoutBar';
 import { useRef } from 'react';
 
 // Top 4 products for homepage
@@ -551,15 +552,10 @@ const Index = () => {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
               >
-                <Link to="/onboarding/buyer">
+                <Link to="/marketplace">
                   <Button size="xl" className="bg-doju-lime text-doju-navy hover:bg-doju-lime-light font-bold gap-2">
-                    Create Buyer Account
+                    Buy from Us Now!
                     <ArrowRight className="h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link to="/onboarding/seller">
-                  <Button size="xl" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-                    Become a Seller
                   </Button>
                 </Link>
               </motion.div>
@@ -568,6 +564,7 @@ const Index = () => {
         </section>
       </main>
 
+      <CartCheckoutBar />
       <Footer />
     </div>
   );

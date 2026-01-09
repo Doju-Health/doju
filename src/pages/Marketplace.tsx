@@ -1,25 +1,67 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/products/ProductCard';
+import CartCheckoutBar from '@/components/cart/CartCheckoutBar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
 import { allProducts, categories } from '@/data/mockData';
 import { Search, Filter, ChevronDown, X, SlidersHorizontal } from 'lucide-react';
 
 const Marketplace = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Get unique brands from products
+  const brands = useMemo(() => {
+    const uniqueBrands = [...new Set(allProducts.map(p => p.brand))];
+    return uniqueBrands.sort();
+  }, []);
+
+  // Get price range from products
+  const maxPrice = useMemo(() => {
+    return Math.max(...allProducts.map(p => p.price));
+  }, []);
 
   const filteredProducts = allProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.brand.toLowerCase().includes(searchQuery.toLowerCase());
+      product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(product.brand);
+    const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
+    return matchesSearch && matchesCategory && matchesBrand && matchesPrice;
   });
+
+  const toggleBrand = (brand: string) => {
+    setSelectedBrands(prev => 
+      prev.includes(brand) 
+        ? prev.filter(b => b !== brand)
+        : [...prev, brand]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory(null);
+    setSelectedBrands([]);
+    setPriceRange([0, maxPrice]);
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -147,15 +189,48 @@ const Marketplace = () => {
                 >
                   <h3 className="font-bold text-foreground mb-4">Brands</h3>
                   <div className="space-y-1">
-                    {['OmniCare', 'PulseCheck', 'AeroMed', 'ThermaCo'].map((brand) => (
+                    {brands.map((brand) => (
                       <motion.button
                         key={brand}
+                        onClick={() => toggleBrand(brand)}
                         whileHover={{ x: 4 }}
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+                        whileTap={{ scale: 0.98 }}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-all ${
+                          selectedBrands.includes(brand) 
+                            ? 'bg-doju-lime text-doju-navy font-semibold' 
+                            : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                        }`}
                       >
                         <span>{brand}</span>
+                        <span className="text-xs">
+                          {allProducts.filter(p => p.brand === brand).length}
+                        </span>
                       </motion.button>
                     ))}
+                  </div>
+                </motion.div>
+
+                {/* Price Range */}
+                <motion.div 
+                  className="rounded-2xl border border-border bg-card p-5"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <h3 className="font-bold text-foreground mb-4">Price Range</h3>
+                  <div className="space-y-4">
+                    <Slider
+                      value={[priceRange[0], priceRange[1]]}
+                      onValueChange={(value) => setPriceRange([value[0], value[1]])}
+                      min={0}
+                      max={maxPrice}
+                      step={5000}
+                      className="w-full"
+                    />
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>{formatPrice(priceRange[0])}</span>
+                      <span>{formatPrice(priceRange[1])}</span>
+                    </div>
                   </div>
                 </motion.div>
 
@@ -163,10 +238,10 @@ const Marketplace = () => {
                   <Button 
                     variant="ghost" 
                     className="text-destructive hover:text-destructive/80 w-full"
-                    onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
+                    onClick={clearAllFilters}
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Reset filters
+                    Reset all filters
                   </Button>
                 </motion.div>
               </motion.aside>
@@ -193,7 +268,7 @@ const Marketplace = () => {
 
               {/* Active Filters */}
               <AnimatePresence>
-                {(selectedCategory || searchQuery) && (
+                {(selectedCategory || searchQuery || selectedBrands.length > 0 || priceRange[0] > 0 || priceRange[1] < maxPrice) && (
                   <motion.div 
                     className="flex flex-wrap gap-2 mb-6"
                     initial={{ opacity: 0, y: -10 }}
@@ -212,6 +287,22 @@ const Marketplace = () => {
                       <Badge variant="secondary" className="gap-1 py-1.5 px-3 rounded-full">
                         "{searchQuery}"
                         <button onClick={() => setSearchQuery('')} className="ml-1 hover:text-destructive">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    )}
+                    {selectedBrands.map(brand => (
+                      <Badge key={brand} variant="secondary" className="gap-1 py-1.5 px-3 rounded-full">
+                        {brand}
+                        <button onClick={() => toggleBrand(brand)} className="ml-1 hover:text-destructive">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                    {(priceRange[0] > 0 || priceRange[1] < maxPrice) && (
+                      <Badge variant="secondary" className="gap-1 py-1.5 px-3 rounded-full">
+                        {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+                        <button onClick={() => setPriceRange([0, maxPrice])} className="ml-1 hover:text-destructive">
                           <X className="h-3 w-3" />
                         </button>
                       </Badge>
@@ -242,7 +333,7 @@ const Marketplace = () => {
                   <p className="text-muted-foreground mb-4">Try adjusting your search or filters</p>
                   <Button 
                     variant="doju-primary" 
-                    onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
+                    onClick={clearAllFilters}
                   >
                     Clear filters
                   </Button>
@@ -270,6 +361,7 @@ const Marketplace = () => {
         </div>
       </main>
 
+      <CartCheckoutBar />
       <Footer />
     </div>
   );

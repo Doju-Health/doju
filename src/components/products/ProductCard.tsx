@@ -2,7 +2,7 @@ import { Product } from '@/types';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Eye, Star, Users } from 'lucide-react';
 
@@ -13,7 +13,12 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
 
+  const handleProductClick = () => {
+    navigate(`/product/${product.id}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
@@ -61,15 +66,14 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
         )}
 
         {/* Quick view button */}
-        <Link to={`/product/${product.id}`}>
-          <motion.button
-            className="absolute top-3 left-3 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-doju-lime hover:text-doju-navy"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <Eye className="h-5 w-5" />
-          </motion.button>
-        </Link>
+        <motion.button
+          onClick={handleProductClick}
+          className="absolute top-3 left-3 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-doju-lime hover:text-doju-navy"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <Eye className="h-5 w-5" />
+        </motion.button>
       </div>
 
       {/* Content */}
@@ -125,11 +129,9 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             </Button>
           </motion.div>
           <motion.div className="flex-1" whileTap={{ scale: 0.95 }}>
-            <Link to={`/product/${product.id}`} className="w-full">
-              <Button variant="doju-primary" size="sm" className="w-full">
-                View
-              </Button>
-            </Link>
+            <Button variant="doju-primary" size="sm" className="w-full" onClick={handleProductClick}>
+              View
+            </Button>
           </motion.div>
         </div>
       </div>
