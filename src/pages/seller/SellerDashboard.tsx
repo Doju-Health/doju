@@ -9,10 +9,18 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
+  useOrders, 
+  Order, 
+  OrderStatus, 
+  getStatusLabel, 
+  getStatusColor 
+} from '@/hooks/useOrders';
+import { 
   Package, TrendingUp, Eye, DollarSign, Plus, 
   Upload, X, Edit, Trash2, MoreVertical, Image,
   Video, BarChart3, ShoppingCart, Users, ArrowUpRight,
-  Home, Store, Settings, LogOut, Menu, Clock, CheckCircle, XCircle
+  Home, Store, Settings, LogOut, Menu, Clock, CheckCircle, XCircle,
+  Truck, PackageCheck, MapPin, Phone
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
@@ -41,9 +49,12 @@ interface UploadedMedia {
   type: 'image' | 'video';
 }
 
+const ORDER_STATUS_FLOW: OrderStatus[] = ['confirmed', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered'];
+
 const SellerDashboard = () => {
   const navigate = useNavigate();
   const { user, isSeller, loading: authLoading, signOut } = useAuth();
+  const { orders, loading: ordersLoading, updateOrderStatus } = useOrders();
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [uploadedMedia, setUploadedMedia] = useState<UploadedMedia[]>([]);
@@ -253,13 +264,48 @@ const SellerDashboard = () => {
     }
   };
 
+  const getNextStatus = (currentStatus: OrderStatus): OrderStatus | null => {
+    const currentIndex = ORDER_STATUS_FLOW.indexOf(currentStatus);
+    if (currentIndex < ORDER_STATUS_FLOW.length - 1) {
+      return ORDER_STATUS_FLOW[currentIndex + 1];
+    }
+    return null;
+  };
+
+  const getNextStatusLabel = (currentStatus: OrderStatus): string => {
+    const next = getNextStatus(currentStatus);
+    if (!next) return '';
+    
+    const labels: Record<OrderStatus, string> = {
+      confirmed: 'Mark as Picked Up',
+      picked_up: 'Mark as In Transit',
+      in_transit: 'Mark as Out for Delivery',
+      out_for_delivery: 'Mark as Delivered',
+      delivered: ''
+    };
+    return labels[currentStatus];
+  };
+
+  const handleUpdateOrderStatus = async (orderId: string, currentStatus: OrderStatus) => {
+    const nextStatus = getNextStatus(currentStatus);
+    if (nextStatus) {
+      await updateOrderStatus(orderId, nextStatus);
+    }
+  };
+
+  // Filter orders for this seller
+  const sellerOrders = orders.filter(order => 
+    order.items?.some(item => item.seller_id === user?.id)
+  );
+
+  const pendingOrdersCount = sellerOrders.filter(o => o.status !== 'delivered').length;
   const pendingCount = products.filter(p => p.status === 'pending').length;
   const approvedCount = products.filter(p => p.status === 'approved').length;
 
   const sidebarLinks = [
     { icon: BarChart3, label: 'Overview', value: 'overview' },
     { icon: Package, label: 'Products', value: 'products' },
-    { icon: ShoppingCart, label: 'Orders', value: 'orders' },
+    { icon: ShoppingCart, label: 'Orders', value: 'orders', badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
     { icon: Settings, label: 'Settings', value: 'settings' },
   ];
 
@@ -280,14 +326,21 @@ const SellerDashboard = () => {
           <button
             key={link.value}
             onClick={() => setActiveTab(link.value)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               activeTab === link.value
                 ? 'bg-doju-lime/10 text-doju-lime'
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             }`}
           >
-            <link.icon className="h-5 w-5" />
-            {link.label}
+            <div className="flex items-center gap-3">
+              <link.icon className="h-5 w-5" />
+              {link.label}
+            </div>
+            {link.badge && (
+              <span className="h-5 min-w-[20px] px-1.5 rounded-full bg-doju-lime text-doju-navy text-xs font-bold flex items-center justify-center">
+                {link.badge}
+              </span>
+            )}
           </button>
         ))}
       </nav>
@@ -432,14 +485,14 @@ const SellerDashboard = () => {
                   className="rounded-2xl border border-border bg-card p-4 lg:p-6"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div className="h-10 w-10 rounded-xl bg-yellow-100 flex items-center justify-center">
-                      <Clock className="h-5 w-5 text-yellow-600" />
+                    <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                      <ShoppingCart className="h-5 w-5 text-blue-600" />
                     </div>
                   </div>
                   <p className="text-2xl lg:text-3xl font-bold text-foreground">
-                    {pendingCount}
+                    {sellerOrders.length}
                   </p>
-                  <p className="text-sm text-muted-foreground">Pending Approval</p>
+                  <p className="text-sm text-muted-foreground">Total Orders</p>
                 </motion.div>
 
                 <motion.div
@@ -449,22 +502,64 @@ const SellerDashboard = () => {
                   className="rounded-2xl border border-border bg-card p-4 lg:p-6"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div className="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center">
-                      <Eye className="h-5 w-5 text-purple-600" />
+                    <div className="h-10 w-10 rounded-xl bg-yellow-100 flex items-center justify-center">
+                      <Clock className="h-5 w-5 text-yellow-600" />
                     </div>
                   </div>
                   <p className="text-2xl lg:text-3xl font-bold text-foreground">
-                    0
+                    {pendingOrdersCount}
                   </p>
-                  <p className="text-sm text-muted-foreground">Product Views</p>
+                  <p className="text-sm text-muted-foreground">Pending Delivery</p>
                 </motion.div>
               </div>
+
+              {/* Recent Orders */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="rounded-2xl border border-border bg-card p-4 lg:p-6"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-foreground">Recent Orders</h3>
+                  <Button variant="ghost" size="sm" onClick={() => setActiveTab('orders')}>
+                    View All
+                    <ArrowUpRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+
+                {sellerOrders.length > 0 ? (
+                  <div className="space-y-3">
+                    {sellerOrders.slice(0, 3).map((order) => (
+                      <div 
+                        key={order.id}
+                        className="flex items-center justify-between gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-foreground">{order.order_number}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {order.items?.filter(i => i.seller_id === user?.id).length} item(s)
+                          </p>
+                        </div>
+                        <Badge className={getStatusColor(order.status)}>
+                          {getStatusLabel(order.status)}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>No orders yet</p>
+                  </div>
+                )}
+              </motion.div>
 
               {/* Recent Products */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.5 }}
                 className="rounded-2xl border border-border bg-card p-4 lg:p-6"
               >
                 <div className="flex items-center justify-between mb-4">
@@ -497,21 +592,20 @@ const SellerDashboard = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-foreground truncate">{product.name}</p>
-                          <div className="flex items-center gap-2">
-                            {getStatusBadge(product.status)}
-                          </div>
+                          <p className="text-sm text-doju-lime">{formatPrice(product.price)}</p>
                         </div>
-                        <p className="font-semibold text-foreground">{formatPrice(product.price)}</p>
+                        {getStatusBadge(product.status)}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <Package className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground">No products yet</p>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>No products yet</p>
                     <Button 
                       variant="doju-primary" 
-                      className="mt-4"
+                      size="sm" 
+                      className="mt-3"
                       onClick={() => setShowAddProduct(true)}
                     >
                       Add Your First Product
@@ -522,16 +616,128 @@ const SellerDashboard = () => {
             </div>
           )}
 
+          {/* Orders Tab */}
+          {activeTab === 'orders' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-foreground">
+                  Your Orders ({sellerOrders.length})
+                </h2>
+              </div>
+
+              {ordersLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-doju-lime"></div>
+                </div>
+              ) : sellerOrders.length > 0 ? (
+                <div className="space-y-4">
+                  {sellerOrders.map((order) => {
+                    const sellerItems = order.items?.filter(i => i.seller_id === user?.id) || [];
+                    const nextStatusLabel = getNextStatusLabel(order.status);
+                    
+                    return (
+                      <motion.div
+                        key={order.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-2xl border border-border bg-card overflow-hidden"
+                      >
+                        {/* Order Header */}
+                        <div className="p-4 border-b border-border bg-muted/30">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                              <p className="font-semibold text-foreground">{order.order_number}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {new Date(order.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                  hour: 'numeric',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Badge className={getStatusColor(order.status)}>
+                                {getStatusLabel(order.status)}
+                              </Badge>
+                              {nextStatusLabel && (
+                                <Button
+                                  variant="doju-primary"
+                                  size="sm"
+                                  onClick={() => handleUpdateOrderStatus(order.id, order.status)}
+                                >
+                                  {nextStatusLabel}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Order Items */}
+                        <div className="p-4">
+                          <div className="space-y-3 mb-4">
+                            {sellerItems.map((item) => (
+                              <div key={item.id} className="flex items-center gap-3">
+                                {item.product_image && (
+                                  <div className="h-12 w-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                                    <img
+                                      src={item.product_image}
+                                      alt={item.product_name}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-foreground">{item.product_name}</p>
+                                  <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                                </div>
+                                <p className="font-semibold text-foreground">
+                                  {formatPrice(item.unit_price * item.quantity)}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Delivery Info */}
+                          <div className="pt-4 border-t border-border">
+                            <p className="text-sm font-medium text-foreground mb-2">Delivery Information</p>
+                            <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                              <div className="flex items-start gap-2">
+                                <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                                <span className="text-muted-foreground">{order.delivery_address}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-muted-foreground">{order.phone}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-16 text-muted-foreground">
+                  <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">No orders yet</h3>
+                  <p className="text-sm">When customers order your products, they'll appear here.</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Products Tab */}
           {activeTab === 'products' && (
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground">Your Products</h2>
-                  <p className="text-sm text-muted-foreground">{products.length} products listed</p>
-                </div>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-foreground">
+                  Your Products ({products.length})
+                </h2>
                 <Button 
                   variant="doju-primary" 
+                  size="sm" 
                   className="gap-2"
                   onClick={() => setShowAddProduct(true)}
                 >
@@ -542,15 +748,14 @@ const SellerDashboard = () => {
 
               {products.length > 0 ? (
                 <div className="grid gap-4">
-                  {products.map((product, index) => (
+                  {products.map((product) => (
                     <motion.div
                       key={product.id}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="rounded-2xl border border-border bg-card p-4 hover:border-doju-lime/40 transition-colors"
+                      className="rounded-2xl border border-border bg-card p-4"
                     >
-                      <div className="flex items-start gap-4">
+                      <div className="flex gap-4">
                         <div className="h-20 w-20 rounded-xl bg-muted overflow-hidden flex-shrink-0">
                           {product.media && product.media.length > 0 ? (
                             <img 
@@ -565,34 +770,37 @@ const SellerDashboard = () => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start justify-between gap-4">
                             <div>
                               <h3 className="font-semibold text-foreground">{product.name}</h3>
-                              <p className="text-lg font-bold text-doju-lime">{formatPrice(product.price)}</p>
+                              <p className="text-doju-lime font-medium">{formatPrice(product.price)}</p>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Stock: {product.stock} • {product.category || 'Uncategorized'}
+                              </p>
                             </div>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem 
-                                  className="text-red-600"
-                                  onClick={() => handleDeleteProduct(product.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-4 mt-3 text-sm">
-                            {getStatusBadge(product.status)}
-                            <span className="text-muted-foreground">Stock: {product.stock}</span>
-                            {product.category && (
-                              <span className="text-muted-foreground">{product.category}</span>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {getStatusBadge(product.status)}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    className="text-red-600"
+                                    onClick={() => handleDeleteProduct(product.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </div>
                           {product.description && (
                             <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
@@ -605,53 +813,27 @@ const SellerDashboard = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No products yet</h3>
-                  <p className="text-muted-foreground mb-4">Start by adding your first product</p>
+                <div className="text-center py-16 text-muted-foreground">
+                  <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">No products yet</h3>
+                  <p className="text-sm mb-4">Start selling by adding your first product.</p>
                   <Button 
                     variant="doju-primary"
                     onClick={() => setShowAddProduct(true)}
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Product
+                    Add Your First Product
                   </Button>
                 </div>
               )}
             </div>
           )}
 
-          {/* Orders Tab */}
-          {activeTab === 'orders' && (
-            <div className="text-center py-12">
-              <div className="h-16 w-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
-                <ShoppingCart className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">No orders yet</h3>
-              <p className="text-muted-foreground">Orders from your products will appear here</p>
-            </div>
-          )}
-
           {/* Settings Tab */}
           {activeTab === 'settings' && (
-            <div className="max-w-lg space-y-6">
+            <div className="max-w-2xl">
+              <h2 className="text-lg font-semibold text-foreground mb-6">Settings</h2>
               <div className="rounded-2xl border border-border bg-card p-6">
-                <h3 className="font-semibold text-foreground mb-4">Business Information</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm text-muted-foreground">Business Name</label>
-                    <Input defaultValue="Medical Supplies Co." className="mt-1" />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Email</label>
-                    <Input defaultValue={user?.email || ''} className="mt-1" />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Phone</label>
-                    <Input defaultValue="+234 800 123 4567" className="mt-1" />
-                  </div>
-                  <Button variant="doju-primary">Save Changes</Button>
-                </div>
+                <p className="text-muted-foreground">Settings coming soon...</p>
               </div>
             </div>
           )}
@@ -660,27 +842,29 @@ const SellerDashboard = () => {
 
       {/* Add Product Modal */}
       {showAddProduct && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-lg max-h-[90vh] overflow-auto rounded-2xl border border-border bg-card p-6"
+            className="w-full max-w-lg bg-card rounded-2xl border border-border shadow-xl max-h-[90vh] overflow-y-auto"
           >
-            <div className="flex items-center justify-between mb-6">
-              <div>
+            <div className="p-6 border-b border-border">
+              <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-foreground">Add New Product</h2>
-                <p className="text-sm text-muted-foreground">Products require admin approval</p>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setShowAddProduct(false)}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
               </div>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => setShowAddProduct(false)}
-              >
-                <X className="h-5 w-5" />
-              </Button>
+              <p className="text-sm text-muted-foreground mt-1">
+                Your product will be reviewed by an admin before going live.
+              </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="p-6 space-y-6">
               {/* Image Upload */}
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">
@@ -688,8 +872,8 @@ const SellerDashboard = () => {
                 </label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {uploadedMedia.filter(m => m.type === 'image').map((media, index) => (
-                    <div key={index} className="relative h-20 w-20 rounded-lg overflow-hidden bg-muted">
-                      <img src={media.preview} alt="" className="h-full w-full object-cover" />
+                    <div key={index} className="relative h-20 w-20 rounded-lg overflow-hidden">
+                      <img src={media.preview} alt="Preview" className="h-full w-full object-cover" />
                       <button
                         onClick={() => removeMedia(uploadedMedia.indexOf(media))}
                         className="absolute top-1 right-1 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center"
