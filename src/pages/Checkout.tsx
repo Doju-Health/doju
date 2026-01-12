@@ -6,6 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrders, Order } from '@/hooks/useOrders';
+import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight, Check, Phone, MapPin, CreditCard, MessageSquare, ShoppingBag, Shield, Landmark, Copy, CheckCircle, Package } from 'lucide-react';
 import dojuLogo from '@/assets/doju-logo.jpg';
 
@@ -57,6 +60,8 @@ const steps: CheckoutStep[] = [
 
 const Checkout = () => {
   const { items, totalAmount, clearCart } = useCart();
+  const { user } = useAuth();
+  const { createOrder } = useOrders();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Record<string, string>>({});
@@ -64,11 +69,8 @@ const Checkout = () => {
   const [showReview, setShowReview] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
-
-  // Generate unique 5-digit delivery code
-  const deliveryCode = useMemo(() => {
-    return Math.floor(10000 + Math.random() * 90000).toString();
-  }, []);
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
 
   const shipping = totalAmount > 50000 ? 0 : 2500;
   const tax = totalAmount * 0.075;
@@ -116,15 +118,55 @@ const Checkout = () => {
     }));
   };
 
-  const handlePlaceOrder = () => {
-    setIsComplete(true);
-    clearCart();
+  const handlePlaceOrder = async () => {
+    if (!user) {
+      toast.error('Please sign in to place an order');
+      return;
+    }
+    
+    setPlacingOrder(true);
+    
+    try {
+      // Create order in database
+      const order = await createOrder({
+        phone: formData.phone,
+        delivery_address: formData.address,
+        notes: formData.notes,
+        payment_method: paymentMethod || 'card',
+        items: items.map(item => ({
+          product_id: item.product.id,
+          product_name: item.product.name,
+          product_image: item.product.images?.[0] || '/placeholder.svg',
+          seller_id: item.product.sellerId || user.id, // Fallback for mock products
+          seller_name: item.product.brand || 'DOJU Seller',
+          quantity: item.quantity,
+          unit_price: item.product.price
+        })),
+        total_amount: total,
+        shipping_amount: shipping,
+        tax_amount: tax
+      });
+
+      if (order) {
+        setCreatedOrder(order);
+        setIsComplete(true);
+        clearCart();
+        toast.success('Order placed successfully!');
+      }
+    } catch (error) {
+      console.error('Error placing order:', error);
+      toast.error('Failed to place order. Please try again.');
+    } finally {
+      setPlacingOrder(false);
+    }
   };
 
   const copyDeliveryCode = () => {
-    navigator.clipboard.writeText(deliveryCode);
-    setCodeCopied(true);
-    setTimeout(() => setCodeCopied(false), 2000);
+    if (createdOrder) {
+      navigator.clipboard.writeText(createdOrder.delivery_code);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
+    }
   };
 
   const currentValue = formData[steps[currentStep]?.id] || '';
@@ -145,22 +187,7 @@ const Checkout = () => {
   }, []);
 
   // Order complete screen with delivery code
-  if (isComplete) {
-    // Create order data to pass to tracking page
-    const orderData = {
-      id: orderId,
-      deliveryCode,
-      phone: formData.phone,
-      address: formData.address,
-      items: items.map(item => ({
-        name: item.product.name,
-        quantity: item.quantity,
-        price: item.product.price,
-        image: item.product.images[0] || '/placeholder.svg',
-      })),
-      total,
-      createdAt: new Date().toISOString(),
-    };
+  if (isComplete && createdOrder) {
 
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -227,7 +254,7 @@ const Checkout = () => {
               </p>
               <div className="flex items-center justify-center gap-3">
                 <div className="flex gap-1.5">
-                  {deliveryCode.split('').map((digit, i) => (
+                  {createdOrder.delivery_code.split('').map((digit, i) => (
                     <motion.span 
                       key={i}
                       className="w-12 h-14 md:w-14 md:h-16 flex items-center justify-center bg-card border-2 border-doju-lime rounded-xl text-2xl md:text-3xl font-bold text-foreground shadow-sm"
@@ -253,7 +280,7 @@ const Checkout = () => {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-3">
-                Order ID: <span className="font-medium">{orderId}</span>
+                Order ID: <span className="font-medium">{createdOrder.order_number}</span>
               </p>
             </motion.div>
             
@@ -265,8 +292,8 @@ const Checkout = () => {
               transition={{ delay: 0.9 }}
             >
               <Link 
-                to="/order-tracking" 
-                state={{ orderData }}
+                to="/track-order" 
+                state={{ orderData: createdOrder }}
                 className="block"
               >
                 <Button variant="doju-primary" size="xl" className="w-full gap-2">
@@ -420,8 +447,16 @@ const Checkout = () => {
                 size="lg"
                 className="w-full"
                 onClick={handlePlaceOrder}
+                disabled={placingOrder}
               >
-                Confirm & Pay {formatPrice(total)}
+                {placingOrder ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-doju-navy"></div>
+                    Processing...
+                  </div>
+                ) : (
+                  `Confirm & Pay ${formatPrice(total)}`
+                )}
               </Button>
 
               <div className="flex items-center justify-center gap-2 mt-4 text-muted-foreground">
