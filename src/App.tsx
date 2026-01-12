@@ -19,6 +19,8 @@ import SellerDashboard from "./pages/seller/SellerDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import BuyerOnboarding from "./pages/onboarding/BuyerOnboarding";
 import SellerOnboarding from "./pages/onboarding/SellerOnboarding";
+import DispatchRegistration from "./pages/dispatch/DispatchRegistration";
+import DispatchDashboard from "./pages/dispatch/DispatchDashboard";
 import About from "./pages/About";
 import Careers from "./pages/Careers";
 import Press from "./pages/Press";
@@ -62,6 +64,8 @@ const App = () => (
               <Route path="/onboarding/buyer" element={<BuyerOnboarding />} />
               <Route path="/onboarding/seller" element={<SellerOnboarding />} />
               <Route path="/seller-onboarding" element={<SellerOnboarding />} />
+              <Route path="/dispatch/register" element={<DispatchRegistration />} />
+              <Route path="/dispatch/dashboard" element={<DispatchDashboard />} />
               <Route path="/about" element={<About />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/press" element={<Press />} />

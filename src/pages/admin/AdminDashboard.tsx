@@ -14,8 +14,9 @@ import {
   Users, Package, ShoppingCart, DollarSign, 
   TrendingUp, Search, MoreVertical,
   CheckCircle, XCircle, Clock, UserCheck,
-  BarChart3, Activity, Shield, Check, X, Eye
+  BarChart3, Activity, Shield, Check, X, Eye, Truck
 } from 'lucide-react';
+import { useDispatchAgentsAdmin, DispatchAgent } from '@/hooks/useDispatchAgent';
 import {
   Dialog,
   DialogContent,
@@ -82,7 +83,7 @@ const AdminDashboard = () => {
   const [showApprovalDialog, setShowApprovalDialog] = useState(false);
   const [approvalAction, setApprovalAction] = useState<'approve' | 'reject' | null>(null);
   const [processing, setProcessing] = useState(false);
-
+  const { agents: dispatchAgents, loading: dispatchLoading, updateAgentStatus } = useDispatchAgentsAdmin();
   // Redirect if not admin - wait for roles to load
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
@@ -291,6 +292,15 @@ const AdminDashboard = () => {
               <TabsTrigger value="products" className="rounded-lg gap-2 text-xs md:text-sm">
                 <Package className="h-4 w-4" />
                 <span className="hidden sm:inline">Products</span>
+              </TabsTrigger>
+              <TabsTrigger value="dispatch" className="rounded-lg gap-2 relative text-xs md:text-sm">
+                <Truck className="h-4 w-4" />
+                <span className="hidden sm:inline">Dispatch</span>
+                {dispatchAgents.filter(a => a.status === 'pending_verification').length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-yellow-500 text-white text-xs flex items-center justify-center">
+                    {dispatchAgents.filter(a => a.status === 'pending_verification').length}
+                  </span>
+                )}
               </TabsTrigger>
             </TabsList>
 
@@ -654,6 +664,102 @@ const AdminDashboard = () => {
                   <p className="text-muted-foreground">
                     {searchQuery ? 'Try a different search term' : 'No products have been uploaded yet'}
                   </p>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Dispatch Agents Tab */}
+            <TabsContent value="dispatch" className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">Dispatch Agents</h2>
+                  <p className="text-muted-foreground text-sm">Manage dispatch agent applications and approvals</p>
+                </div>
+              </div>
+
+              {dispatchAgents.length > 0 ? (
+                <div className="grid gap-4">
+                  {dispatchAgents.map(agent => (
+                    <motion.div
+                      key={agent.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-card rounded-2xl border border-border p-4 md:p-6"
+                    >
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <div className="h-24 w-24 rounded-xl bg-muted overflow-hidden flex-shrink-0">
+                          <img 
+                            src={agent.selfie_url} 
+                            alt={agent.full_name}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div>
+                              <h3 className="font-bold text-foreground text-lg">{agent.full_name}</h3>
+                              <Badge className={
+                                agent.status === 'pending_verification' ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20' :
+                                agent.status === 'active' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                                agent.status === 'rejected' ? 'bg-red-500/10 text-red-600 border-red-500/20' :
+                                'bg-orange-500/10 text-orange-600 border-orange-500/20'
+                              }>
+                                {agent.status.replace('_', ' ')}
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="grid sm:grid-cols-2 gap-2 text-sm mb-4">
+                            <p className="text-muted-foreground"><strong>Email:</strong> {agent.email}</p>
+                            <p className="text-muted-foreground"><strong>Phone:</strong> {agent.phone}</p>
+                            <p className="text-muted-foreground"><strong>Vehicle:</strong> {agent.vehicle_type} - {agent.plate_number}</p>
+                            <p className="text-muted-foreground"><strong>Area:</strong> {agent.area_of_operation}</p>
+                          </div>
+
+                          <div className="flex gap-2 mb-4">
+                            <a href={agent.government_id_url} target="_blank" rel="noopener noreferrer">
+                              <Button variant="outline" size="sm" className="gap-1">
+                                <Eye className="h-3 w-3" /> View ID
+                              </Button>
+                            </a>
+                            <a href={agent.selfie_url} target="_blank" rel="noopener noreferrer">
+                              <Button variant="outline" size="sm" className="gap-1">
+                                <Eye className="h-3 w-3" /> View Selfie
+                              </Button>
+                            </a>
+                          </div>
+
+                          {agent.status === 'pending_verification' && (
+                            <div className="flex gap-3">
+                              <Button
+                                variant="default"
+                                className="gap-2 bg-green-600 hover:bg-green-700"
+                                onClick={() => updateAgentStatus(agent.id, 'active')}
+                              >
+                                <Check className="h-4 w-4" />
+                                Approve
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="gap-2 text-red-600 border-red-200 hover:bg-red-50"
+                                onClick={() => updateAgentStatus(agent.id, 'rejected', 'Application did not meet requirements')}
+                              >
+                                <X className="h-4 w-4" />
+                                Reject
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-card rounded-2xl border border-border">
+                  <Truck className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No dispatch agents yet</h3>
+                  <p className="text-muted-foreground">Dispatch agent applications will appear here</p>
                 </div>
               )}
             </TabsContent>
