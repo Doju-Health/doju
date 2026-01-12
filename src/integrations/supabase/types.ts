@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      dispatch_agents: {
+        Row: {
+          account_name: string
+          account_number: string
+          approved_at: string | null
+          approved_by: string | null
+          area_of_operation: string
+          bank_name: string
+          created_at: string
+          email: string
+          full_name: string
+          government_id_url: string
+          home_address: string
+          id: string
+          phone: string
+          plate_number: string
+          rejection_reason: string | null
+          selfie_url: string
+          status: Database["public"]["Enums"]["dispatch_agent_status"]
+          updated_at: string
+          user_id: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Insert: {
+          account_name: string
+          account_number: string
+          approved_at?: string | null
+          approved_by?: string | null
+          area_of_operation: string
+          bank_name: string
+          created_at?: string
+          email: string
+          full_name: string
+          government_id_url: string
+          home_address: string
+          id?: string
+          phone: string
+          plate_number: string
+          rejection_reason?: string | null
+          selfie_url: string
+          status?: Database["public"]["Enums"]["dispatch_agent_status"]
+          updated_at?: string
+          user_id: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          area_of_operation?: string
+          bank_name?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          government_id_url?: string
+          home_address?: string
+          id?: string
+          phone?: string
+          plate_number?: string
+          rejection_reason?: string | null
+          selfie_url?: string
+          status?: Database["public"]["Enums"]["dispatch_agent_status"]
+          updated_at?: string
+          user_id?: string
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -105,6 +174,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          assigned_dispatch_agent_id: string | null
           buyer_id: string
           created_at: string
           delivery_address: string
@@ -122,6 +192,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_dispatch_agent_id?: string | null
           buyer_id: string
           created_at?: string
           delivery_address: string
@@ -139,6 +210,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_dispatch_agent_id?: string | null
           buyer_id?: string
           created_at?: string
           delivery_address?: string
@@ -155,7 +227,15 @@ export type Database = {
           total_amount?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_assigned_dispatch_agent_id_fkey"
+            columns: ["assigned_dispatch_agent_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_media: {
         Row: {
@@ -308,13 +388,19 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "buyer" | "seller"
+      app_role: "admin" | "buyer" | "seller" | "dispatch"
+      dispatch_agent_status:
+        | "pending_verification"
+        | "active"
+        | "suspended"
+        | "rejected"
       order_status:
         | "confirmed"
         | "picked_up"
         | "in_transit"
         | "out_for_delivery"
         | "delivered"
+      vehicle_type: "bike" | "car" | "van"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -442,7 +528,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "buyer", "seller"],
+      app_role: ["admin", "buyer", "seller", "dispatch"],
+      dispatch_agent_status: [
+        "pending_verification",
+        "active",
+        "suspended",
+        "rejected",
+      ],
       order_status: [
         "confirmed",
         "picked_up",
@@ -450,6 +542,7 @@ export const Constants = {
         "out_for_delivery",
         "delivered",
       ],
+      vehicle_type: ["bike", "car", "van"],
     },
   },
 } as const

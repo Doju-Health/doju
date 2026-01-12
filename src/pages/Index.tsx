@@ -8,6 +8,7 @@ import ProductCard from '@/components/products/ProductCard';
 import CategoryCard from '@/components/products/CategoryCard';
 import AnimatedStat from '@/components/home/AnimatedStat';
 import TopSellingCarousel from '@/components/home/TopSellingCarousel';
+import DispatchAgentSection from '@/components/home/DispatchAgentSection';
 import { categories, featuredProducts } from '@/data/mockData';
 import { 
   Shield, Truck, BadgeCheck, Headphones, 
@@ -414,6 +415,8 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Dispatch Agent Section */}
+        <DispatchAgentSection />
 
         {/* Trust Section */}
         <section className="py-12 sm:py-20 bg-card">
