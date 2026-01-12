@@ -14,7 +14,8 @@ import {
   Users, Package, ShoppingCart, DollarSign, 
   TrendingUp, Search, MoreVertical,
   CheckCircle, XCircle, Clock, UserCheck,
-  BarChart3, Activity, Shield, Check, X, Eye, Truck
+  BarChart3, Activity, Shield, Check, X, Eye, Truck,
+  MessageCircle, FileText
 } from 'lucide-react';
 import { useDispatchAgentsAdmin, DispatchAgent } from '@/hooks/useDispatchAgent';
 import {
@@ -25,6 +26,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import AdminMessagesInbox from '@/components/chat/AdminMessagesInbox';
+import AdminDocumentManager from '@/components/admin/AdminDocumentManager';
 
 interface Product {
   id: string;
@@ -301,6 +304,14 @@ const AdminDashboard = () => {
                     {dispatchAgents.filter(a => a.status === 'pending_verification').length}
                   </span>
                 )}
+              </TabsTrigger>
+              <TabsTrigger value="documents" className="rounded-lg gap-2 text-xs md:text-sm">
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">Documents</span>
+              </TabsTrigger>
+              <TabsTrigger value="messages" className="rounded-lg gap-2 text-xs md:text-sm">
+                <MessageCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Messages</span>
               </TabsTrigger>
             </TabsList>
 
