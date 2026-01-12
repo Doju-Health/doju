@@ -68,7 +68,7 @@ const Auth = () => {
   const isAdminLogin = searchParams.get('admin') === 'true';
   const returnTo = searchParams.get('returnTo');
   
-  const { user, signIn, signUp, loading, isAdmin, isSeller } = useAuth();
+  const { user, signIn, signUp, loading, isAdmin, isSeller, isDispatch } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
@@ -86,17 +86,23 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !loading) {
-      if (isAdmin) {
-        navigate('/admin/dashboard');
-      } else if (isSeller) {
-        navigate('/seller/dashboard');
-      } else if (returnTo) {
-        navigate(returnTo);
-      } else {
-        navigate('/');
-      }
+      // Wait a bit for roles to be fetched
+      const timer = setTimeout(() => {
+        if (isAdmin) {
+          navigate('/admin/dashboard');
+        } else if (isSeller) {
+          navigate('/seller/dashboard');
+        } else if (isDispatch) {
+          navigate('/dispatch/dashboard');
+        } else if (returnTo) {
+          navigate(returnTo);
+        } else {
+          navigate('/');
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [user, loading, isAdmin, isSeller, navigate, returnTo]);
+  }, [user, loading, isAdmin, isSeller, isDispatch, navigate, returnTo]);
 
   const validateCurrentStep = () => {
     const value = formData[currentStepData.field as keyof typeof formData];

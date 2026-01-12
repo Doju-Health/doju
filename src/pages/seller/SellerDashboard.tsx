@@ -72,12 +72,8 @@ const SellerDashboard = () => {
     category: '',
   });
 
-  // Redirect if not seller
-  useEffect(() => {
-    if (!authLoading && (!user || !isSeller)) {
-      navigate('/auth');
-    }
-  }, [user, isSeller, authLoading, navigate]);
+  // Note: Protection is handled by SellerProtectedRoute in App.tsx
+  // This is a backup check
 
   // Fetch seller products
   useEffect(() => {
