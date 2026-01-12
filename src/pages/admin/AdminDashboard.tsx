@@ -37,6 +37,8 @@ interface Product {
   created_at: string;
   media?: { id: string; url: string; type: string }[];
   seller_email?: string;
+  seller_name?: string;
+  seller_address?: string;
 }
 
 // Mock data for stats (will be replaced with real data later)
@@ -112,18 +114,30 @@ const AdminDashboard = () => {
           .select('*')
           .in('product_id', productIds);
 
-        // Fetch seller profiles
+        // Fetch seller profiles with address info
         const sellerIds = [...new Set(data.map(p => p.seller_id))];
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('user_id, email')
+          .select('user_id, email, business_name, street_address, area, city, state')
           .in('user_id', sellerIds);
 
-        const productsWithData = data.map(product => ({
-          ...product,
-          media: mediaData?.filter(m => m.product_id === product.id) || [],
-          seller_email: profiles?.find(p => p.user_id === product.seller_id)?.email || 'Unknown'
-        }));
+        const productsWithData = data.map(product => {
+          const sellerProfile = profiles?.find(p => p.user_id === product.seller_id);
+          const addressParts = [
+            sellerProfile?.street_address,
+            sellerProfile?.area,
+            sellerProfile?.city,
+            sellerProfile?.state
+          ].filter(Boolean);
+          
+          return {
+            ...product,
+            media: mediaData?.filter(m => m.product_id === product.id) || [],
+            seller_email: sellerProfile?.email || 'Unknown',
+            seller_name: sellerProfile?.business_name || 'Unknown Seller',
+            seller_address: addressParts.length > 0 ? addressParts.join(', ') : 'No address provided'
+          };
+        });
         setProducts(productsWithData);
       } else {
         setProducts([]);
@@ -455,12 +469,18 @@ const AdminDashboard = () => {
                             <p className="text-muted-foreground text-sm mb-3 line-clamp-2">{product.description}</p>
                           )}
                           
-                          <div className="flex flex-wrap items-center gap-3 text-sm mb-4">
-                            <span className="text-muted-foreground">Seller: {product.seller_email}</span>
-                            <span className="text-muted-foreground">Stock: {product.stock}</span>
-                            {product.category && (
-                              <Badge variant="outline">{product.category}</Badge>
-                            )}
+                          <div className="space-y-2 text-sm mb-4">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <span className="font-medium text-foreground">{product.seller_name}</span>
+                              <span className="text-muted-foreground">{product.seller_email}</span>
+                            </div>
+                            <p className="text-muted-foreground text-xs">{product.seller_address}</p>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <span className="text-muted-foreground">Stock: {product.stock}</span>
+                              {product.category && (
+                                <Badge variant="outline">{product.category}</Badge>
+                              )}
+                            </div>
                           </div>
 
                           <div className="flex gap-3">

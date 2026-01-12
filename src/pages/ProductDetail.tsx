@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CartCheckoutBar from '@/components/cart/CartCheckoutBar';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { allProducts, featuredProducts } from '@/data/mockData';
+import { allProducts as mockProducts, featuredProducts } from '@/data/mockData';
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/types';
 import ProductCard from '@/components/products/ProductCard';
 import { Shield, Truck, RotateCcw, Heart, ChevronRight, LogIn } from 'lucide-react';
 import { toast } from 'sonner';
@@ -18,9 +19,81 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const product = allProducts.find(p => p.id === id);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      // First check mock products
+      const mockProduct = mockProducts.find(p => p.id === id);
+      if (mockProduct) {
+        setProduct(mockProduct);
+        setLoading(false);
+        return;
+      }
+
+      // Then check database
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .eq('status', 'approved')
+          .single();
+
+        if (error || !data) {
+          setProduct(null);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch media
+        const { data: mediaData } = await supabase
+          .from('product_media')
+          .select('*')
+          .eq('product_id', data.id);
+
+        const dbProduct: Product = {
+          id: data.id,
+          name: data.name,
+          description: data.description || '',
+          price: Number(data.price),
+          images: mediaData?.filter(m => m.type === 'image').map(m => m.url) || [],
+          category: data.category || 'Other',
+          brand: 'DOJU Seller',
+          sku: `DB-${data.id.slice(0, 8)}`,
+          stock: data.stock,
+          sellerId: data.seller_id,
+          approvalStatus: 'approved',
+          createdAt: new Date(data.created_at),
+        };
+        setProduct(dbProduct);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
+
   const relatedProducts = featuredProducts.filter(p => p.id !== id).slice(0, 4);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doju-lime"></div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -81,11 +154,20 @@ const ProductDetail = () => {
                   />
                 </div>
                 <div className="grid grid-cols-4 gap-2">
-                  {[1, 2, 3, 4].map((i) => (
+                  {product.images.slice(0, 4).map((image, i) => (
                     <div key={i} className="aspect-square rounded-lg border border-border bg-muted overflow-hidden cursor-pointer hover:border-doju-lime transition-colors">
                       <img
+                        src={image || '/placeholder.svg'}
+                        alt={`${product.name} view ${i + 1}`}
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                  ))}
+                  {product.images.length < 4 && [...Array(4 - product.images.length)].map((_, i) => (
+                    <div key={`placeholder-${i}`} className="aspect-square rounded-lg border border-border bg-muted overflow-hidden cursor-pointer hover:border-doju-lime transition-colors">
+                      <img
                         src={product.images[0] || '/placeholder.svg'}
-                        alt={`${product.name} view ${i}`}
+                        alt={`${product.name} view`}
                         className="h-full w-full object-contain"
                       />
                     </div>
@@ -104,20 +186,20 @@ const ProductDetail = () => {
                 {/* Specs */}
                 <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <div className="rounded-lg border border-border p-2.5 sm:p-3">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">Material</p>
-                    <p className="text-xs sm:text-sm font-medium">Stainless steel</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Category</p>
+                    <p className="text-xs sm:text-sm font-medium">{product.category}</p>
                   </div>
                   <div className="rounded-lg border border-border p-2.5 sm:p-3">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">Tubing</p>
-                    <p className="text-xs sm:text-sm font-medium">Latex-free PVC</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Brand</p>
+                    <p className="text-xs sm:text-sm font-medium">{product.brand}</p>
                   </div>
                   <div className="rounded-lg border border-border p-2.5 sm:p-3">
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Warranty</p>
                     <p className="text-xs sm:text-sm font-medium">2 years</p>
                   </div>
                   <div className="rounded-lg border border-border p-2.5 sm:p-3">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">Weight</p>
-                    <p className="text-xs sm:text-sm font-medium">150g</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Stock</p>
+                    <p className="text-xs sm:text-sm font-medium">{product.stock} units</p>
                   </div>
                 </div>
 
