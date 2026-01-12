@@ -19,13 +19,10 @@ const SupportChatWidget = () => {
   const { messages, sendMessage, loading } = useConversationMessages(conversationId);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Don't show for admins (they have their own inbox)
-  if (isAdmin) return null;
-
   // Check for existing support conversation
   useEffect(() => {
     const checkExistingConversation = async () => {
-      if (!user) return;
+      if (!user || isAdmin) return;
 
       const { data } = await supabase
         .from('conversations')
@@ -43,7 +40,7 @@ const SupportChatWidget = () => {
     if (isOpen && user) {
       checkExistingConversation();
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, isAdmin]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -51,6 +48,9 @@ const SupportChatWidget = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Don't show for admins (they have their own inbox) - AFTER all hooks
+  if (isAdmin) return null;
 
   const handleSend = async () => {
     if (!message.trim()) return;
