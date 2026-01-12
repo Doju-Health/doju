@@ -7,6 +7,9 @@ import ScrollToTop from "@/components/ScrollToTop";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import SellerProtectedRoute from "@/components/auth/SellerProtectedRoute";
+import DispatchProtectedRoute from "@/components/auth/DispatchProtectedRoute";
+import AdminProtectedRoute from "@/components/auth/AdminProtectedRoute";
 import SupportChatWidget from "@/components/chat/SupportChatWidget";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -60,13 +63,25 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/track-order" element={<OrderTracking />} />
-              <Route path="/seller/dashboard" element={<SellerDashboard />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/seller/dashboard" element={
+                <SellerProtectedRoute>
+                  <SellerDashboard />
+                </SellerProtectedRoute>
+              } />
+              <Route path="/admin/dashboard" element={
+                <AdminProtectedRoute>
+                  <AdminDashboard />
+                </AdminProtectedRoute>
+              } />
               <Route path="/onboarding/buyer" element={<BuyerOnboarding />} />
               <Route path="/onboarding/seller" element={<SellerOnboarding />} />
               <Route path="/seller-onboarding" element={<SellerOnboarding />} />
               <Route path="/dispatch/register" element={<DispatchRegistration />} />
-              <Route path="/dispatch/dashboard" element={<DispatchDashboard />} />
+              <Route path="/dispatch/dashboard" element={
+                <DispatchProtectedRoute>
+                  <DispatchDashboard />
+                </DispatchProtectedRoute>
+              } />
               <Route path="/about" element={<About />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/press" element={<Press />} />

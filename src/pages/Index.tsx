@@ -218,7 +218,7 @@ const Index = () => {
                       <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </Link>
-                  <Link to="/onboarding/seller" className="w-full sm:w-auto">
+                  <Link to="/seller-onboarding" className="w-full sm:w-auto">
                     <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary-foreground/30 text-foreground hover:bg-primary-foreground/10 font-bold gap-2 h-12 sm:h-14 text-sm sm:text-base">
                       Sell Through Us
                       <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
