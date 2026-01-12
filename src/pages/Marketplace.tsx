@@ -9,7 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { allProducts, categories } from '@/data/mockData';
+import { allProducts as mockProducts, categories } from '@/data/mockData';
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/types';
 import { Search, ChevronDown, X, SlidersHorizontal } from 'lucide-react';
 
 const Marketplace = () => {
@@ -21,6 +23,55 @@ const Marketplace = () => {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
   const [showFilters, setShowFilters] = useState(false);
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+
+  // Fetch approved products from database
+  useEffect(() => {
+    const fetchApprovedProducts = async () => {
+      try {
+        const { data: products, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('status', 'approved');
+
+        if (error) throw error;
+
+        if (products && products.length > 0) {
+          // Fetch media for products
+          const productIds = products.map(p => p.id);
+          const { data: mediaData } = await supabase
+            .from('product_media')
+            .select('*')
+            .in('product_id', productIds);
+
+          const productsWithMedia: Product[] = products.map(product => ({
+            id: product.id,
+            name: product.name,
+            description: product.description || '',
+            price: Number(product.price),
+            images: mediaData?.filter(m => m.product_id === product.id && m.type === 'image').map(m => m.url) || [],
+            category: product.category || 'Other',
+            brand: 'DOJU Seller',
+            sku: `DB-${product.id.slice(0, 8)}`,
+            stock: product.stock,
+            sellerId: product.seller_id,
+            approvalStatus: 'approved' as const,
+            createdAt: new Date(product.created_at),
+          }));
+          setDbProducts(productsWithMedia);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+
+    fetchApprovedProducts();
+  }, []);
+
+  // Combine mock products with database products
+  const allProducts = useMemo(() => {
+    return [...mockProducts, ...dbProducts];
+  }, [dbProducts]);
 
   // Sync URL params to state
   useEffect(() => {
@@ -39,17 +90,17 @@ const Marketplace = () => {
   const brands = useMemo(() => {
     const uniqueBrands = [...new Set(allProducts.map(p => p.brand))];
     return uniqueBrands.sort();
-  }, []);
+  }, [allProducts]);
 
   // Get price range from products
   const maxPrice = useMemo(() => {
-    return Math.max(...allProducts.map(p => p.price));
-  }, []);
+    return allProducts.length > 0 ? Math.max(...allProducts.map(p => p.price)) : 500000;
+  }, [allProducts]);
 
   // Filter only approved products for display
   const approvedProducts = useMemo(() => {
     return allProducts.filter(p => p.approvalStatus === 'approved');
-  }, []);
+  }, [allProducts]);
 
   const filteredProducts = approvedProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
