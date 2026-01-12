@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-type AppRole = 'admin' | 'buyer' | 'seller';
+type AppRole = 'admin' | 'buyer' | 'seller' | 'dispatch';
 
 interface AuthContextType {
   user: User | null;
@@ -12,6 +12,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isSeller: boolean;
   isBuyer: boolean;
+  isDispatch: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -119,6 +120,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const isAdmin = roles.includes('admin');
   const isSeller = roles.includes('seller');
   const isBuyer = roles.includes('buyer');
+  const isDispatch = roles.includes('dispatch');
 
   // Loading should be true until both auth and roles are loaded
   const isLoading = loading || (user !== null && !rolesLoaded);
@@ -133,6 +135,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isAdmin,
         isSeller,
         isBuyer,
+        isDispatch,
         signIn,
         signUp,
         signOut,

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, LogOut, Shield, Store } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, LogOut, Shield, Store, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,11 +13,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import SearchDialog from '@/components/search/SearchDialog';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import dojuLogo from '@/assets/doju-logo.jpg';
 
 const Header = () => {
   const { totalItems } = useCart();
-  const { user, isAdmin, isSeller, signOut } = useAuth();
+  const { user, isAdmin, isSeller, isDispatch, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -82,6 +83,9 @@ const Header = () => {
               <Search className="h-5 w-5" />
             </Button>
 
+            {/* Notification Bell - only for logged in users */}
+            {user && <NotificationBell />}
+
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -105,6 +109,12 @@ const Header = () => {
                     <DropdownMenuItem onClick={() => navigate('/seller/dashboard')}>
                       <Store className="h-4 w-4 mr-2" />
                       Seller Dashboard
+                    </DropdownMenuItem>
+                  )}
+                  {isDispatch && (
+                    <DropdownMenuItem onClick={() => navigate('/dispatch/dashboard')}>
+                      <Truck className="h-4 w-4 mr-2" />
+                      Dispatch Dashboard
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
@@ -179,6 +189,14 @@ const Header = () => {
                             <Button variant="doju-outline" className="w-full gap-2">
                               <Store className="h-4 w-4" />
                               Seller Dashboard
+                            </Button>
+                          </Link>
+                        )}
+                        {isDispatch && (
+                          <Link to="/dispatch/dashboard">
+                            <Button variant="doju-outline" className="w-full gap-2">
+                              <Truck className="h-4 w-4" />
+                              Dispatch Dashboard
                             </Button>
                           </Link>
                         )}
