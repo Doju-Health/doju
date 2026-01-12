@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, CheckCircle, Store } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import dojuLogo from '@/assets/doju-logo.jpg';
 
 interface OnboardingStep {
@@ -18,22 +21,76 @@ const steps: OnboardingStep[] = [
   { question: "What's your business name?", placeholder: "Your company name", field: 'businessName', type: 'text' },
   { question: "What's your business email?", placeholder: "business@company.com", field: 'businessEmail', type: 'email' },
   { question: "What's your business phone number?", placeholder: "+234 800 000 0000", field: 'businessPhone', type: 'tel' },
+  { question: "What's your street address?", placeholder: "123 Market Street", field: 'streetAddress', type: 'text' },
+  { question: "What area or neighborhood?", placeholder: "Victoria Island", field: 'area', type: 'text' },
+  { question: "What city are you located in?", placeholder: "Lagos", field: 'city', type: 'text' },
+  { question: "What state?", placeholder: "Lagos State", field: 'state', type: 'text' },
 ];
 
 const SellerOnboarding = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [isComplete, setIsComplete] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totalSteps = steps.length;
   const progress = ((currentStep + 1) / totalSteps) * 100;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
+      // Final step - save data and assign seller role
+      await completeOnboarding();
+    }
+  };
+
+  const completeOnboarding = async () => {
+    if (!user) {
+      toast.error('Please sign in first');
+      navigate('/auth');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Update profile with business information
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          business_name: formData.businessName,
+          email: formData.businessEmail,
+          phone: formData.businessPhone,
+          street_address: formData.streetAddress,
+          area: formData.area,
+          city: formData.city,
+          state: formData.state,
+        })
+        .eq('user_id', user.id);
+
+      if (profileError) throw profileError;
+
+      // Assign seller role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: user.id,
+          role: 'seller'
+        });
+
+      if (roleError && !roleError.message.includes('duplicate')) {
+        throw roleError;
+      }
+
+      toast.success('Your seller account is ready!');
       setIsComplete(true);
+    } catch (error: any) {
+      console.error('Onboarding error:', error);
+      toast.error('Failed to complete onboarding', { description: error.message });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -120,7 +177,10 @@ const SellerOnboarding = () => {
                 variant="doju-primary" 
                 size="lg" 
                 className="w-full gap-2"
-                onClick={() => navigate('/seller/dashboard')}
+                onClick={() => {
+                  // Force page reload to refresh auth context
+                  window.location.href = '/seller/dashboard';
+                }}
               >
                 <Store className="h-5 w-5" />
                 Go to Seller Dashboard
@@ -201,7 +261,7 @@ const SellerOnboarding = () => {
                 className="text-lg h-14 mb-6"
                 autoFocus
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && isValid) {
+                  if (e.key === 'Enter' && isValid && !isSubmitting) {
                     handleNext();
                   }
                 }}
@@ -216,11 +276,17 @@ const SellerOnboarding = () => {
                   variant="doju-primary"
                   size="lg"
                   className="w-full"
-                  disabled={!isValid}
+                  disabled={!isValid || isSubmitting}
                   onClick={handleNext}
                 >
-                  {currentStep === steps.length - 1 ? 'Create Account' : 'Continue'}
-                  <ArrowRight className="h-4 w-4 ml-2" />
+                  {isSubmitting ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-doju-navy" />
+                  ) : currentStep === steps.length - 1 ? (
+                    'Create Seller Account'
+                  ) : (
+                    'Continue'
+                  )}
+                  {!isSubmitting && <ArrowRight className="h-4 w-4 ml-2" />}
                 </Button>
               </motion.div>
 

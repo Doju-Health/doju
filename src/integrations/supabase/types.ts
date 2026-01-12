@@ -87,29 +87,44 @@ export type Database = {
       }
       profiles: {
         Row: {
+          area: string | null
+          business_name: string | null
+          city: string | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
           phone: string | null
+          state: string | null
+          street_address: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          area?: string | null
+          business_name?: string | null
+          city?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
+          state?: string | null
+          street_address?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          area?: string | null
+          business_name?: string | null
+          city?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
+          state?: string | null
+          street_address?: string | null
           updated_at?: string
           user_id?: string
         }
