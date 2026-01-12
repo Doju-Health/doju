@@ -72,8 +72,12 @@ const SellerDashboard = () => {
     category: '',
   });
 
-  // Note: Protection is handled by SellerProtectedRoute in App.tsx
-  // This is a backup check
+  // Redirect if not seller (backup check - main protection in SellerProtectedRoute)
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/seller-onboarding');
+    }
+  }, [user, authLoading, navigate]);
 
   // Fetch seller products
   useEffect(() => {
