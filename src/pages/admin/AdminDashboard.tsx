@@ -15,9 +15,10 @@ import {
   TrendingUp, Search, MoreVertical,
   CheckCircle, XCircle, Clock, UserCheck,
   BarChart3, Activity, Shield, Check, X, Eye, Truck,
-  MessageCircle, FileText
+  MessageCircle, FileText, Send
 } from 'lucide-react';
 import { useDispatchAgentsAdmin, DispatchAgent } from '@/hooks/useDispatchAgent';
+import { useMessaging } from '@/hooks/useMessaging';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,7 @@ import {
 } from '@/components/ui/dialog';
 import AdminMessagesInbox from '@/components/chat/AdminMessagesInbox';
 import AdminDocumentManager from '@/components/admin/AdminDocumentManager';
+import ChatWindow from '@/components/chat/ChatWindow';
 
 interface Product {
   id: string;
@@ -87,6 +89,26 @@ const AdminDashboard = () => {
   const [approvalAction, setApprovalAction] = useState<'approve' | 'reject' | null>(null);
   const [processing, setProcessing] = useState(false);
   const { agents: dispatchAgents, loading: dispatchLoading, updateAgentStatus } = useDispatchAgentsAdmin();
+  const { createConversation } = useMessaging();
+  const [activeChatConversation, setActiveChatConversation] = useState<any>(null);
+  const [startingChat, setStartingChat] = useState<string | null>(null);
+
+  const handleStartDirectMessage = async (userId: string, userName: string) => {
+    setStartingChat(userId);
+    try {
+      const conversation = await createConversation(userId, 'admin_direct', `Chat with ${userName}`);
+      if (conversation) {
+        setActiveChatConversation(conversation);
+        setActiveTab('messages');
+        toast.success(`Started conversation with ${userName}`);
+      }
+    } catch (error) {
+      toast.error('Failed to start conversation');
+    } finally {
+      setStartingChat(null);
+    }
+  };
+
   // Redirect if not admin - wait for roles to load
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
@@ -656,12 +678,24 @@ const AdminDashboard = () => {
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <h3 className="font-semibold text-foreground">{product.name}</h3>
-                              <p className="text-sm text-muted-foreground">by {product.seller_email}</p>
+                              <p className="text-sm text-muted-foreground">by {product.seller_name || product.seller_email}</p>
                             </div>
                             <div className="text-right">
                               <p className="font-bold text-foreground">{formatPrice(product.price)}</p>
                               {getStatusBadge(product.status)}
                             </div>
+                          </div>
+                          <div className="flex gap-2 mt-3">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="gap-1"
+                              onClick={() => handleStartDirectMessage(product.seller_id, product.seller_name || 'Seller')}
+                              disabled={startingChat === product.seller_id}
+                            >
+                              <Send className="h-3 w-3" /> 
+                              {startingChat === product.seller_id ? 'Starting...' : 'Message Seller'}
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -739,6 +773,16 @@ const AdminDashboard = () => {
                                 <Eye className="h-3 w-3" /> View Selfie
                               </Button>
                             </a>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="gap-1"
+                              onClick={() => handleStartDirectMessage(agent.user_id, agent.full_name)}
+                              disabled={startingChat === agent.user_id}
+                            >
+                              <Send className="h-3 w-3" /> 
+                              {startingChat === agent.user_id ? 'Starting...' : 'Message'}
+                            </Button>
                           </div>
 
                           {agent.status === 'pending_verification' && (
@@ -773,6 +817,16 @@ const AdminDashboard = () => {
                   <p className="text-muted-foreground">Dispatch agent applications will appear here</p>
                 </div>
               )}
+            </TabsContent>
+
+            {/* Documents Tab Content */}
+            <TabsContent value="documents" className="space-y-6">
+              <AdminDocumentManager />
+            </TabsContent>
+
+            {/* Messages Tab Content */}
+            <TabsContent value="messages" className="space-y-6">
+              <AdminMessagesInbox />
             </TabsContent>
           </Tabs>
         </div>

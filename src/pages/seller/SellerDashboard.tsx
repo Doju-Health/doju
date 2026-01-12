@@ -20,9 +20,10 @@ import {
   Upload, X, Edit, Trash2, MoreVertical, Image,
   Video, BarChart3, ShoppingCart, Users, ArrowUpRight,
   Home, Store, Settings, LogOut, Menu, Clock, CheckCircle, XCircle,
-  Truck, PackageCheck, MapPin, Phone
+  Truck, PackageCheck, MapPin, Phone, MessageCircle
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import UserMessagesInbox from '@/components/chat/UserMessagesInbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -306,6 +307,7 @@ const SellerDashboard = () => {
     { icon: BarChart3, label: 'Overview', value: 'overview' },
     { icon: Package, label: 'Products', value: 'products' },
     { icon: ShoppingCart, label: 'Orders', value: 'orders', badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
+    { icon: MessageCircle, label: 'Messages', value: 'messages' },
     { icon: Settings, label: 'Settings', value: 'settings' },
   ];
 
@@ -419,6 +421,7 @@ const SellerDashboard = () => {
                   {activeTab === 'overview' && 'Dashboard'}
                   {activeTab === 'products' && 'Products'}
                   {activeTab === 'orders' && 'Orders'}
+                  {activeTab === 'messages' && 'Messages'}
                   {activeTab === 'settings' && 'Settings'}
                 </h1>
                 <p className="text-sm text-muted-foreground hidden sm:block">
@@ -825,6 +828,14 @@ const SellerDashboard = () => {
                   </Button>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Messages Tab */}
+          {activeTab === 'messages' && (
+            <div className="space-y-6">
+              <h2 className="text-lg font-semibold text-foreground">Messages & Notifications</h2>
+              <UserMessagesInbox />
             </div>
           )}
 
