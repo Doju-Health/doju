@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          participant_ids: string[]
+          status: string
+          subject: string | null
+          type: Database["public"]["Enums"]["conversation_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          participant_ids: string[]
+          status?: string
+          subject?: string | null
+          type: Database["public"]["Enums"]["conversation_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          participant_ids?: string[]
+          status?: string
+          subject?: string | null
+          type?: Database["public"]["Enums"]["conversation_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dispatch_agents: {
         Row: {
           account_name: string
@@ -80,6 +110,74 @@ export type Database = {
           updated_at?: string
           user_id?: string
           vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+          status: Database["public"]["Enums"]["message_status"]
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+          status?: Database["public"]["Enums"]["message_status"]
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+          status?: Database["public"]["Enums"]["message_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          message: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -353,6 +451,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_documents: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          document_name: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          document_url: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          role: string
+          status: Database["public"]["Enums"]["document_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          document_name: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          document_url: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role: string
+          status?: Database["public"]["Enums"]["document_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          document_name?: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          document_url?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role?: string
+          status?: Database["public"]["Enums"]["document_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -389,11 +532,21 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "buyer" | "seller" | "dispatch"
+      conversation_type: "admin_direct" | "support"
       dispatch_agent_status:
         | "pending_verification"
         | "active"
         | "suspended"
         | "rejected"
+      document_status: "pending" | "approved" | "rejected"
+      document_type:
+        | "government_id"
+        | "proof_of_address"
+        | "vehicle_document"
+        | "business_document"
+        | "product_document"
+        | "other"
+      message_status: "sent" | "delivered" | "read"
       order_status:
         | "confirmed"
         | "picked_up"
@@ -529,12 +682,23 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "buyer", "seller", "dispatch"],
+      conversation_type: ["admin_direct", "support"],
       dispatch_agent_status: [
         "pending_verification",
         "active",
         "suspended",
         "rejected",
       ],
+      document_status: ["pending", "approved", "rejected"],
+      document_type: [
+        "government_id",
+        "proof_of_address",
+        "vehicle_document",
+        "business_document",
+        "product_document",
+        "other",
+      ],
+      message_status: ["sent", "delivered", "read"],
       order_status: [
         "confirmed",
         "picked_up",
