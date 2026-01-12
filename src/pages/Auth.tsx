@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { ArrowLeft, ArrowRight, Shield, Eye, EyeOff, Check } from 'lucide-react';
@@ -67,7 +68,7 @@ const Auth = () => {
   const isAdminLogin = searchParams.get('admin') === 'true';
   const returnTo = searchParams.get('returnTo');
   
-  const { user, signIn, signUp, loading, isAdmin } = useAuth();
+  const { user, signIn, signUp, loading, isAdmin, isSeller } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
@@ -87,13 +88,15 @@ const Auth = () => {
     if (user && !loading) {
       if (isAdmin) {
         navigate('/admin/dashboard');
+      } else if (isSeller) {
+        navigate('/seller/dashboard');
       } else if (returnTo) {
         navigate(returnTo);
       } else {
         navigate('/');
       }
     }
-  }, [user, loading, isAdmin, navigate, returnTo]);
+  }, [user, loading, isAdmin, isSeller, navigate, returnTo]);
 
   const validateCurrentStep = () => {
     const value = formData[currentStepData.field as keyof typeof formData];
