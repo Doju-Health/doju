@@ -1,16 +1,16 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { useCart } from '@/contexts/CartContext';
-import { ShoppingCart, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/redux/hooks";
+import { ShoppingCart, ArrowRight } from "lucide-react";
 
 const CartCheckoutBar = () => {
   const { totalItems, totalAmount } = useCart();
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
@@ -23,7 +23,7 @@ const CartCheckoutBar = () => {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
           className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border shadow-2xl"
         >
           <div className="container py-4">
@@ -34,15 +34,21 @@ const CartCheckoutBar = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    {totalItems} {totalItems === 1 ? 'item' : 'items'} in cart
+                    {totalItems} {totalItems === 1 ? "item" : "items"} in cart
                   </p>
-                  <p className="font-bold text-foreground">{formatPrice(totalAmount)}</p>
+                  <p className="font-bold text-foreground">
+                    {formatPrice(totalAmount)}
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <Link to="/cart">
-                  <Button variant="doju-outline" size="sm" className="hidden sm:flex">
+                  <Button
+                    variant="doju-outline"
+                    size="sm"
+                    className="hidden sm:flex"
+                  >
                     View Cart
                   </Button>
                 </Link>

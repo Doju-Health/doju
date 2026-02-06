@@ -1,58 +1,73 @@
-import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Progress } from '@/components/ui/progress';
-import { useCart } from '@/contexts/CartContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useOrders, Order } from '@/hooks/useOrders';
-import { toast } from 'sonner';
-import { ArrowLeft, ArrowRight, Check, Phone, MapPin, CreditCard, MessageSquare, ShoppingBag, Shield, Landmark, Copy, CheckCircle, Package } from 'lucide-react';
-import dojuLogo from '@/assets/doju-logo.jpg';
+import { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { useCart } from "@/redux/hooks";
+import { useAuth } from "@/contexts/AuthContext";
+import { useOrders, Order } from "@/hooks/useOrders";
+import { toast } from "sonner";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Phone,
+  MapPin,
+  CreditCard,
+  MessageSquare,
+  ShoppingBag,
+  Shield,
+  Landmark,
+  Copy,
+  CheckCircle,
+  Package,
+} from "lucide-react";
+import dojuLogo from "@/assets/doju-logo.jpg";
 
-type PaymentMethod = 'card' | 'bank_transfer' | null;
+type PaymentMethod = "card" | "bank_transfer" | null;
 
 interface CheckoutStep {
   id: string;
   question: string;
   placeholder: string;
-  type: 'text' | 'tel' | 'textarea' | 'payment';
+  type: "text" | "tel" | "textarea" | "payment";
   icon: React.ReactNode;
   required: boolean;
 }
 
 const steps: CheckoutStep[] = [
-  { 
-    id: 'phone', 
-    question: "What's the best number to reach you?", 
-    placeholder: "+234 800 000 0000", 
-    type: 'tel',
+  {
+    id: "phone",
+    question: "What's the best number to reach you?",
+    placeholder: "+234 800 000 0000",
+    type: "tel",
     icon: <Phone className="h-6 w-6" />,
     required: true,
   },
-  { 
-    id: 'address', 
-    question: "Where should we deliver your order?", 
-    placeholder: "Enter your full delivery address", 
-    type: 'text',
+  {
+    id: "address",
+    question: "Where should we deliver your order?",
+    placeholder: "Enter your full delivery address",
+    type: "text",
     icon: <MapPin className="h-6 w-6" />,
     required: true,
   },
-  { 
-    id: 'payment', 
-    question: "How would you like to pay?", 
-    placeholder: "Card number", 
-    type: 'payment',
+  {
+    id: "payment",
+    question: "How would you like to pay?",
+    placeholder: "Card number",
+    type: "payment",
     icon: <CreditCard className="h-6 w-6" />,
     required: true,
   },
-  { 
-    id: 'notes', 
-    question: "Anything else you want us to know?", 
-    placeholder: "Special delivery instructions, gate codes, landmarks... (optional)", 
-    type: 'textarea',
+  {
+    id: "notes",
+    question: "Anything else you want us to know?",
+    placeholder:
+      "Special delivery instructions, gate codes, landmarks... (optional)",
+    type: "textarea",
     icon: <MessageSquare className="h-6 w-6" />,
     required: false,
   },
@@ -76,14 +91,14 @@ const Checkout = () => {
   const tax = totalAmount * 0.075;
   const total = totalAmount + shipping + tax;
 
-  const progress = showReview 
-    ? 100 
+  const progress = showReview
+    ? 100
     : ((currentStep + 1) / (steps.length + 1)) * 100;
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
@@ -91,11 +106,11 @@ const Checkout = () => {
 
   const handleNext = () => {
     const step = steps[currentStep];
-    if (step.id === 'payment' && !paymentMethod) return;
-    if (step.required && step.type !== 'payment' && !formData[step.id]) return;
-    
+    if (step.id === "payment" && !paymentMethod) return;
+    if (step.required && step.type !== "payment" && !formData[step.id]) return;
+
     if (currentStep < steps.length - 1) {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep((prev) => prev + 1);
     } else {
       setShowReview(true);
     }
@@ -105,14 +120,14 @@ const Checkout = () => {
     if (showReview) {
       setShowReview(false);
     } else if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
+      setCurrentStep((prev) => prev - 1);
     } else {
-      navigate('/cart');
+      navigate("/cart");
     }
   };
 
   const handleInputChange = (value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [steps[currentStep].id]: value,
     }));
@@ -120,42 +135,42 @@ const Checkout = () => {
 
   const handlePlaceOrder = async () => {
     if (!user) {
-      toast.error('Please sign in to place an order');
+      toast.error("Please sign in to place an order");
       return;
     }
-    
+
     setPlacingOrder(true);
-    
+
     try {
       // Create order in database
       const order = await createOrder({
         phone: formData.phone,
         delivery_address: formData.address,
         notes: formData.notes,
-        payment_method: paymentMethod || 'card',
-        items: items.map(item => ({
+        payment_method: paymentMethod || "card",
+        items: items.map((item) => ({
           product_id: item.product.id,
           product_name: item.product.name,
-          product_image: item.product.images?.[0] || '/placeholder.svg',
+          product_image: item.product.images?.[0] || "/placeholder.svg",
           seller_id: item.product.sellerId || user.id, // Fallback for mock products
-          seller_name: item.product.brand || 'DOJU Seller',
+          seller_name: item.product.brand || "DOJU Seller",
           quantity: item.quantity,
-          unit_price: item.product.price
+          unit_price: item.product.price,
         })),
         total_amount: total,
         shipping_amount: shipping,
-        tax_amount: tax
+        tax_amount: tax,
       });
 
       if (order) {
         setCreatedOrder(order);
         setIsComplete(true);
         clearCart();
-        toast.success('Order placed successfully!');
+        toast.success("Order placed successfully!");
       }
     } catch (error) {
-      console.error('Error placing order:', error);
-      toast.error('Failed to place order. Please try again.');
+      console.error("Error placing order:", error);
+      toast.error("Failed to place order. Please try again.");
     } finally {
       setPlacingOrder(false);
     }
@@ -169,11 +184,14 @@ const Checkout = () => {
     }
   };
 
-  const currentValue = formData[steps[currentStep]?.id] || '';
+  const currentValue = formData[steps[currentStep]?.id] || "";
   const currentStepData = steps[currentStep];
-  const isValid = currentStepData?.id === 'payment' 
-    ? paymentMethod !== null 
-    : (currentStepData?.required ? currentValue.length > 0 : true);
+  const isValid =
+    currentStepData?.id === "payment"
+      ? paymentMethod !== null
+      : currentStepData?.required
+        ? currentValue.length > 0
+        : true;
 
   const pageVariants = {
     initial: { opacity: 0, x: 20 },
@@ -188,39 +206,42 @@ const Checkout = () => {
 
   // Order complete screen with delivery code
   if (isComplete && createdOrder) {
-
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="border-b border-border bg-card">
           <div className="container flex h-16 items-center justify-center">
             <Link to="/" className="flex items-center gap-2">
-              <img src={dojuLogo} alt="DOJU" className="h-8 w-8 rounded-full object-cover" />
+              <img
+                src={dojuLogo}
+                alt="DOJU"
+                className="h-8 w-8 rounded-full object-cover"
+              />
               <span className="text-xl font-bold text-foreground">DOJU</span>
             </Link>
           </div>
         </header>
 
         <main className="flex-1 flex items-center justify-center p-4">
-          <motion.div 
+          <motion.div
             className="w-full max-w-md text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             {/* Success Icon */}
-            <motion.div 
+            <motion.div
               className="flex justify-center mb-6"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
             >
               <div className="h-24 w-24 rounded-full bg-doju-lime flex items-center justify-center">
                 <Check className="h-12 w-12 text-doju-navy" />
               </div>
             </motion.div>
-            
+
             {/* Success Message */}
-            <motion.h1 
+            <motion.h1
               className="text-3xl md:text-4xl font-bold text-foreground mb-3"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -228,18 +249,19 @@ const Checkout = () => {
             >
               Order Placed Successfully!
             </motion.h1>
-            
-            <motion.p 
+
+            <motion.p
               className="text-muted-foreground mb-6"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              Thank you for shopping with DOJU. Your order is confirmed and we'll start processing it right away.
+              Thank you for shopping with DOJU. Your order is confirmed and
+              we'll start processing it right away.
             </motion.p>
 
             {/* Order Code Display */}
-            <motion.div 
+            <motion.div
               className="rounded-xl border-2 border-doju-lime/30 bg-doju-lime/5 p-6 mb-6"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -247,20 +269,22 @@ const Checkout = () => {
             >
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Shield className="h-5 w-5 text-doju-lime" />
-                <h3 className="font-semibold text-foreground">Your 5-Digit Order Code</h3>
+                <h3 className="font-semibold text-foreground">
+                  Your 5-Digit Order Code
+                </h3>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
                 Share this code with the delivery driver to confirm receipt
               </p>
               <div className="flex items-center justify-center gap-3">
                 <div className="flex gap-1.5">
-                  {createdOrder.delivery_code.split('').map((digit, i) => (
-                    <motion.span 
+                  {createdOrder.delivery_code.split("").map((digit, i) => (
+                    <motion.span
                       key={i}
                       className="w-12 h-14 md:w-14 md:h-16 flex items-center justify-center bg-card border-2 border-doju-lime rounded-xl text-2xl md:text-3xl font-bold text-foreground shadow-sm"
                       initial={{ scale: 0, rotateY: 180 }}
                       animate={{ scale: 1, rotateY: 0 }}
-                      transition={{ delay: 0.6 + i * 0.1, type: 'spring' }}
+                      transition={{ delay: 0.6 + i * 0.1, type: "spring" }}
                     >
                       {digit}
                     </motion.span>
@@ -280,29 +304,38 @@ const Checkout = () => {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-3">
-                Order ID: <span className="font-medium">{createdOrder.order_number}</span>
+                Order ID:{" "}
+                <span className="font-medium">{createdOrder.order_number}</span>
               </p>
             </motion.div>
-            
+
             {/* Action Buttons - Two Large Buttons */}
-            <motion.div 
+            <motion.div
               className="space-y-3"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9 }}
             >
-              <Link 
-                to="/track-order" 
+              <Link
+                to="/track-order"
                 state={{ orderData: createdOrder }}
                 className="block"
               >
-                <Button variant="doju-primary" size="xl" className="w-full gap-2">
+                <Button
+                  variant="doju-primary"
+                  size="xl"
+                  className="w-full gap-2"
+                >
                   <Package className="h-5 w-5" />
                   Track Order
                 </Button>
               </Link>
               <Link to="/marketplace" className="block">
-                <Button variant="doju-outline" size="xl" className="w-full gap-2">
+                <Button
+                  variant="doju-outline"
+                  size="xl"
+                  className="w-full gap-2"
+                >
                   <ShoppingBag className="h-5 w-5" />
                   Continue Shopping
                 </Button>
@@ -316,7 +349,7 @@ const Checkout = () => {
 
   // Empty cart redirect
   if (items.length === 0 && !isComplete) {
-    navigate('/cart');
+    navigate("/cart");
     return null;
   }
 
@@ -326,12 +359,19 @@ const Checkout = () => {
       <div className="min-h-screen bg-background flex flex-col">
         <header className="border-b border-border bg-card">
           <div className="container flex h-16 items-center justify-between">
-            <button onClick={handleBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
               <ArrowLeft className="h-4 w-4" />
               Back
             </button>
             <Link to="/" className="flex items-center gap-2">
-              <img src={dojuLogo} alt="DOJU" className="h-8 w-8 rounded-full object-cover" />
+              <img
+                src={dojuLogo}
+                alt="DOJU"
+                className="h-8 w-8 rounded-full object-cover"
+              />
               <span className="text-xl font-bold text-foreground">DOJU</span>
             </Link>
             <div className="w-16" />
@@ -340,13 +380,15 @@ const Checkout = () => {
 
         <main className="flex-1 p-4">
           <div className="max-w-lg mx-auto">
-            <motion.div 
+            <motion.div
               className="mb-6"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
             >
               <Progress value={100} className="h-2" />
-              <p className="text-sm text-muted-foreground mt-2 text-center">Review your order</p>
+              <p className="text-sm text-muted-foreground mt-2 text-center">
+                Review your order
+              </p>
             </motion.div>
 
             <motion.div
@@ -369,14 +411,18 @@ const Checkout = () => {
                     <div key={item.product.id} className="flex gap-3">
                       <div className="h-14 w-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                         <img
-                          src={item.product.images[0] || '/placeholder.svg'}
+                          src={item.product.images[0] || "/placeholder.svg"}
                           alt={item.product.name}
                           className="h-full w-full object-cover"
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground line-clamp-1">{item.product.name}</p>
-                        <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                        <p className="text-sm font-medium text-foreground line-clamp-1">
+                          {item.product.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Qty: {item.quantity}
+                        </p>
                       </div>
                       <p className="text-sm font-semibold text-foreground">
                         {formatPrice(item.product.price * item.quantity)}
@@ -392,10 +438,16 @@ const Checkout = () => {
                   <MapPin className="h-5 w-5 text-doju-lime" />
                   <h2 className="font-semibold text-foreground">Delivery</h2>
                 </div>
-                <p className="text-sm text-muted-foreground">{formData.address}</p>
-                <p className="text-sm text-muted-foreground mt-1">{formData.phone}</p>
+                <p className="text-sm text-muted-foreground">
+                  {formData.address}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {formData.phone}
+                </p>
                 {formData.notes && (
-                  <p className="text-sm text-muted-foreground mt-2 italic">"{formData.notes}"</p>
+                  <p className="text-sm text-muted-foreground mt-2 italic">
+                    "{formData.notes}"
+                  </p>
                 )}
               </div>
 
@@ -406,27 +458,33 @@ const Checkout = () => {
                   <h2 className="font-semibold text-foreground">Payment</h2>
                 </div>
                 <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-muted/50">
-                  {paymentMethod === 'card' ? (
+                  {paymentMethod === "card" ? (
                     <>
                       <CreditCard className="h-4 w-4 text-doju-lime" />
-                      <span className="text-sm text-foreground">Card Payment</span>
+                      <span className="text-sm text-foreground">
+                        Card Payment
+                      </span>
                     </>
                   ) : (
                     <>
                       <Landmark className="h-4 w-4 text-doju-lime" />
-                      <span className="text-sm text-foreground">Bank Transfer</span>
+                      <span className="text-sm text-foreground">
+                        Bank Transfer
+                      </span>
                     </>
                   )}
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span className="text-foreground">{formatPrice(totalAmount)}</span>
+                    <span className="text-foreground">
+                      {formatPrice(totalAmount)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Shipping</span>
                     <span className="text-foreground">
-                      {shipping === 0 ? 'Free' : formatPrice(shipping)}
+                      {shipping === 0 ? "Free" : formatPrice(shipping)}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -475,12 +533,19 @@ const Checkout = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border bg-card">
         <div className="container flex h-16 items-center justify-between">
-          <button onClick={handleBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
             <ArrowLeft className="h-4 w-4" />
             Back
           </button>
           <Link to="/" className="flex items-center gap-2">
-            <img src={dojuLogo} alt="DOJU" className="h-8 w-8 rounded-full object-cover" />
+            <img
+              src={dojuLogo}
+              alt="DOJU"
+              className="h-8 w-8 rounded-full object-cover"
+            />
             <span className="text-xl font-bold text-foreground">DOJU</span>
           </Link>
           <div className="w-16" />
@@ -489,7 +554,7 @@ const Checkout = () => {
 
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <motion.div 
+          <motion.div
             className="mb-8"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -510,7 +575,7 @@ const Checkout = () => {
               transition={{ duration: 0.3 }}
             >
               {/* Step Icon */}
-              <motion.div 
+              <motion.div
                 className="flex justify-center mb-6"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -526,28 +591,36 @@ const Checkout = () => {
               </h1>
 
               {/* Payment method selection */}
-              {currentStepData.type === 'payment' ? (
+              {currentStepData.type === "payment" ? (
                 <div className="space-y-4 mb-6">
                   <motion.button
                     type="button"
                     className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
-                      paymentMethod === 'card' 
-                        ? 'border-doju-lime bg-doju-lime/10' 
-                        : 'border-border bg-card hover:border-doju-lime/50'
+                      paymentMethod === "card"
+                        ? "border-doju-lime bg-doju-lime/10"
+                        : "border-border bg-card hover:border-doju-lime/50"
                     }`}
-                    onClick={() => setPaymentMethod('card')}
+                    onClick={() => setPaymentMethod("card")}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${
-                      paymentMethod === 'card' ? 'bg-doju-lime text-doju-navy' : 'bg-muted text-muted-foreground'
-                    }`}>
+                    <div
+                      className={`h-12 w-12 rounded-xl flex items-center justify-center ${
+                        paymentMethod === "card"
+                          ? "bg-doju-lime text-doju-navy"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
                       <CreditCard className="h-6 w-6" />
                     </div>
                     <div className="text-left flex-1">
-                      <p className="font-semibold text-foreground">Card Payment</p>
-                      <p className="text-sm text-muted-foreground">Pay with debit or credit card</p>
+                      <p className="font-semibold text-foreground">
+                        Card Payment
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Pay with debit or credit card
+                      </p>
                     </div>
-                    {paymentMethod === 'card' && (
+                    {paymentMethod === "card" && (
                       <Check className="h-5 w-5 text-doju-lime" />
                     )}
                   </motion.button>
@@ -555,32 +628,40 @@ const Checkout = () => {
                   <motion.button
                     type="button"
                     className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
-                      paymentMethod === 'bank_transfer' 
-                        ? 'border-doju-lime bg-doju-lime/10' 
-                        : 'border-border bg-card hover:border-doju-lime/50'
+                      paymentMethod === "bank_transfer"
+                        ? "border-doju-lime bg-doju-lime/10"
+                        : "border-border bg-card hover:border-doju-lime/50"
                     }`}
-                    onClick={() => setPaymentMethod('bank_transfer')}
+                    onClick={() => setPaymentMethod("bank_transfer")}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${
-                      paymentMethod === 'bank_transfer' ? 'bg-doju-lime text-doju-navy' : 'bg-muted text-muted-foreground'
-                    }`}>
+                    <div
+                      className={`h-12 w-12 rounded-xl flex items-center justify-center ${
+                        paymentMethod === "bank_transfer"
+                          ? "bg-doju-lime text-doju-navy"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
                       <Landmark className="h-6 w-6" />
                     </div>
                     <div className="text-left flex-1">
-                      <p className="font-semibold text-foreground">Bank Transfer</p>
-                      <p className="text-sm text-muted-foreground">Transfer directly to our account</p>
+                      <p className="font-semibold text-foreground">
+                        Bank Transfer
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Transfer directly to our account
+                      </p>
                     </div>
-                    {paymentMethod === 'bank_transfer' && (
+                    {paymentMethod === "bank_transfer" && (
                       <Check className="h-5 w-5 text-doju-lime" />
                     )}
                   </motion.button>
 
                   {/* Card details if card selected */}
-                  {paymentMethod === 'card' && (
+                  {paymentMethod === "card" && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
+                      animate={{ opacity: 1, height: "auto" }}
                       className="space-y-3 pt-2"
                     >
                       <Input
@@ -594,33 +675,37 @@ const Checkout = () => {
                           placeholder="MM/YY"
                           className="h-12"
                         />
-                        <Input
-                          type="text"
-                          placeholder="CVV"
-                          className="h-12"
-                        />
+                        <Input type="text" placeholder="CVV" className="h-12" />
                       </div>
                     </motion.div>
                   )}
 
                   {/* Bank transfer info if selected */}
-                  {paymentMethod === 'bank_transfer' && (
+                  {paymentMethod === "bank_transfer" && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
+                      animate={{ opacity: 1, height: "auto" }}
                       className="p-4 rounded-xl bg-muted/50 border border-border"
                     >
-                      <p className="text-sm text-muted-foreground mb-2">Transfer to:</p>
-                      <p className="font-semibold text-foreground">DOJU Medical Supplies</p>
-                      <p className="text-sm text-foreground">Bank: First Bank Nigeria</p>
-                      <p className="text-sm text-foreground">Account: 0123456789</p>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Transfer to:
+                      </p>
+                      <p className="font-semibold text-foreground">
+                        DOJU Medical Supplies
+                      </p>
+                      <p className="text-sm text-foreground">
+                        Bank: First Bank Nigeria
+                      </p>
+                      <p className="text-sm text-foreground">
+                        Account: 0123456789
+                      </p>
                       <p className="text-xs text-muted-foreground mt-2">
                         Order will be processed after payment confirmation
                       </p>
                     </motion.div>
                   )}
                 </div>
-              ) : currentStepData.type === 'textarea' ? (
+              ) : currentStepData.type === "textarea" ? (
                 <Textarea
                   placeholder={currentStepData.placeholder}
                   value={currentValue}
@@ -637,7 +722,7 @@ const Checkout = () => {
                   className="text-lg h-14 mb-6"
                   autoFocus
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && isValid) {
+                    if (e.key === "Enter" && isValid) {
                       handleNext();
                     }
                   }}
@@ -656,7 +741,9 @@ const Checkout = () => {
                   disabled={!isValid}
                   onClick={handleNext}
                 >
-                  {currentStep === steps.length - 1 ? 'Review Order' : 'Continue'}
+                  {currentStep === steps.length - 1
+                    ? "Review Order"
+                    : "Continue"}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
 
@@ -677,7 +764,7 @@ const Checkout = () => {
                   <motion.div
                     key={index}
                     className={`h-2 w-2 rounded-full transition-colors ${
-                      index <= currentStep ? 'bg-doju-lime' : 'bg-muted'
+                      index <= currentStep ? "bg-doju-lime" : "bg-muted"
                     }`}
                     initial={{ scale: 0.8 }}
                     animate={{ scale: index === currentStep ? 1.2 : 1 }}

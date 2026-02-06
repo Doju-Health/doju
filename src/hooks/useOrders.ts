@@ -1,9 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
-export type OrderStatus = 'confirmed' | 'picked_up' | 'in_transit' | 'out_for_delivery' | 'delivered';
+export type OrderStatus =
+  | "confirmed"
+  | "picked_up"
+  | "in_transit"
+  | "out_for_delivery"
+  | "delivered";
 
 export interface OrderItem {
   id: string;
@@ -78,6 +82,11 @@ const generateDeliveryCode = () => {
   return Math.floor(10000 + Math.random() * 90000).toString();
 };
 
+// Mock order storage
+const mockOrders: Record<string, Order> = {};
+const mockOrderItems: Record<string, OrderItem[]> = {};
+const mockOrderHistory: Record<string, OrderStatusHistory[]> = {};
+
 export const useOrders = () => {
   const { user, isSeller, isAdmin } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -92,43 +101,19 @@ export const useOrders = () => {
     }
 
     try {
-      // Fetch orders
-      const { data: ordersData, error: ordersError } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Simulate loading
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-      if (ordersError) throw ordersError;
+      // Return mock orders
+      const allOrders = Object.values(mockOrders).map((order) => ({
+        ...order,
+        items: mockOrderItems[order.id] || [],
+        status_history: mockOrderHistory[order.id] || [],
+      }));
 
-      if (ordersData && ordersData.length > 0) {
-        const orderIds = ordersData.map(o => o.id);
-        
-        // Fetch items and status history in parallel
-        const [itemsResult, historyResult] = await Promise.all([
-          supabase
-            .from('order_items')
-            .select('*')
-            .in('order_id', orderIds),
-          supabase
-            .from('order_status_history')
-            .select('*')
-            .in('order_id', orderIds)
-            .order('created_at', { ascending: true })
-        ]);
-
-        const ordersWithDetails = ordersData.map(order => ({
-          ...order,
-          status: order.status as OrderStatus,
-          items: (itemsResult.data || []).filter(item => item.order_id === order.id) as OrderItem[],
-          status_history: (historyResult.data || []).filter(h => h.order_id === order.id) as OrderStatusHistory[]
-        }));
-
-        setOrders(ordersWithDetails);
-      } else {
-        setOrders([]);
-      }
+      setOrders(allOrders);
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.error("Error fetching orders:", error);
     } finally {
       setLoading(false);
     }
@@ -137,7 +122,7 @@ export const useOrders = () => {
   // Create a new order
   const createOrder = async (data: CreateOrderData): Promise<Order | null> => {
     if (!user) {
-      toast.error('Please sign in to place an order');
+      toast.error("Please sign in to place an order");
       return null;
     }
 
@@ -145,147 +130,130 @@ export const useOrders = () => {
     const deliveryCode = generateDeliveryCode();
     const estimatedDelivery = new Date();
     estimatedDelivery.setDate(estimatedDelivery.getDate() + 3);
+    const orderId = `order-${Date.now()}`;
 
     try {
-      // Insert order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          buyer_id: user.id,
-          order_number: orderNumber,
-          delivery_code: deliveryCode,
-          phone: data.phone,
-          delivery_address: data.delivery_address,
-          notes: data.notes || null,
-          payment_method: data.payment_method,
-          total_amount: data.total_amount,
-          shipping_amount: data.shipping_amount,
-          tax_amount: data.tax_amount,
-          estimated_delivery: estimatedDelivery.toISOString(),
-          status: 'confirmed'
-        })
-        .select()
-        .single();
+      const newOrder: Order = {
+        id: orderId,
+        buyer_id: user.id,
+        order_number: orderNumber,
+        delivery_code: deliveryCode,
+        phone: data.phone,
+        delivery_address: data.delivery_address,
+        notes: data.notes || null,
+        payment_method: data.payment_method,
+        total_amount: data.total_amount,
+        shipping_amount: data.shipping_amount,
+        tax_amount: data.tax_amount,
+        estimated_delivery: estimatedDelivery.toISOString(),
+        status: "confirmed",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
-      if (orderError) throw orderError;
+      // Store in mock
+      mockOrders[orderId] = newOrder;
 
-      // Insert order items
-      const orderItems = data.items.map(item => ({
-        order_id: order.id,
+      // Create order items
+      const orderItems: OrderItem[] = data.items.map((item, i) => ({
+        id: `item-${i}-${Date.now()}`,
+        order_id: orderId,
         product_id: item.product_id || null,
         product_name: item.product_name,
         product_image: item.product_image || null,
         seller_id: item.seller_id,
         seller_name: item.seller_name || null,
         quantity: item.quantity,
-        unit_price: item.unit_price
+        unit_price: item.unit_price,
+        created_at: new Date().toISOString(),
       }));
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
+      mockOrderItems[orderId] = orderItems;
 
-      if (itemsError) throw itemsError;
-
-      // Insert initial status history
-      const { error: historyError } = await supabase
-        .from('order_status_history')
-        .insert({
-          order_id: order.id,
-          status: 'confirmed',
-          notes: 'Order placed successfully',
-          updated_by: user.id
-        });
-
-      if (historyError) throw historyError;
-
-      return {
-        ...order,
-        status: order.status as OrderStatus,
-        items: orderItems.map((item, i) => ({
-          ...item,
-          id: `temp-${i}`,
-          created_at: new Date().toISOString()
-        })) as OrderItem[]
+      // Create status history
+      const statusHistory: OrderStatusHistory = {
+        id: `history-${Date.now()}`,
+        order_id: orderId,
+        status: "confirmed",
+        notes: "Order placed successfully",
+        updated_by: user.id,
+        created_at: new Date().toISOString(),
       };
+
+      mockOrderHistory[orderId] = [statusHistory];
+
+      newOrder.items = orderItems;
+      newOrder.status_history = [statusHistory];
+
+      return newOrder;
     } catch (error: any) {
-      console.error('Error creating order:', error);
-      toast.error('Failed to place order', { description: error.message });
+      console.error("Error creating order:", error);
+      toast.error("Failed to place order", { description: error.message });
       return null;
     }
   };
 
   // Update order status (for sellers/admins)
-  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus, notes?: string) => {
+  const updateOrderStatus = async (
+    orderId: string,
+    newStatus: OrderStatus,
+    notes?: string,
+  ) => {
     if (!user) return false;
 
     try {
-      // Update order status
-      const { error: updateError } = await supabase
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', orderId);
+      // Update mock
+      if (mockOrders[orderId]) {
+        mockOrders[orderId].status = newStatus;
+        mockOrders[orderId].updated_at = new Date().toISOString();
 
-      if (updateError) throw updateError;
-
-      // Insert status history
-      const { error: historyError } = await supabase
-        .from('order_status_history')
-        .insert({
+        const historyEntry: OrderStatusHistory = {
+          id: `history-${Date.now()}`,
           order_id: orderId,
           status: newStatus,
           notes: notes || getStatusMessage(newStatus),
-          updated_by: user.id
+          updated_by: user.id,
+          created_at: new Date().toISOString(),
+        };
+
+        if (!mockOrderHistory[orderId]) {
+          mockOrderHistory[orderId] = [];
+        }
+        mockOrderHistory[orderId].push(historyEntry);
+
+        toast.success("Order status updated", {
+          description: `Order marked as ${getStatusLabel(newStatus)}`,
         });
 
-      if (historyError) throw historyError;
-
-      toast.success('Order status updated', {
-        description: `Order marked as ${getStatusLabel(newStatus)}`
-      });
-
-      // Refresh orders
-      await fetchOrders();
-      return true;
+        await fetchOrders();
+        return true;
+      }
+      return false;
     } catch (error: any) {
-      console.error('Error updating order status:', error);
-      toast.error('Failed to update status', { description: error.message });
+      console.error("Error updating order status:", error);
+      toast.error("Failed to update status", { description: error.message });
       return false;
     }
   };
 
   // Fetch a single order by ID or order number
-  const fetchOrderByNumber = async (orderNumber: string): Promise<Order | null> => {
+  const fetchOrderByNumber = async (
+    orderNumber: string,
+  ): Promise<Order | null> => {
     try {
-      const { data: order, error } = await supabase
-        .from('orders')
-        .select('*')
-        .or(`order_number.eq.${orderNumber},id.eq.${orderNumber}`)
-        .single();
+      const order = Object.values(mockOrders).find(
+        (o) => o.order_number === orderNumber || o.id === orderNumber,
+      );
 
-      if (error || !order) return null;
-
-      // Fetch items and history
-      const [itemsResult, historyResult] = await Promise.all([
-        supabase
-          .from('order_items')
-          .select('*')
-          .eq('order_id', order.id),
-        supabase
-          .from('order_status_history')
-          .select('*')
-          .eq('order_id', order.id)
-          .order('created_at', { ascending: true })
-      ]);
+      if (!order) return null;
 
       return {
         ...order,
-        status: order.status as OrderStatus,
-        items: (itemsResult.data || []) as OrderItem[],
-        status_history: (historyResult.data || []) as OrderStatusHistory[]
+        items: mockOrderItems[order.id] || [],
+        status_history: mockOrderHistory[order.id] || [],
       };
     } catch (error) {
-      console.error('Error fetching order:', error);
+      console.error("Error fetching order:", error);
       return null;
     }
   };
@@ -295,51 +263,6 @@ export const useOrders = () => {
     if (!user) return;
 
     fetchOrders();
-
-    // Subscribe to order updates
-    const ordersChannel = supabase
-      .channel('orders-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'orders'
-        },
-        (payload) => {
-          console.log('Order update:', payload);
-          fetchOrders();
-          
-          // Show notification for status changes
-          if (payload.eventType === 'UPDATE' && payload.new) {
-            const newOrder = payload.new as any;
-            toast.info('Order Update', {
-              description: `Order ${newOrder.order_number} is now ${getStatusLabel(newOrder.status)}`
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    const historyChannel = supabase
-      .channel('status-history-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'order_status_history'
-        },
-        () => {
-          fetchOrders();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(ordersChannel);
-      supabase.removeChannel(historyChannel);
-    };
   }, [user, fetchOrders]);
 
   return {
@@ -348,58 +271,61 @@ export const useOrders = () => {
     createOrder,
     updateOrderStatus,
     fetchOrderByNumber,
-    refetch: fetchOrders
+    refetch: fetchOrders,
   };
 };
 
 // Helper functions
 export const getStatusLabel = (status: OrderStatus): string => {
   const labels: Record<OrderStatus, string> = {
-    confirmed: 'Order Confirmed',
-    picked_up: 'Picked Up by Seller',
-    in_transit: 'In Transit',
-    out_for_delivery: 'Out for Delivery',
-    delivered: 'Delivered'
+    confirmed: "Order Confirmed",
+    picked_up: "Picked Up by Seller",
+    in_transit: "In Transit",
+    out_for_delivery: "Out for Delivery",
+    delivered: "Delivered",
   };
   return labels[status];
 };
 
 export const getStatusMessage = (status: OrderStatus): string => {
   const messages: Record<OrderStatus, string> = {
-    confirmed: 'Order has been confirmed',
-    picked_up: 'Order has been picked up by seller',
-    in_transit: 'Order is in transit',
-    out_for_delivery: 'Order is out for delivery',
-    delivered: 'Order has been delivered'
+    confirmed: "Order has been confirmed",
+    picked_up: "Order has been picked up by seller",
+    in_transit: "Order is in transit",
+    out_for_delivery: "Order is out for delivery",
+    delivered: "Order has been delivered",
   };
   return messages[status];
 };
 
 export const getStatusColor = (status: OrderStatus): string => {
   const colors: Record<OrderStatus, string> = {
-    confirmed: 'bg-blue-100 text-blue-700',
-    picked_up: 'bg-yellow-100 text-yellow-700',
-    in_transit: 'bg-purple-100 text-purple-700',
-    out_for_delivery: 'bg-orange-100 text-orange-700',
-    delivered: 'bg-green-100 text-green-700'
+    confirmed: "bg-blue-100 text-blue-700",
+    picked_up: "bg-yellow-100 text-yellow-700",
+    in_transit: "bg-purple-100 text-purple-700",
+    out_for_delivery: "bg-orange-100 text-orange-700",
+    delivered: "bg-green-100 text-green-700",
   };
   return colors[status];
 };
 
-export const getEstimatedTimeRemaining = (estimatedDelivery: string | null): string => {
-  if (!estimatedDelivery) return 'Calculating...';
-  
+export const getEstimatedTimeRemaining = (
+  estimatedDelivery: string | null,
+): string => {
+  if (!estimatedDelivery) return "Calculating...";
+
   const now = new Date();
   const estimated = new Date(estimatedDelivery);
   const diffMs = estimated.getTime() - now.getTime();
-  
-  if (diffMs < 0) return 'Arriving soon';
-  
+
+  if (diffMs < 0) return "Arriving soon";
+
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffHours / 24);
-  
-  if (diffHours < 1) return 'Arriving in less than an hour';
-  if (diffHours < 24) return `Arriving in ${diffHours} hour${diffHours > 1 ? 's' : ''}`;
-  if (diffDays === 1) return 'Arriving tomorrow';
+
+  if (diffHours < 1) return "Arriving in less than an hour";
+  if (diffHours < 24)
+    return `Arriving in ${diffHours} hour${diffHours > 1 ? "s" : ""}`;
+  if (diffDays === 1) return "Arriving tomorrow";
   return `Arriving in ${diffDays} days`;
 };

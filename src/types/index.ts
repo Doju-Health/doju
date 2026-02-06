@@ -1,6 +1,6 @@
 // Core Data Types for DOJU
 
-export type UserRole = 'buyer' | 'seller' | 'admin';
+export type UserRole = "buyer" | "seller" | "admin";
 
 export interface Category {
   id: string;
@@ -20,6 +20,15 @@ export interface User {
   createdAt: Date;
 }
 
+export interface IUser {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: UserRole;
+  createdAt: Date;
+}
+
 export interface SellerProfile {
   id: string;
   userId: string;
@@ -27,7 +36,7 @@ export interface SellerProfile {
   businessEmail: string;
   businessPhone: string;
   documents: string[];
-  approvalStatus: 'pending' | 'approved' | 'rejected';
+  approvalStatus: "pending" | "approved" | "rejected";
   createdAt: Date;
 }
 
@@ -42,7 +51,7 @@ export interface Product {
   sku: string;
   stock: number;
   sellerId: string;
-  approvalStatus: 'pending' | 'approved' | 'rejected';
+  approvalStatus: "pending" | "approved" | "rejected";
   createdAt: Date;
   weeklyPurchases?: number;
 }
@@ -57,7 +66,7 @@ export interface Order {
   buyerId: string;
   items: CartItem[];
   totalAmount: number;
-  status: 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: "processing" | "shipped" | "delivered" | "cancelled";
   shippingAddress: Address;
   createdAt: Date;
 }

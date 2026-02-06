@@ -1,36 +1,58 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { 
-  useOrders, 
-  Order, 
-  OrderStatus, 
-  getStatusLabel, 
-  getStatusColor 
-} from '@/hooks/useOrders';
-import { 
-  Package, TrendingUp, Eye, DollarSign, Plus, 
-  Upload, X, Edit, Trash2, MoreVertical, Image,
-  Video, BarChart3, ShoppingCart, Users, ArrowUpRight,
-  Home, Store, Settings, LogOut, Menu, Clock, CheckCircle, XCircle,
-  Truck, PackageCheck, MapPin, Phone, MessageCircle
-} from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import UserMessagesInbox from '@/components/chat/UserMessagesInbox';
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  useOrders,
+  Order,
+  OrderStatus,
+  getStatusLabel,
+  getStatusColor,
+} from "@/hooks/useOrders";
+import {
+  Package,
+  TrendingUp,
+  Eye,
+  DollarSign,
+  Plus,
+  Upload,
+  X,
+  Edit,
+  Trash2,
+  MoreVertical,
+  Image,
+  Video,
+  BarChart3,
+  ShoppingCart,
+  Users,
+  ArrowUpRight,
+  Home,
+  Store,
+  Settings,
+  LogOut,
+  Menu,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Truck,
+  PackageCheck,
+  MapPin,
+  Phone,
+  MessageCircle,
+} from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import dojuLogo from '@/assets/doju-logo.jpg';
+} from "@/components/ui/dropdown-menu";
+import dojuLogo from "@/assets/doju-logo.jpg";
 
 interface Product {
   id: string;
@@ -47,16 +69,22 @@ interface Product {
 interface UploadedMedia {
   file: File;
   preview: string;
-  type: 'image' | 'video';
+  type: "image" | "video";
 }
 
-const ORDER_STATUS_FLOW: OrderStatus[] = ['confirmed', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered'];
+const ORDER_STATUS_FLOW: OrderStatus[] = [
+  "confirmed",
+  "picked_up",
+  "in_transit",
+  "out_for_delivery",
+  "delivered",
+];
 
 const SellerDashboard = () => {
   const navigate = useNavigate();
   const { user, isSeller, loading: authLoading, signOut } = useAuth();
   const { orders, loading: ordersLoading, updateOrderStatus } = useOrders();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [uploadedMedia, setUploadedMedia] = useState<UploadedMedia[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -65,17 +93,17 @@ const SellerDashboard = () => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const [newProduct, setNewProduct] = useState({
-    name: '',
-    description: '',
-    price: '',
-    stock: '',
-    category: '',
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    category: "",
   });
 
   // Redirect if not seller (backup check - main protection in SellerProtectedRoute)
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/seller-onboarding');
+      navigate("/seller-onboarding");
     }
   }, [user, authLoading, navigate]);
 
@@ -88,42 +116,21 @@ const SellerDashboard = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('seller_id', user?.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Fetch media for each product
-      if (data && data.length > 0) {
-        const productIds = data.map(p => p.id);
-        const { data: mediaData } = await supabase
-          .from('product_media')
-          .select('*')
-          .in('product_id', productIds);
-
-        const productsWithMedia = data.map(product => ({
-          ...product,
-          media: mediaData?.filter(m => m.product_id === product.id) || []
-        }));
-        setProducts(productsWithMedia);
-      } else {
-        setProducts([]);
-      }
+      // Mock product fetching
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setProducts([]);
     } catch (error) {
-      console.error('Error fetching products:', error);
-      toast.error('Failed to load products');
+      console.error("Error fetching products:", error);
+      toast.error("Failed to load products");
     } finally {
       setLoading(false);
     }
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
@@ -132,31 +139,37 @@ const SellerDashboard = () => {
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      Array.from(files).forEach(file => {
-        if (file.type.startsWith('image/')) {
+      Array.from(files).forEach((file) => {
+        if (file.type.startsWith("image/")) {
           const preview = URL.createObjectURL(file);
-          setUploadedMedia(prev => [...prev, { file, preview, type: 'image' }]);
+          setUploadedMedia((prev) => [
+            ...prev,
+            { file, preview, type: "image" },
+          ]);
         }
       });
     }
-    if (imageInputRef.current) imageInputRef.current.value = '';
+    if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      Array.from(files).forEach(file => {
-        if (file.type.startsWith('video/')) {
+      Array.from(files).forEach((file) => {
+        if (file.type.startsWith("video/")) {
           const preview = URL.createObjectURL(file);
-          setUploadedMedia(prev => [...prev, { file, preview, type: 'video' }]);
+          setUploadedMedia((prev) => [
+            ...prev,
+            { file, preview, type: "video" },
+          ]);
         }
       });
     }
-    if (videoInputRef.current) videoInputRef.current.value = '';
+    if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
   const removeMedia = (index: number) => {
-    setUploadedMedia(prev => {
+    setUploadedMedia((prev) => {
       const item = prev[index];
       URL.revokeObjectURL(item.preview);
       return prev.filter((_, i) => i !== index);
@@ -165,69 +178,31 @@ const SellerDashboard = () => {
 
   const handleAddProduct = async () => {
     if (!user || !newProduct.name || !newProduct.price) return;
-    
+
     setSubmitting(true);
     try {
-      // Insert product
-      const { data: product, error: productError } = await supabase
-        .from('products')
-        .insert({
-          seller_id: user.id,
-          name: newProduct.name,
-          description: newProduct.description || null,
-          price: parseFloat(newProduct.price),
-          stock: parseInt(newProduct.stock) || 0,
-          category: newProduct.category || null,
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (productError) throw productError;
-
-      // Upload media files
-      for (const media of uploadedMedia) {
-        const fileExt = media.file.name.split('.').pop();
-        const fileName = `${user.id}/${product.id}/${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('product-media')
-          .upload(fileName, media.file);
-
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
-          continue;
-        }
-
-        const { data: publicUrl } = supabase.storage
-          .from('product-media')
-          .getPublicUrl(fileName);
-
-        // Insert media record
-        await supabase
-          .from('product_media')
-          .insert({
-            product_id: product.id,
-            url: publicUrl.publicUrl,
-            type: media.type
-          });
-      }
-
-      toast.success('Product submitted for approval!', {
-        description: 'An admin will review your product shortly.'
+      // Mock product creation
+      toast.success("Product submitted for approval!", {
+        description: "An admin will review your product shortly.",
       });
 
       // Reset form
       setShowAddProduct(false);
-      setNewProduct({ name: '', description: '', price: '', stock: '', category: '' });
-      uploadedMedia.forEach(m => URL.revokeObjectURL(m.preview));
+      setNewProduct({
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        category: "",
+      });
+      uploadedMedia.forEach((m) => URL.revokeObjectURL(m.preview));
       setUploadedMedia([]);
-      
+
       // Refresh products
       fetchProducts();
     } catch (error: any) {
-      console.error('Error adding product:', error);
-      toast.error('Failed to add product', { description: error.message });
+      console.error("Error adding product:", error);
+      toast.error("Failed to add product", { description: error.message });
     } finally {
       setSubmitting(false);
     }
@@ -235,33 +210,42 @@ const SellerDashboard = () => {
 
   const handleDeleteProduct = async (productId: string) => {
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productId);
-
-      if (error) throw error;
-      
-      toast.success('Product deleted');
+      // Mock product deletion
+      toast.success("Product deleted");
       fetchProducts();
     } catch (error: any) {
-      toast.error('Failed to delete product', { description: error.message });
+      toast.error("Failed to delete product", { description: error.message });
     }
   };
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    navigate("/");
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'approved':
-        return <Badge className="bg-green-100 text-green-700 gap-1"><CheckCircle className="h-3 w-3" />Approved</Badge>;
-      case 'rejected':
-        return <Badge className="bg-red-100 text-red-700 gap-1"><XCircle className="h-3 w-3" />Rejected</Badge>;
+      case "approved":
+        return (
+          <Badge className="bg-green-100 text-green-700 gap-1">
+            <CheckCircle className="h-3 w-3" />
+            Approved
+          </Badge>
+        );
+      case "rejected":
+        return (
+          <Badge className="bg-red-100 text-red-700 gap-1">
+            <XCircle className="h-3 w-3" />
+            Rejected
+          </Badge>
+        );
       default:
-        return <Badge className="bg-yellow-100 text-yellow-700 gap-1"><Clock className="h-3 w-3" />Pending</Badge>;
+        return (
+          <Badge className="bg-yellow-100 text-yellow-700 gap-1">
+            <Clock className="h-3 w-3" />
+            Pending
+          </Badge>
+        );
     }
   };
 
@@ -275,19 +259,22 @@ const SellerDashboard = () => {
 
   const getNextStatusLabel = (currentStatus: OrderStatus): string => {
     const next = getNextStatus(currentStatus);
-    if (!next) return '';
-    
+    if (!next) return "";
+
     const labels: Record<OrderStatus, string> = {
-      confirmed: 'Mark as Picked Up',
-      picked_up: 'Mark as In Transit',
-      in_transit: 'Mark as Out for Delivery',
-      out_for_delivery: 'Mark as Delivered',
-      delivered: ''
+      confirmed: "Mark as Picked Up",
+      picked_up: "Mark as In Transit",
+      in_transit: "Mark as Out for Delivery",
+      out_for_delivery: "Mark as Delivered",
+      delivered: "",
     };
     return labels[currentStatus];
   };
 
-  const handleUpdateOrderStatus = async (orderId: string, currentStatus: OrderStatus) => {
+  const handleUpdateOrderStatus = async (
+    orderId: string,
+    currentStatus: OrderStatus,
+  ) => {
     const nextStatus = getNextStatus(currentStatus);
     if (nextStatus) {
       await updateOrderStatus(orderId, nextStatus);
@@ -295,27 +282,38 @@ const SellerDashboard = () => {
   };
 
   // Filter orders for this seller
-  const sellerOrders = orders.filter(order => 
-    order.items?.some(item => item.seller_id === user?.id)
+  const sellerOrders = orders.filter((order) =>
+    order.items?.some((item) => item.seller_id === user?.id),
   );
 
-  const pendingOrdersCount = sellerOrders.filter(o => o.status !== 'delivered').length;
-  const pendingCount = products.filter(p => p.status === 'pending').length;
-  const approvedCount = products.filter(p => p.status === 'approved').length;
+  const pendingOrdersCount = sellerOrders.filter(
+    (o) => o.status !== "delivered",
+  ).length;
+  const pendingCount = products.filter((p) => p.status === "pending").length;
+  const approvedCount = products.filter((p) => p.status === "approved").length;
 
   const sidebarLinks = [
-    { icon: BarChart3, label: 'Overview', value: 'overview' },
-    { icon: Package, label: 'Products', value: 'products' },
-    { icon: ShoppingCart, label: 'Orders', value: 'orders', badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
-    { icon: MessageCircle, label: 'Messages', value: 'messages' },
-    { icon: Settings, label: 'Settings', value: 'settings' },
+    { icon: BarChart3, label: "Overview", value: "overview" },
+    { icon: Package, label: "Products", value: "products" },
+    {
+      icon: ShoppingCart,
+      label: "Orders",
+      value: "orders",
+      badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined,
+    },
+    { icon: MessageCircle, label: "Messages", value: "messages" },
+    { icon: Settings, label: "Settings", value: "settings" },
   ];
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-border">
         <Link to="/" className="flex items-center gap-2">
-          <img src={dojuLogo} alt="DOJU" className="h-10 w-10 rounded-full object-cover" />
+          <img
+            src={dojuLogo}
+            alt="DOJU"
+            className="h-10 w-10 rounded-full object-cover"
+          />
           <div>
             <span className="text-lg font-bold text-foreground">DOJU</span>
             <p className="text-xs text-muted-foreground">Seller Portal</p>
@@ -330,8 +328,8 @@ const SellerDashboard = () => {
             onClick={() => setActiveTab(link.value)}
             className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               activeTab === link.value
-                ? 'bg-doju-lime/10 text-doju-lime'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                ? "bg-doju-lime/10 text-doju-lime"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             <div className="flex items-center gap-3">
@@ -354,7 +352,7 @@ const SellerDashboard = () => {
             Back to Store
           </button>
         </Link>
-        <button 
+        <button
           onClick={handleSignOut}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
@@ -418,11 +416,11 @@ const SellerDashboard = () => {
 
               <div>
                 <h1 className="text-xl font-bold text-foreground">
-                  {activeTab === 'overview' && 'Dashboard'}
-                  {activeTab === 'products' && 'Products'}
-                  {activeTab === 'orders' && 'Orders'}
-                  {activeTab === 'messages' && 'Messages'}
-                  {activeTab === 'settings' && 'Settings'}
+                  {activeTab === "overview" && "Dashboard"}
+                  {activeTab === "products" && "Products"}
+                  {activeTab === "orders" && "Orders"}
+                  {activeTab === "messages" && "Messages"}
+                  {activeTab === "settings" && "Settings"}
                 </h1>
                 <p className="text-sm text-muted-foreground hidden sm:block">
                   Welcome back, Seller
@@ -430,8 +428,8 @@ const SellerDashboard = () => {
               </div>
             </div>
 
-            <Button 
-              variant="doju-primary" 
+            <Button
+              variant="doju-primary"
               className="gap-2"
               onClick={() => setShowAddProduct(true)}
             >
@@ -444,7 +442,7 @@ const SellerDashboard = () => {
         {/* Main Content Area */}
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
           {/* Overview Tab */}
-          {activeTab === 'overview' && (
+          {activeTab === "overview" && (
             <div className="space-y-6">
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -461,7 +459,9 @@ const SellerDashboard = () => {
                   <p className="text-2xl lg:text-3xl font-bold text-foreground">
                     {products.length}
                   </p>
-                  <p className="text-sm text-muted-foreground">Total Products</p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Products
+                  </p>
                 </motion.div>
 
                 <motion.div
@@ -512,7 +512,9 @@ const SellerDashboard = () => {
                   <p className="text-2xl lg:text-3xl font-bold text-foreground">
                     {pendingOrdersCount}
                   </p>
-                  <p className="text-sm text-muted-foreground">Pending Delivery</p>
+                  <p className="text-sm text-muted-foreground">
+                    Pending Delivery
+                  </p>
                 </motion.div>
               </div>
 
@@ -524,8 +526,14 @@ const SellerDashboard = () => {
                 className="rounded-2xl border border-border bg-card p-4 lg:p-6"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Recent Orders</h3>
-                  <Button variant="ghost" size="sm" onClick={() => setActiveTab('orders')}>
+                  <h3 className="font-semibold text-foreground">
+                    Recent Orders
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setActiveTab("orders")}
+                  >
                     View All
                     <ArrowUpRight className="h-4 w-4 ml-1" />
                   </Button>
@@ -534,14 +542,21 @@ const SellerDashboard = () => {
                 {sellerOrders.length > 0 ? (
                   <div className="space-y-3">
                     {sellerOrders.slice(0, 3).map((order) => (
-                      <div 
+                      <div
                         key={order.id}
                         className="flex items-center justify-between gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground">{order.order_number}</p>
+                          <p className="font-medium text-foreground">
+                            {order.order_number}
+                          </p>
                           <p className="text-sm text-muted-foreground">
-                            {order.items?.filter(i => i.seller_id === user?.id).length} item(s)
+                            {
+                              order.items?.filter(
+                                (i) => i.seller_id === user?.id,
+                              ).length
+                            }{" "}
+                            item(s)
                           </p>
                         </div>
                         <Badge className={getStatusColor(order.status)}>
@@ -566,8 +581,14 @@ const SellerDashboard = () => {
                 className="rounded-2xl border border-border bg-card p-4 lg:p-6"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Recent Products</h3>
-                  <Button variant="ghost" size="sm" onClick={() => setActiveTab('products')}>
+                  <h3 className="font-semibold text-foreground">
+                    Recent Products
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setActiveTab("products")}
+                  >
                     View All
                     <ArrowUpRight className="h-4 w-4 ml-1" />
                   </Button>
@@ -576,14 +597,14 @@ const SellerDashboard = () => {
                 {products.length > 0 ? (
                   <div className="space-y-3">
                     {products.slice(0, 3).map((product) => (
-                      <div 
+                      <div
                         key={product.id}
                         className="flex items-center gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
                       >
                         <div className="h-12 w-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                           {product.media && product.media.length > 0 ? (
-                            <img 
-                              src={product.media[0].url} 
+                            <img
+                              src={product.media[0].url}
                               alt={product.name}
                               className="h-full w-full object-cover"
                             />
@@ -594,8 +615,12 @@ const SellerDashboard = () => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground truncate">{product.name}</p>
-                          <p className="text-sm text-doju-lime">{formatPrice(product.price)}</p>
+                          <p className="font-medium text-foreground truncate">
+                            {product.name}
+                          </p>
+                          <p className="text-sm text-doju-lime">
+                            {formatPrice(product.price)}
+                          </p>
                         </div>
                         {getStatusBadge(product.status)}
                       </div>
@@ -605,9 +630,9 @@ const SellerDashboard = () => {
                   <div className="text-center py-8 text-muted-foreground">
                     <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
                     <p>No products yet</p>
-                    <Button 
-                      variant="doju-primary" 
-                      size="sm" 
+                    <Button
+                      variant="doju-primary"
+                      size="sm"
                       className="mt-3"
                       onClick={() => setShowAddProduct(true)}
                     >
@@ -620,7 +645,7 @@ const SellerDashboard = () => {
           )}
 
           {/* Orders Tab */}
-          {activeTab === 'orders' && (
+          {activeTab === "orders" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-foreground">
@@ -635,9 +660,11 @@ const SellerDashboard = () => {
               ) : sellerOrders.length > 0 ? (
                 <div className="space-y-4">
                   {sellerOrders.map((order) => {
-                    const sellerItems = order.items?.filter(i => i.seller_id === user?.id) || [];
+                    const sellerItems =
+                      order.items?.filter((i) => i.seller_id === user?.id) ||
+                      [];
                     const nextStatusLabel = getNextStatusLabel(order.status);
-                    
+
                     return (
                       <motion.div
                         key={order.id}
@@ -649,15 +676,20 @@ const SellerDashboard = () => {
                         <div className="p-4 border-b border-border bg-muted/30">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
-                              <p className="font-semibold text-foreground">{order.order_number}</p>
+                              <p className="font-semibold text-foreground">
+                                {order.order_number}
+                              </p>
                               <p className="text-sm text-muted-foreground">
-                                {new Date(order.created_at).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                  hour: 'numeric',
-                                  minute: '2-digit'
-                                })}
+                                {new Date(order.created_at).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                  },
+                                )}
                               </p>
                             </div>
                             <div className="flex items-center gap-3">
@@ -668,7 +700,12 @@ const SellerDashboard = () => {
                                 <Button
                                   variant="doju-primary"
                                   size="sm"
-                                  onClick={() => handleUpdateOrderStatus(order.id, order.status)}
+                                  onClick={() =>
+                                    handleUpdateOrderStatus(
+                                      order.id,
+                                      order.status,
+                                    )
+                                  }
                                 >
                                   {nextStatusLabel}
                                 </Button>
@@ -681,7 +718,10 @@ const SellerDashboard = () => {
                         <div className="p-4">
                           <div className="space-y-3 mb-4">
                             {sellerItems.map((item) => (
-                              <div key={item.id} className="flex items-center gap-3">
+                              <div
+                                key={item.id}
+                                className="flex items-center gap-3"
+                              >
                                 {item.product_image && (
                                   <div className="h-12 w-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                                     <img
@@ -692,8 +732,12 @@ const SellerDashboard = () => {
                                   </div>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-foreground">{item.product_name}</p>
-                                  <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                                  <p className="font-medium text-foreground">
+                                    {item.product_name}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Qty: {item.quantity}
+                                  </p>
                                 </div>
                                 <p className="font-semibold text-foreground">
                                   {formatPrice(item.unit_price * item.quantity)}
@@ -704,15 +748,21 @@ const SellerDashboard = () => {
 
                           {/* Delivery Info */}
                           <div className="pt-4 border-t border-border">
-                            <p className="text-sm font-medium text-foreground mb-2">Delivery Information</p>
+                            <p className="text-sm font-medium text-foreground mb-2">
+                              Delivery Information
+                            </p>
                             <div className="grid sm:grid-cols-2 gap-3 text-sm">
                               <div className="flex items-start gap-2">
                                 <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                                <span className="text-muted-foreground">{order.delivery_address}</span>
+                                <span className="text-muted-foreground">
+                                  {order.delivery_address}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Phone className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-muted-foreground">{order.phone}</span>
+                                <span className="text-muted-foreground">
+                                  {order.phone}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -725,22 +775,24 @@ const SellerDashboard = () => {
                 <div className="text-center py-16 text-muted-foreground">
                   <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-50" />
                   <h3 className="text-lg font-medium mb-2">No orders yet</h3>
-                  <p className="text-sm">When customers order your products, they'll appear here.</p>
+                  <p className="text-sm">
+                    When customers order your products, they'll appear here.
+                  </p>
                 </div>
               )}
             </div>
           )}
 
           {/* Products Tab */}
-          {activeTab === 'products' && (
+          {activeTab === "products" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-foreground">
                   Your Products ({products.length})
                 </h2>
-                <Button 
-                  variant="doju-primary" 
-                  size="sm" 
+                <Button
+                  variant="doju-primary"
+                  size="sm"
                   className="gap-2"
                   onClick={() => setShowAddProduct(true)}
                 >
@@ -761,8 +813,8 @@ const SellerDashboard = () => {
                       <div className="flex gap-4">
                         <div className="h-20 w-20 rounded-xl bg-muted overflow-hidden flex-shrink-0">
                           {product.media && product.media.length > 0 ? (
-                            <img 
-                              src={product.media[0].url} 
+                            <img
+                              src={product.media[0].url}
                               alt={product.name}
                               className="h-full w-full object-cover"
                             />
@@ -775,10 +827,15 @@ const SellerDashboard = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-4">
                             <div>
-                              <h3 className="font-semibold text-foreground">{product.name}</h3>
-                              <p className="text-doju-lime font-medium">{formatPrice(product.price)}</p>
+                              <h3 className="font-semibold text-foreground">
+                                {product.name}
+                              </h3>
+                              <p className="text-doju-lime font-medium">
+                                {formatPrice(product.price)}
+                              </p>
                               <p className="text-sm text-muted-foreground mt-1">
-                                Stock: {product.stock} • {product.category || 'Uncategorized'}
+                                Stock: {product.stock} •{" "}
+                                {product.category || "Uncategorized"}
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -794,9 +851,11 @@ const SellerDashboard = () => {
                                     <Edit className="h-4 w-4 mr-2" />
                                     Edit
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem 
+                                  <DropdownMenuItem
                                     className="text-red-600"
-                                    onClick={() => handleDeleteProduct(product.id)}
+                                    onClick={() =>
+                                      handleDeleteProduct(product.id)
+                                    }
                                   >
                                     <Trash2 className="h-4 w-4 mr-2" />
                                     Delete
@@ -819,8 +878,10 @@ const SellerDashboard = () => {
                 <div className="text-center py-16 text-muted-foreground">
                   <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
                   <h3 className="text-lg font-medium mb-2">No products yet</h3>
-                  <p className="text-sm mb-4">Start selling by adding your first product.</p>
-                  <Button 
+                  <p className="text-sm mb-4">
+                    Start selling by adding your first product.
+                  </p>
+                  <Button
                     variant="doju-primary"
                     onClick={() => setShowAddProduct(true)}
                   >
@@ -832,17 +893,20 @@ const SellerDashboard = () => {
           )}
 
           {/* Messages Tab */}
-          {activeTab === 'messages' && (
+          {activeTab === "messages" && (
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-foreground">Messages & Notifications</h2>
-              <UserMessagesInbox />
+              <h2 className="text-lg font-semibold text-foreground">
+                Messages & Notifications
+              </h2>
             </div>
           )}
 
           {/* Settings Tab */}
-          {activeTab === 'settings' && (
+          {activeTab === "settings" && (
             <div className="max-w-2xl">
-              <h2 className="text-lg font-semibold text-foreground mb-6">Settings</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-6">
+                Settings
+              </h2>
               <div className="rounded-2xl border border-border bg-card p-6">
                 <p className="text-muted-foreground">Settings coming soon...</p>
               </div>
@@ -861,9 +925,11 @@ const SellerDashboard = () => {
           >
             <div className="p-6 border-b border-border">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-foreground">Add New Product</h2>
-                <Button 
-                  variant="ghost" 
+                <h2 className="text-xl font-bold text-foreground">
+                  Add New Product
+                </h2>
+                <Button
+                  variant="ghost"
                   size="icon"
                   onClick={() => setShowAddProduct(false)}
                 >
@@ -882,17 +948,28 @@ const SellerDashboard = () => {
                   Product Images
                 </label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {uploadedMedia.filter(m => m.type === 'image').map((media, index) => (
-                    <div key={index} className="relative h-20 w-20 rounded-lg overflow-hidden">
-                      <img src={media.preview} alt="Preview" className="h-full w-full object-cover" />
-                      <button
-                        onClick={() => removeMedia(uploadedMedia.indexOf(media))}
-                        className="absolute top-1 right-1 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  {uploadedMedia
+                    .filter((m) => m.type === "image")
+                    .map((media, index) => (
+                      <div
+                        key={index}
+                        className="relative h-20 w-20 rounded-lg overflow-hidden"
                       >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
+                        <img
+                          src={media.preview}
+                          alt="Preview"
+                          className="h-full w-full object-cover"
+                        />
+                        <button
+                          onClick={() =>
+                            removeMedia(uploadedMedia.indexOf(media))
+                          }
+                          className="absolute top-1 right-1 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
                   <button
                     onClick={() => imageInputRef.current?.click()}
                     className="h-20 w-20 rounded-lg border-2 border-dashed border-border hover:border-doju-lime flex flex-col items-center justify-center gap-1 transition-colors"
@@ -909,91 +986,135 @@ const SellerDashboard = () => {
                   Product Videos (optional)
                 </label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {uploadedMedia.filter(m => m.type === 'video').map((media, index) => (
-                    <div key={index} className="relative h-20 w-32 rounded-lg overflow-hidden bg-muted">
-                      <video src={media.preview} className="h-full w-full object-cover" />
-                      <button
-                        onClick={() => removeMedia(uploadedMedia.indexOf(media))}
-                        className="absolute top-1 right-1 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  {uploadedMedia
+                    .filter((m) => m.type === "video")
+                    .map((media, index) => (
+                      <div
+                        key={index}
+                        className="relative h-20 w-32 rounded-lg overflow-hidden bg-muted"
                       >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
+                        <video
+                          src={media.preview}
+                          className="h-full w-full object-cover"
+                        />
+                        <button
+                          onClick={() =>
+                            removeMedia(uploadedMedia.indexOf(media))
+                          }
+                          className="absolute top-1 right-1 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
                   <button
                     onClick={() => videoInputRef.current?.click()}
                     className="h-20 w-32 rounded-lg border-2 border-dashed border-border hover:border-doju-lime flex flex-col items-center justify-center gap-1 transition-colors"
                   >
                     <Video className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Add Video</span>
+                    <span className="text-xs text-muted-foreground">
+                      Add Video
+                    </span>
                   </button>
                 </div>
               </div>
 
               {/* Product Details */}
               <div>
-                <label className="text-sm font-medium text-foreground">Product Name</label>
+                <label className="text-sm font-medium text-foreground">
+                  Product Name
+                </label>
                 <Input
                   placeholder="e.g., Digital Blood Pressure Monitor"
                   value={newProduct.name}
-                  onChange={(e) => setNewProduct(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   className="mt-1"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground">Description</label>
+                <label className="text-sm font-medium text-foreground">
+                  Description
+                </label>
                 <Textarea
                   placeholder="Describe your product..."
                   value={newProduct.description}
-                  onChange={(e) => setNewProduct(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   className="mt-1 min-h-[100px]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground">Price (₦)</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Price (₦)
+                  </label>
                   <Input
                     type="number"
                     placeholder="50000"
                     value={newProduct.price}
-                    onChange={(e) => setNewProduct(prev => ({ ...prev, price: e.target.value }))}
+                    onChange={(e) =>
+                      setNewProduct((prev) => ({
+                        ...prev,
+                        price: e.target.value,
+                      }))
+                    }
                     className="mt-1"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground">Stock</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Stock
+                  </label>
                   <Input
                     type="number"
                     placeholder="100"
                     value={newProduct.stock}
-                    onChange={(e) => setNewProduct(prev => ({ ...prev, stock: e.target.value }))}
+                    onChange={(e) =>
+                      setNewProduct((prev) => ({
+                        ...prev,
+                        stock: e.target.value,
+                      }))
+                    }
                     className="mt-1"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground">Category</label>
+                <label className="text-sm font-medium text-foreground">
+                  Category
+                </label>
                 <Input
                   placeholder="e.g., Monitors, Diagnostics"
                   value={newProduct.category}
-                  onChange={(e) => setNewProduct(prev => ({ ...prev, category: e.target.value }))}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      category: e.target.value,
+                    }))
+                  }
                   className="mt-1"
                 />
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="flex-1"
                   onClick={() => setShowAddProduct(false)}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  variant="doju-primary" 
+                <Button
+                  variant="doju-primary"
                   className="flex-1"
                   onClick={handleAddProduct}
                   disabled={!newProduct.name || !newProduct.price || submitting}
@@ -1001,7 +1122,7 @@ const SellerDashboard = () => {
                   {submitting ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-doju-navy"></div>
                   ) : (
-                    'Submit for Approval'
+                    "Submit for Approval"
                   )}
                 </Button>
               </div>

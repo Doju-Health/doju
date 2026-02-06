@@ -1,10 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
-export type DocumentType = 'government_id' | 'proof_of_address' | 'vehicle_document' | 'business_document' | 'product_document' | 'other';
-export type DocumentStatus = 'pending' | 'approved' | 'rejected';
+export type DocumentType =
+  | "government_id"
+  | "proof_of_address"
+  | "vehicle_document"
+  | "business_document"
+  | "product_document"
+  | "other";
+export type DocumentStatus = "pending" | "approved" | "rejected";
 
 export interface UserDocument {
   id: string;
@@ -23,6 +28,9 @@ export interface UserDocument {
   user_email?: string;
 }
 
+// Mock documents storage
+const mockDocuments: Record<string, UserDocument[]> = {};
+
 export const useDocuments = () => {
   const { user, isAdmin } = useAuth();
   const [documents, setDocuments] = useState<UserDocument[]>([]);
@@ -32,46 +40,19 @@ export const useDocuments = () => {
     if (!user) return;
 
     try {
-      let query = supabase.from('user_documents').select('*');
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // If not admin, only fetch user's own documents
+      const allDocs = Object.values(mockDocuments).flat();
+
       if (!isAdmin) {
-        query = query.eq('user_id', user.id);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Enrich with user info for admin
-      if (isAdmin && data) {
-        const enrichedDocs = await Promise.all(
-          data.map(async (doc) => {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('full_name, email')
-              .eq('user_id', doc.user_id)
-              .single();
-
-            return {
-              ...doc,
-              document_type: doc.document_type as DocumentType,
-              status: doc.status as DocumentStatus,
-              user_name: profile?.full_name || 'Unknown',
-              user_email: profile?.email || ''
-            };
-          })
-        );
-        setDocuments(enrichedDocs);
+        // Show only user's own documents
+        setDocuments(allDocs.filter((d) => d.user_id === user.id));
       } else {
-        setDocuments((data || []).map(d => ({
-          ...d,
-          document_type: d.document_type as DocumentType,
-          status: d.status as DocumentStatus
-        })));
+        // Show all documents for admin
+        setDocuments(allDocs);
       }
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      console.error("Error fetching documents:", error);
     } finally {
       setLoading(false);
     }
@@ -84,41 +65,26 @@ export const useDocuments = () => {
   const updateDocumentStatus = async (
     documentId: string,
     status: DocumentStatus,
-    notes?: string
+    notes?: string,
   ) => {
     if (!user || !isAdmin) return;
 
     try {
-      const { error } = await supabase
-        .from('user_documents')
-        .update({
-          status,
-          admin_notes: notes || null,
-          reviewed_by: user.id,
-          reviewed_at: new Date().toISOString()
-        })
-        .eq('id', documentId);
+      const allDocs = Object.values(mockDocuments).flat();
+      const doc = allDocs.find((d) => d.id === documentId);
 
-      if (error) throw error;
-
-      // Get document owner for notification
-      const doc = documents.find(d => d.id === documentId);
       if (doc) {
-        await supabase.from('notifications').insert({
-          user_id: doc.user_id,
-          title: status === 'approved' ? 'Document Approved ✓' : 'Document Rejected',
-          message: status === 'approved'
-            ? `Your ${doc.document_name} has been approved.`
-            : `Your ${doc.document_name} was rejected. ${notes || ''}`,
-          type: status === 'approved' ? 'success' : 'error'
-        });
+        doc.status = status;
+        doc.admin_notes = notes || null;
+        doc.reviewed_by = user.id;
+        doc.reviewed_at = new Date().toISOString();
       }
 
       toast.success(`Document ${status}`);
       await fetchDocuments();
     } catch (error) {
-      console.error('Error updating document:', error);
-      toast.error('Failed to update document');
+      console.error("Error updating document:", error);
+      toast.error("Failed to update document");
     }
   };
 
@@ -126,28 +92,19 @@ export const useDocuments = () => {
     documents,
     loading,
     updateDocumentStatus,
-    refreshDocuments: fetchDocuments
+    refreshDocuments: fetchDocuments,
   };
 };
 
 // Fetch documents for a specific user (admin use)
-export const fetchUserDocuments = async (userId: string): Promise<UserDocument[]> => {
+export const fetchUserDocuments = async (
+  userId: string,
+): Promise<UserDocument[]> => {
   try {
-    const { data, error } = await supabase
-      .from('user_documents')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    return (data || []).map(d => ({
-      ...d,
-      document_type: d.document_type as DocumentType,
-      status: d.status as DocumentStatus
-    }));
+    const allDocs = Object.values(mockDocuments).flat();
+    return allDocs.filter((d) => d.user_id === userId);
   } catch (error) {
-    console.error('Error fetching user documents:', error);
+    console.error("Error fetching user documents:", error);
     return [];
   }
 };

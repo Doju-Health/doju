@@ -1,46 +1,25 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Minimize2, MessageCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAuth } from '@/contexts/AuthContext';
-import { useMessaging, useConversationMessages } from '@/hooks/useMessaging';
-import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Send, Minimize2, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMessaging, useConversationMessages } from "@/hooks/useMessaging";
+import { format } from "date-fns";
 
 const SupportChatWidget = () => {
   const { user, isAdmin } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
   const { createConversation } = useMessaging();
-  const { messages, sendMessage, loading } = useConversationMessages(conversationId);
+  const { messages, sendMessage, loading } =
+    useConversationMessages(conversationId);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Check for existing support conversation
-  useEffect(() => {
-    const checkExistingConversation = async () => {
-      if (!user || isAdmin) return;
-
-      const { data } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('type', 'support')
-        .contains('participant_ids', [user.id])
-        .eq('status', 'open')
-        .limit(1);
-
-      if (data && data.length > 0) {
-        setConversationId(data[0].id);
-      }
-    };
-
-    if (isOpen && user) {
-      checkExistingConversation();
-    }
-  }, [isOpen, user, isAdmin]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -58,28 +37,27 @@ const SupportChatWidget = () => {
     // Create conversation if doesn't exist
     if (!conversationId && user) {
       // For support, we use a placeholder admin ID that will be picked up by any admin
-      const conv = await createConversation(user.id, 'support', 'Customer Support');
+      const conv = await createConversation(
+        user.id,
+        "support",
+        "Customer Support",
+      );
       if (conv) {
         setConversationId(conv.id);
         // Send message after conversation is created
         setTimeout(async () => {
-          await supabase.from('messages').insert({
-            conversation_id: conv.id,
-            sender_id: user.id,
-            content: message.trim(),
-            status: 'sent'
-          });
-          setMessage('');
+          await sendMessage(message.trim());
+          setMessage("");
         }, 100);
       }
     } else {
       await sendMessage(message);
-      setMessage('');
+      setMessage("");
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -119,7 +97,9 @@ const SupportChatWidget = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-white">Customer Support</h3>
-                  <p className="text-xs text-white/70">We typically reply in minutes</p>
+                  <p className="text-xs text-white/70">
+                    We typically reply in minutes
+                  </p>
                 </div>
               </div>
               <Button
@@ -136,28 +116,36 @@ const SupportChatWidget = () => {
             <ScrollArea className="flex-1 p-4" ref={scrollRef}>
               {!user ? (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground mb-2">Please log in to chat with support</p>
-                  <Button variant="doju-primary" size="sm" onClick={() => window.location.href = '/auth'}>
+                  <p className="text-muted-foreground mb-2">
+                    Please log in to chat with support
+                  </p>
+                  <Button
+                    variant="doju-primary"
+                    size="sm"
+                    onClick={() => (window.location.href = "/auth")}
+                  >
                     Log In
                   </Button>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="text-center py-8">
                   <MessageCircle className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
-                  <p className="text-muted-foreground">Start a conversation with our support team</p>
+                  <p className="text-muted-foreground">
+                    Start a conversation with our support team
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {messages.map((msg) => (
                     <div
                       key={msg.id}
-                      className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}
                     >
                       <div
                         className={`max-w-[80%] rounded-2xl px-4 py-2 ${
                           msg.sender_id === user?.id
-                            ? 'bg-doju-lime text-doju-navy'
-                            : 'bg-muted text-foreground'
+                            ? "bg-doju-lime text-doju-navy"
+                            : "bg-muted text-foreground"
                         }`}
                       >
                         {msg.sender_id !== user?.id && (
@@ -166,10 +154,14 @@ const SupportChatWidget = () => {
                           </p>
                         )}
                         <p className="text-sm">{msg.content}</p>
-                        <p className={`text-xs mt-1 ${
-                          msg.sender_id === user?.id ? 'text-doju-navy/60' : 'text-muted-foreground'
-                        }`}>
-                          {format(new Date(msg.created_at), 'HH:mm')}
+                        <p
+                          className={`text-xs mt-1 ${
+                            msg.sender_id === user?.id
+                              ? "text-doju-navy/60"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {format(new Date(msg.created_at), "HH:mm")}
                         </p>
                       </div>
                     </div>

@@ -1,20 +1,29 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, LogOut, Shield, Store, Truck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useCart } from '@/contexts/CartContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Search,
+  ShoppingCart,
+  User,
+  Menu,
+  LogOut,
+  Shield,
+  Store,
+  Truck,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/redux/hooks";
+import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import SearchDialog from '@/components/search/SearchDialog';
-import NotificationBell from '@/components/notifications/NotificationBell';
-import dojuLogo from '@/assets/doju-logo.jpg';
+} from "@/components/ui/dropdown-menu";
+import SearchDialog from "@/components/search/SearchDialog";
+import NotificationBell from "@/components/notifications/NotificationBell";
+import dojuLogo from "@/assets/doju-logo.jpg";
 
 const Header = () => {
   const { totalItems } = useCart();
@@ -23,15 +32,15 @@ const Header = () => {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'Categories', href: '/categories' },
-    { label: 'Products', href: '/marketplace' },
-    { label: 'Track Order', href: '/track-order' },
+    { label: "Home", href: "/" },
+    { label: "Categories", href: "/categories" },
+    { label: "Products", href: "/marketplace" },
+    { label: "Track Order", href: "/track-order" },
   ];
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -40,7 +49,11 @@ const Header = () => {
         <div className="container flex h-16 items-center justify-between gap-4">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src={dojuLogo} alt="Doju" className="h-10 w-10 rounded-full object-cover shadow-md" />
+            <img
+              src={dojuLogo}
+              alt="Doju"
+              className="h-10 w-10 rounded-full object-cover shadow-md"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -89,7 +102,11 @@ const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="hidden sm:flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="hidden sm:flex gap-2"
+                  >
                     <User className="h-4 w-4" />
                     Account
                   </Button>
@@ -100,19 +117,25 @@ const Header = () => {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate('/admin/dashboard')}>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/admin/dashboard")}
+                    >
                       <Shield className="h-4 w-4 mr-2" />
                       Admin Dashboard
                     </DropdownMenuItem>
                   )}
                   {isSeller && (
-                    <DropdownMenuItem onClick={() => navigate('/seller/dashboard')}>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/seller/dashboard")}
+                    >
                       <Store className="h-4 w-4 mr-2" />
                       Seller Dashboard
                     </DropdownMenuItem>
                   )}
                   {isDispatch && (
-                    <DropdownMenuItem onClick={() => navigate('/dispatch/dashboard')}>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/dispatch/dashboard")}
+                    >
                       <Truck className="h-4 w-4 mr-2" />
                       Dispatch Dashboard
                     </DropdownMenuItem>
@@ -126,13 +149,17 @@ const Header = () => {
               </DropdownMenu>
             ) : (
               <Link to="/auth">
-                <Button variant="ghost" size="sm" className="hidden sm:flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="hidden sm:flex gap-2"
+                >
                   <User className="h-4 w-4" />
                   Sign in
                 </Button>
               </Link>
             )}
-            
+
             <Link to="/cart">
               <Button variant="ghost" size="sm" className="relative">
                 <ShoppingCart className="h-4 w-4" />
@@ -178,7 +205,10 @@ const Header = () => {
                       <>
                         {isAdmin && (
                           <Link to="/admin/dashboard">
-                            <Button variant="doju-outline" className="w-full gap-2">
+                            <Button
+                              variant="doju-outline"
+                              className="w-full gap-2"
+                            >
                               <Shield className="h-4 w-4" />
                               Admin Dashboard
                             </Button>
@@ -186,7 +216,10 @@ const Header = () => {
                         )}
                         {isSeller && (
                           <Link to="/seller/dashboard">
-                            <Button variant="doju-outline" className="w-full gap-2">
+                            <Button
+                              variant="doju-outline"
+                              className="w-full gap-2"
+                            >
                               <Store className="h-4 w-4" />
                               Seller Dashboard
                             </Button>
@@ -194,13 +227,20 @@ const Header = () => {
                         )}
                         {isDispatch && (
                           <Link to="/dispatch/dashboard">
-                            <Button variant="doju-outline" className="w-full gap-2">
+                            <Button
+                              variant="doju-outline"
+                              className="w-full gap-2"
+                            >
                               <Truck className="h-4 w-4" />
                               Dispatch Dashboard
                             </Button>
                           </Link>
                         )}
-                        <Button variant="ghost" className="w-full" onClick={handleSignOut}>
+                        <Button
+                          variant="ghost"
+                          className="w-full"
+                          onClick={handleSignOut}
+                        >
                           <LogOut className="h-4 w-4 mr-2" />
                           Sign out
                         </Button>

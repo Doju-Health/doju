@@ -11,7 +11,6 @@ import {
   Truck, Clock, CheckCircle, XCircle,
   MapPin, Phone, Mail, Car, CreditCard, AlertCircle, MessageCircle, BarChart3
 } from 'lucide-react';
-import UserMessagesInbox from '@/components/chat/UserMessagesInbox';
 
 const DispatchDashboard = () => {
   const navigate = useNavigate();
@@ -272,7 +271,6 @@ const DispatchDashboard = () => {
 
             <TabsContent value="messages" className="space-y-6">
               <h2 className="text-lg font-semibold text-foreground">Messages & Notifications</h2>
-              <UserMessagesInbox />
             </TabsContent>
           </Tabs>
         </div>
