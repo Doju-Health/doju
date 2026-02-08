@@ -88,3 +88,11 @@ export interface Category {
   icon: string;
   productCount: number;
 }
+
+export type SignupData = {
+  fullName: string;
+  email: string;
+  password: string;
+  role: "buyer" | "seller";
+  phoneNumber: string;
+};

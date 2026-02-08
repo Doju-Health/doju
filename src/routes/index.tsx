@@ -39,14 +39,7 @@ export const allRoutes = [
     path: "/track-order",
     element: <OrderTracking />,
   },
-  {
-    path: "/onboarding/buyer",
-    element: <BuyerOnboarding />,
-  },
-  {
-    path: "/onboarding/seller",
-    element: <SellerOnboarding />,
-  },
+
   {
     path: "/dispatch/register",
     element: <DispatchRegistration />,
@@ -93,9 +86,9 @@ export const allRoutes = [
     element: <NotFound />,
   },
   {
-    path:'/',
-    children: authRoutes
-  }
+    path: "/",
+    children: authRoutes,
+  },
 ];
 
 export const router = createBrowserRouter(allRoutes);
