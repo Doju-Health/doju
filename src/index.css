@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* DOJU Brand Colors - Medical Marketplace */
+    --background: 210 20% 98%;
+    --foreground: 215 45% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 45% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 45% 15%;
+
+    /* Deep Navy - Trust & Professionalism */
+    --primary: 215 55% 18%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Soft Gray Surfaces */
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 215 45% 15%;
+
+    --muted: 210 15% 94%;
+    --muted-foreground: 215 20% 45%;
+
+    /* Vibrant Lime Green - Action & Energy */
+    --accent: 95 70% 45%;
+    --accent-foreground: 215 55% 15%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 95 70% 45%;
+
+    --radius: 0.75rem;
+
+    /* Custom DOJU Colors */
+    --doju-navy: 215 55% 18%;
+    --doju-navy-light: 215 45% 25%;
+    --doju-lime: 95 70% 45%;
+    --doju-lime-light: 95 65% 55%;
+    --doju-lime-pale: 95 50% 95%;
+    --doju-teal: 175 60% 40%;
+    --doju-success: 145 65% 42%;
+    --doju-warning: 38 92% 50%;
+    --doju-info: 200 80% 50%;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 45% 15%;
+    --sidebar-primary: 215 55% 18%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 95 50% 95%;
+    --sidebar-accent-foreground: 215 55% 18%;
+    --sidebar-border: 210 20% 92%;
+    --sidebar-ring: 95 70% 45%;
+  }
+
+  .dark {
+    --background: 215 50% 8%;
+    --foreground: 210 20% 95%;
+
+    --card: 215 45% 12%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 215 45% 12%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 95 70% 50%;
+    --primary-foreground: 215 55% 10%;
+
+    --secondary: 215 40% 18%;
+    --secondary-foreground: 210 20% 95%;
+
+    --muted: 215 35% 20%;
+    --muted-foreground: 210 15% 60%;
+
+    --accent: 95 70% 50%;
+    --accent-foreground: 215 55% 10%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 35% 22%;
+    --input: 215 35% 22%;
+    --ring: 95 70% 50%;
+
+    --sidebar-background: 215 45% 10%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 95 70% 50%;
+    --sidebar-primary-foreground: 215 55% 10%;
+    --sidebar-accent: 215 35% 18%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 215 35% 20%;
+    --sidebar-ring: 95 70% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  /* DOJU Custom Component Styles */
+  .doju-gradient-hero {
+    background: linear-gradient(135deg, hsl(var(--doju-navy)) 0%, hsl(var(--doju-navy-light)) 100%);
+  }
+
+  .doju-gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--doju-lime)) 0%, hsl(var(--doju-lime-light)) 100%);
+  }
+
+  .doju-card-shadow {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+  }
+
+  .doju-card-shadow-hover {
+    box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+  }
+
+  .doju-text-gradient {
+    background: linear-gradient(135deg, hsl(var(--doju-navy)) 0%, hsl(var(--doju-teal)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Onboarding animations */
+  .onboarding-fade-in {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .onboarding-slide-in {
+    animation: slideIn 0.4s ease-out forwards;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

@@ -1,0 +1,143 @@
+// import { Toaster } from "@/components/ui/toaster";
+// import { Toaster as Sonner } from "@/components/ui/sonner";
+// import { TooltipProvider } from "@/components/ui/tooltip";
+// import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// import { BrowserRouter, Routes, Route } from "react-router-dom";
+// import ScrollToTop from "@/components/ScrollToTop";
+// import { AuthProvider } from "@/contexts/AuthContext";
+// import ProtectedRoute from "@/components/auth/ProtectedRoute";
+// import SellerProtectedRoute from "@/components/auth/SellerProtectedRoute";
+// import DispatchProtectedRoute from "@/components/auth/DispatchProtectedRoute";
+// // import SupportChatWidget from "@/components/chat/SupportChatWidget";
+// import Index from "./pages/Index";
+// import Login from "./pages/Login";
+// import Auth from "./pages/Auth";
+// import Marketplace from "./pages/Marketplace";
+// import ProductDetail from "./pages/ProductDetail";
+// import Cart from "./pages/Cart";
+// import Checkout from "./pages/Checkout";
+// import OrderTracking from "./pages/OrderTracking";
+// import SellerDashboard from "./pages/seller/SellerDashboard";
+// import BuyerOnboarding from "./pages/onboarding/BuyerOnboarding";
+// import SellerOnboarding from "./pages/onboarding/SellerOnboarding";
+// import DispatchRegistration from "./pages/dispatch/DispatchRegistration";
+// import DispatchDashboard from "./pages/dispatch/DispatchDashboard";
+// import About from "./pages/About";
+// import Careers from "./pages/Careers";
+// import Press from "./pages/Press";
+// import Terms from "./pages/Terms";
+// import Privacy from "./pages/Privacy";
+// import ReturnPolicy from "./pages/ReturnPolicy";
+// import ForgotPassword from "./pages/ForgotPassword";
+// import NotFound from "./pages/NotFound";
+// import { Providers } from "./redux/provider";
+
+// const queryClient = new QueryClient();
+
+// const App = () => (
+//   <Providers>
+//     <QueryClientProvider client={queryClient}>
+//       <AuthProvider>
+//         <TooltipProvider>
+//           <Toaster />
+//           <Sonner />
+//           <BrowserRouter>
+//             <ScrollToTop />
+//             <Routes>
+//               <Route path="/" element={<Index />} />
+//               <Route path="/login" element={<Login />} />
+//               <Route path="/auth" element={<Auth />} />
+//               <Route path="/marketplace" element={<Marketplace />} />
+//               <Route path="/categories" element={<Marketplace />} />
+//               <Route path="/product/:id" element={<ProductDetail />} />
+//               <Route
+//                 path="/cart"
+//                 element={
+//                   <ProtectedRoute>
+//                     <Cart />
+//                   </ProtectedRoute>
+//                 }
+//               />
+//               <Route
+//                 path="/checkout"
+//                 element={
+//                   <ProtectedRoute>
+//                     <Checkout />
+//                   </ProtectedRoute>
+//                 }
+//               />
+//               <Route path="/track-order" element={<OrderTracking />} />
+//               <Route
+//                 path="/seller/dashboard"
+//                 element={
+//                   <SellerProtectedRoute>
+//                     <SellerDashboard />
+//                   </SellerProtectedRoute>
+//                 }
+//               />
+
+//               <Route path="/onboarding/buyer" element={<BuyerOnboarding />} />
+//               <Route path="/onboarding/seller" element={<SellerOnboarding />} />
+//               <Route path="/seller-onboarding" element={<SellerOnboarding />} />
+//               <Route
+//                 path="/dispatch/register"
+//                 element={<DispatchRegistration />}
+//               />
+//               <Route
+//                 path="/dispatch/dashboard"
+//                 element={
+//                   <DispatchProtectedRoute>
+//                     <DispatchDashboard />
+//                   </DispatchProtectedRoute>
+//                 }
+//               />
+//               <Route path="/about" element={<About />} />
+//               <Route path="/careers" element={<Careers />} />
+//               <Route path="/press" element={<Press />} />
+//               <Route path="/terms" element={<Terms />} />
+//               <Route path="/privacy" element={<Privacy />} />
+//               <Route path="/return-policy" element={<ReturnPolicy />} />
+//               <Route path="/forgot-password" element={<ForgotPassword />} />
+//               <Route path="*" element={<NotFound />} />
+//             </Routes>
+//             {/* <SupportChatWidget /> */}
+//           </BrowserRouter>
+//         </TooltipProvider>
+//       </AuthProvider>
+//     </QueryClientProvider>
+//   </Providers>
+// );
+
+// export default App;
+
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { RouterProvider } from "react-router-dom";
+// import ScrollToTop from "@/components/ScrollToTop";
+import { AuthProvider } from "@/contexts/AuthContext";
+
+// import SupportChatWidget from "@/components/chat/SupportChatWidget";
+
+import { Providers } from "./redux/provider";
+import { router } from "./routes";
+const queryClient = new QueryClient();
+
+const App = () => (
+  <Providers>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          {/* <ScrollToTop /> */}
+          <RouterProvider router={router} />
+          {/* <SupportChatWidget /> */}
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </Providers>
+);
+
+export default App;
