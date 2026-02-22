@@ -1,5 +1,7 @@
 // Core Data Types for DOJU
 
+import { LucideIcon } from "lucide-react";
+
 export type UserRole = "buyer" | "seller" | "admin";
 
 export interface Category {
@@ -95,4 +97,43 @@ export type SignupData = {
   password: string;
   role: "buyer" | "seller";
   phoneNumber: string;
+};
+
+export interface NavItem {
+  title: string;
+  icon: LucideIcon;
+  href?: string;
+  isActive?: boolean;
+}
+
+export interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+export type IProductData = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  status: string;
+  category: {
+    id: string;
+    name: string;
+    description: string;
+    imageUrl: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  imageUrl: string;
+  seller: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 };

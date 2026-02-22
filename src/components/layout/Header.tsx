@@ -119,7 +119,7 @@ const Header = () => {
 
                   {userProfile.user.role === "seller" && (
                     <DropdownMenuItem
-                      onClick={() => navigate("/seller-dashboard")}
+                      onClick={() => navigate("/seller/overview")}
                     >
                       <Store className="h-4 w-4 mr-2" />
                       Seller Dashboard

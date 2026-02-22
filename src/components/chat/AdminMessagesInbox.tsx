@@ -1,47 +1,57 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { MessageCircle, Search, Check, Clock, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useMessaging, Conversation } from '@/hooks/useMessaging';
-import { useAuth } from '@/contexts/AuthContext';
-import { format } from 'date-fns';
-import ChatWindow from './ChatWindow';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { MessageCircle, Search, Check, Clock, X } from "lucide-react";
+import { Input } from "@/components/ui/input/input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMessaging, Conversation } from "@/hooks/useMessaging";
+import { useAuth } from "@/contexts/AuthContext";
+import { format } from "date-fns";
+import ChatWindow from "./ChatWindow";
 
 const AdminMessagesInbox = () => {
   const { user } = useAuth();
   const { conversations, loading, closeConversation } = useMessaging();
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'support' | 'direct'>('all');
+  const [selectedConversation, setSelectedConversation] =
+    useState<Conversation | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"all" | "support" | "direct">(
+    "all",
+  );
 
-  const filteredConversations = conversations.filter(conv => {
+  const filteredConversations = conversations.filter((conv) => {
     // Filter by tab
-    if (activeTab === 'support' && conv.type !== 'support') return false;
-    if (activeTab === 'direct' && conv.type !== 'admin_direct') return false;
+    if (activeTab === "support" && conv.type !== "support") return false;
+    if (activeTab === "direct" && conv.type !== "admin_direct") return false;
 
     // Filter by search
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase();
-      const matchesParticipant = conv.participant_info?.some(p => 
-        p.name.toLowerCase().includes(searchLower) ||
-        p.email.toLowerCase().includes(searchLower)
+      const matchesParticipant = conv.participant_info?.some(
+        (p) =>
+          p.name.toLowerCase().includes(searchLower) ||
+          p.email.toLowerCase().includes(searchLower),
       );
-      const matchesLastMessage = conv.last_message?.content.toLowerCase().includes(searchLower);
+      const matchesLastMessage = conv.last_message?.content
+        .toLowerCase()
+        .includes(searchLower);
       return matchesParticipant || matchesLastMessage;
     }
     return true;
   });
 
-  const openConversations = filteredConversations.filter(c => c.status === 'open');
-  const closedConversations = filteredConversations.filter(c => c.status === 'closed');
+  const openConversations = filteredConversations.filter(
+    (c) => c.status === "open",
+  );
+  const closedConversations = filteredConversations.filter(
+    (c) => c.status === "closed",
+  );
 
   const getOtherParticipant = (conv: Conversation) => {
-    return conv.participant_info?.find(p => p.id !== user?.id);
+    return conv.participant_info?.find((p) => p.id !== user?.id);
   };
 
   const handleClose = () => {
@@ -51,8 +61,8 @@ const AdminMessagesInbox = () => {
   if (selectedConversation) {
     return (
       <div className="h-[600px] bg-card rounded-2xl border border-border overflow-hidden">
-        <ChatWindow 
-          conversation={selectedConversation} 
+        <ChatWindow
+          conversation={selectedConversation}
           onClose={handleClose}
           onBack={handleClose}
         />
@@ -69,9 +79,7 @@ const AdminMessagesInbox = () => {
             <MessageCircle className="h-5 w-5 text-doju-lime" />
             Messages Inbox
           </h3>
-          <Badge variant="outline">
-            {openConversations.length} open
-          </Badge>
+          <Badge variant="outline">{openConversations.length} open</Badge>
         </div>
 
         <div className="relative mb-4">
@@ -86,9 +94,15 @@ const AdminMessagesInbox = () => {
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
           <TabsList className="w-full">
-            <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
-            <TabsTrigger value="support" className="flex-1">Support</TabsTrigger>
-            <TabsTrigger value="direct" className="flex-1">Direct</TabsTrigger>
+            <TabsTrigger value="all" className="flex-1">
+              All
+            </TabsTrigger>
+            <TabsTrigger value="support" className="flex-1">
+              Support
+            </TabsTrigger>
+            <TabsTrigger value="direct" className="flex-1">
+              Direct
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -119,24 +133,31 @@ const AdminMessagesInbox = () => {
                   <div className="flex items-start gap-3">
                     <Avatar className="h-10 w-10">
                       <AvatarFallback className="bg-doju-lime/20 text-doju-lime">
-                        {other?.name?.charAt(0) || 'U'}
+                        {other?.name?.charAt(0) || "U"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-medium text-foreground truncate">
-                          {conv.type === 'support' ? 'Support Chat' : other?.name || 'Unknown'}
+                          {conv.type === "support"
+                            ? "Support Chat"
+                            : other?.name || "Unknown"}
                         </span>
                         <span className="text-xs text-muted-foreground flex-shrink-0">
-                          {format(new Date(conv.updated_at), 'MMM d, HH:mm')}
+                          {format(new Date(conv.updated_at), "MMM d, HH:mm")}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className="text-xs capitalize">
-                          {other?.role || 'user'}
+                          {other?.role || "user"}
                         </Badge>
-                        <Badge variant={conv.type === 'support' ? 'default' : 'secondary'} className="text-xs">
-                          {conv.type === 'support' ? 'Support' : 'Direct'}
+                        <Badge
+                          variant={
+                            conv.type === "support" ? "default" : "secondary"
+                          }
+                          className="text-xs"
+                        >
+                          {conv.type === "support" ? "Support" : "Direct"}
                         </Badge>
                       </div>
                       {conv.last_message && (
@@ -158,7 +179,8 @@ const AdminMessagesInbox = () => {
         <div className="border-t border-border">
           <details className="group">
             <summary className="p-4 cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-              {closedConversations.length} closed conversation{closedConversations.length > 1 ? 's' : ''}
+              {closedConversations.length} closed conversation
+              {closedConversations.length > 1 ? "s" : ""}
             </summary>
             <div className="divide-y divide-border">
               {closedConversations.slice(0, 5).map((conv) => {
@@ -172,14 +194,16 @@ const AdminMessagesInbox = () => {
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className="bg-muted text-muted-foreground text-sm">
-                          {other?.name?.charAt(0) || 'U'}
+                          {other?.name?.charAt(0) || "U"}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <span className="text-sm text-foreground truncate block">
-                          {other?.name || 'Unknown'}
+                          {other?.name || "Unknown"}
                         </span>
-                        <span className="text-xs text-muted-foreground">Closed</span>
+                        <span className="text-xs text-muted-foreground">
+                          Closed
+                        </span>
                       </div>
                     </div>
                   </button>

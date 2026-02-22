@@ -6,7 +6,7 @@ import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/products/ProductCard";
 import CartCheckoutBar from "@/components/cart/CartCheckoutBar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input/input";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { allProducts as mockProducts, categories } from "@/data/mockData";

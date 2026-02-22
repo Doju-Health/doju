@@ -122,20 +122,23 @@ import { AuthProvider } from "@/contexts/AuthContext";
 
 import { Providers } from "./redux/provider";
 import { router } from "./routes";
+import { SidebarProvider } from "./components/ui/sidebar";
 const queryClient = new QueryClient();
 
 const App = () => (
   <Providers>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          {/* <ScrollToTop /> */}
-          <RouterProvider router={router} />
-          {/* <SupportChatWidget /> */}
-        </TooltipProvider>
-      </AuthProvider>
+      <SidebarProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            {/* <ScrollToTop /> */}
+            <RouterProvider router={router} />
+            {/* <SupportChatWidget /> */}
+          </TooltipProvider>
+        </AuthProvider>
+      </SidebarProvider>
     </QueryClientProvider>
   </Providers>
 );

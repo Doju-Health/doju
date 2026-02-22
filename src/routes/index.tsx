@@ -7,18 +7,17 @@ import DispatchRegistration from "@/pages/dispatch/DispatchRegistration";
 import Index from "@/pages/Index";
 import Marketplace from "@/pages/Marketplace";
 import NotFound from "@/pages/NotFound";
-import BuyerOnboarding from "@/pages/onboarding/BuyerOnboarding";
-import SellerOnboarding from "@/pages/onboarding/SellerOnboarding";
+
 import OrderTracking from "@/pages/OrderTracking";
 import Press from "@/pages/Press";
 import Privacy from "@/pages/Privacy";
 import ReturnPolicy from "@/pages/ReturnPolicy";
-import SellerDashboard from "@/pages/seller/SellerDashboard";
 import Terms from "@/pages/Terms";
-import { Navigate, createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { authRoutes } from "./auth";
 import ProductDetail from "@/pages/ProductDetail";
-import { appRoutes } from "./app";
+import { sellerAppRoutes } from "./app";
+import { SellerAppLayout } from "@/pages/seller/layout/app-layout";
 export const allRoutes = [
   {
     path: "/",
@@ -73,10 +72,7 @@ export const allRoutes = [
   { path: "checkout", element: <Checkout /> },
 
   { path: "carts", element: <Cart /> },
-  {
-    path: "seller/dashboard",
-    element: <SellerDashboard />,
-  },
+
   {
     path: "dispatch/dashboard",
     element: <DispatchDashboard />,
@@ -91,8 +87,9 @@ export const allRoutes = [
     children: authRoutes,
   },
   {
-    path: "/",
-    children: appRoutes,
+    path: "/seller",
+    element: <SellerAppLayout />,
+    children: sellerAppRoutes,
   },
 ];
 

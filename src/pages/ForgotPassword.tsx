@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ArrowLeft, ArrowRight, Mail, CheckCircle } from 'lucide-react';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input/input";
+import { ArrowLeft, ArrowRight, Mail, CheckCircle } from "lucide-react";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -20,8 +20,8 @@ const ForgotPassword = () => {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container flex h-16 items-center">
-          <button 
-            onClick={() => navigate('/login')} 
+          <button
+            onClick={() => navigate("/login")}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -42,11 +42,11 @@ const ForgotPassword = () => {
               className="w-full max-w-md"
             >
               <div className="flex justify-center mb-6">
-                <motion.div 
+                <motion.div
                   className="h-16 w-16 rounded-full bg-doju-lime-pale flex items-center justify-center"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                 >
                   <Mail className="h-8 w-8 text-doju-lime" />
                 </motion.div>
@@ -68,10 +68,10 @@ const ForgotPassword = () => {
                   className="text-lg h-14 mb-6"
                   autoFocus
                 />
-                <Button 
-                  type="submit" 
-                  variant="doju-primary" 
-                  size="lg" 
+                <Button
+                  type="submit"
+                  variant="doju-primary"
+                  size="lg"
                   className="w-full"
                   disabled={!email}
                 >
@@ -81,7 +81,7 @@ const ForgotPassword = () => {
               </form>
 
               <p className="text-center text-sm text-muted-foreground mt-6">
-                Remember your password?{' '}
+                Remember your password?{" "}
                 <Link to="/login" className="text-doju-lime hover:underline">
                   Sign in
                 </Link>
@@ -95,11 +95,11 @@ const ForgotPassword = () => {
               transition={{ duration: 0.4 }}
               className="w-full max-w-md text-center"
             >
-              <motion.div 
+              <motion.div
                 className="flex justify-center mb-6"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
               >
                 <div className="h-20 w-20 rounded-full bg-doju-lime-pale flex items-center justify-center">
                   <CheckCircle className="h-10 w-10 text-doju-lime" />
@@ -110,22 +110,22 @@ const ForgotPassword = () => {
                 Check your email
               </h1>
               <p className="text-muted-foreground mb-8">
-                We've sent a password reset link to <strong>{email}</strong>. 
+                We've sent a password reset link to <strong>{email}</strong>.
                 Click the link to create a new password.
               </p>
 
-              <Button 
-                variant="doju-primary" 
-                size="lg" 
+              <Button
+                variant="doju-primary"
+                size="lg"
                 className="w-full"
-                onClick={() => navigate('/login')}
+                onClick={() => navigate("/login")}
               >
                 Back to login
               </Button>
 
               <p className="text-sm text-muted-foreground mt-6">
-                Didn't receive the email?{' '}
-                <button 
+                Didn't receive the email?{" "}
+                <button
                   className="text-doju-lime hover:underline"
                   onClick={() => setSubmitted(false)}
                 >
