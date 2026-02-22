@@ -1,90 +1,117 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { useAuth } from '@/contexts/AuthContext';
-import { useDispatchAgent, VehicleType, DispatchAgentFormData } from '@/hooks/useDispatchAgent';
-import { 
-  Truck, ArrowRight, ArrowLeft, CheckCircle, 
-  User, Phone, Mail, MapPin, Car, CreditCard,
-  Upload, Camera, Bike, Building, Clock
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  useDispatchAgent,
+  VehicleType,
+  DispatchAgentFormData,
+} from "@/hooks/useDispatchAgent";
+import {
+  Truck,
+  ArrowRight,
+  ArrowLeft,
+  CheckCircle,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Car,
+  CreditCard,
+  Upload,
+  Camera,
+  Bike,
+  Building,
+  Clock,
+} from "lucide-react";
 
-type Step = 'personal' | 'delivery' | 'bank' | 'review';
+type Step = "personal" | "delivery" | "bank" | "review";
 
 const DispatchRegistration = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { agent, loading: agentLoading, registerAsAgent } = useDispatchAgent();
-  const [currentStep, setCurrentStep] = useState<Step>('personal');
+  const [currentStep, setCurrentStep] = useState<Step>("personal");
   const [submitting, setSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState<DispatchAgentFormData>({
-    full_name: '',
-    email: '',
-    phone: '',
-    home_address: '',
-    area_of_operation: '',
-    vehicle_type: 'bike',
-    plate_number: '',
+    full_name: "",
+    email: "",
+    phone: "",
+    home_address: "",
+    area_of_operation: "",
+    vehicle_type: "bike",
+    plate_number: "",
     government_id: null,
     selfie: null,
-    account_name: '',
-    account_number: '',
-    bank_name: '',
+    account_name: "",
+    account_number: "",
+    bank_name: "",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof DispatchAgentFormData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof DispatchAgentFormData, string>>
+  >({});
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth?redirect=/dispatch/register');
+      navigate("/auth?redirect=/dispatch/register");
     }
   }, [user, authLoading, navigate]);
 
   // Redirect if already registered
   useEffect(() => {
     if (agent) {
-      navigate('/dispatch/dashboard');
+      navigate("/dispatch/dashboard");
     }
   }, [agent, navigate]);
 
   const steps: { id: Step; title: string; icon: React.ElementType }[] = [
-    { id: 'personal', title: 'Personal Info', icon: User },
-    { id: 'delivery', title: 'Delivery Details', icon: Truck },
-    { id: 'bank', title: 'Bank Details', icon: CreditCard },
-    { id: 'review', title: 'Review', icon: CheckCircle },
+    { id: "personal", title: "Personal Info", icon: User },
+    { id: "delivery", title: "Delivery Details", icon: Truck },
+    { id: "bank", title: "Bank Details", icon: CreditCard },
+    { id: "review", title: "Review", icon: CheckCircle },
   ];
 
-  const currentStepIndex = steps.findIndex(s => s.id === currentStep);
+  const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
   const validateStep = (): boolean => {
     const newErrors: Partial<Record<keyof DispatchAgentFormData, string>> = {};
 
     switch (currentStep) {
-      case 'personal':
-        if (!formData.full_name.trim()) newErrors.full_name = 'Full name is required';
-        if (!formData.email.trim()) newErrors.email = 'Email is required';
-        if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
-        if (!formData.home_address.trim()) newErrors.home_address = 'Home address is required';
+      case "personal":
+        if (!formData.full_name.trim())
+          newErrors.full_name = "Full name is required";
+        if (!formData.email.trim()) newErrors.email = "Email is required";
+        if (!formData.phone.trim())
+          newErrors.phone = "Phone number is required";
+        if (!formData.home_address.trim())
+          newErrors.home_address = "Home address is required";
         break;
-      case 'delivery':
-        if (!formData.area_of_operation.trim()) newErrors.area_of_operation = 'Area of operation is required';
-        if (!formData.plate_number.trim()) newErrors.plate_number = 'Plate number is required';
-        if (!formData.government_id) newErrors.government_id = 'Government ID is required';
-        if (!formData.selfie) newErrors.selfie = 'Selfie is required';
+      case "delivery":
+        if (!formData.area_of_operation.trim())
+          newErrors.area_of_operation = "Area of operation is required";
+        if (!formData.plate_number.trim())
+          newErrors.plate_number = "Plate number is required";
+        if (!formData.government_id)
+          newErrors.government_id = "Government ID is required";
+        if (!formData.selfie) newErrors.selfie = "Selfie is required";
         break;
-      case 'bank':
-        if (!formData.account_name.trim()) newErrors.account_name = 'Account name is required';
-        if (!formData.account_number.trim()) newErrors.account_number = 'Account number is required';
-        if (!formData.bank_name.trim()) newErrors.bank_name = 'Bank name is required';
+      case "bank":
+        if (!formData.account_name.trim())
+          newErrors.account_name = "Account name is required";
+        if (!formData.account_number.trim())
+          newErrors.account_number = "Account number is required";
+        if (!formData.bank_name.trim())
+          newErrors.bank_name = "Bank name is required";
         break;
     }
 
@@ -94,8 +121,8 @@ const DispatchRegistration = () => {
 
   const handleNext = () => {
     if (!validateStep()) return;
-    
-    const stepOrder: Step[] = ['personal', 'delivery', 'bank', 'review'];
+
+    const stepOrder: Step[] = ["personal", "delivery", "bank", "review"];
     const currentIndex = stepOrder.indexOf(currentStep);
     if (currentIndex < stepOrder.length - 1) {
       setCurrentStep(stepOrder[currentIndex + 1]);
@@ -103,7 +130,7 @@ const DispatchRegistration = () => {
   };
 
   const handleBack = () => {
-    const stepOrder: Step[] = ['personal', 'delivery', 'bank', 'review'];
+    const stepOrder: Step[] = ["personal", "delivery", "bank", "review"];
     const currentIndex = stepOrder.indexOf(currentStep);
     if (currentIndex > 0) {
       setCurrentStep(stepOrder[currentIndex - 1]);
@@ -114,23 +141,30 @@ const DispatchRegistration = () => {
     setSubmitting(true);
     const success = await registerAsAgent(formData);
     setSubmitting(false);
-    
+
     if (success) {
-      navigate('/dispatch/dashboard');
+      navigate("/dispatch/dashboard");
     }
   };
 
-  const handleFileChange = (field: 'government_id' | 'selfie', file: File | null) => {
-    setFormData(prev => ({ ...prev, [field]: file }));
+  const handleFileChange = (
+    field: "government_id" | "selfie",
+    file: File | null,
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: file }));
     if (file) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
-  const vehicleOptions: { type: VehicleType; label: string; icon: React.ElementType }[] = [
-    { type: 'bike', label: 'Bike', icon: Bike },
-    { type: 'car', label: 'Car', icon: Car },
-    { type: 'van', label: 'Van', icon: Truck },
+  const vehicleOptions: {
+    type: VehicleType;
+    label: string;
+    icon: React.ElementType;
+  }[] = [
+    { type: "bike", label: "Bike", icon: Bike },
+    { type: "car", label: "Car", icon: Car },
+    { type: "van", label: "Van", icon: Truck },
   ];
 
   if (authLoading || agentLoading) {
@@ -144,10 +178,10 @@ const DispatchRegistration = () => {
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
       <Header />
-      
+
       <main className="flex-1">
         {/* Page Header */}
-        <motion.div 
+        <motion.div
           className="bg-gradient-to-r from-doju-navy to-doju-navy-light border-b border-border"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -176,12 +210,16 @@ const DispatchRegistration = () => {
             <div className="flex items-center justify-between mb-4">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
-                  <div className={`
+                  <div
+                    className={`
                     h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors
-                    ${index <= currentStepIndex 
-                      ? 'bg-doju-lime text-doju-navy' 
-                      : 'bg-muted text-muted-foreground'}
-                  `}>
+                    ${
+                      index <= currentStepIndex
+                        ? "bg-doju-lime text-doju-navy"
+                        : "bg-muted text-muted-foreground"
+                    }
+                  `}
+                  >
                     {index < currentStepIndex ? (
                       <CheckCircle className="h-5 w-5" />
                     ) : (
@@ -189,16 +227,19 @@ const DispatchRegistration = () => {
                     )}
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`h-0.5 w-8 sm:w-16 mx-2 ${
-                      index < currentStepIndex ? 'bg-doju-lime' : 'bg-muted'
-                    }`} />
+                    <div
+                      className={`h-0.5 w-8 sm:w-16 mx-2 ${
+                        index < currentStepIndex ? "bg-doju-lime" : "bg-muted"
+                      }`}
+                    />
                   )}
                 </div>
               ))}
             </div>
             <Progress value={progress} className="h-2" />
             <p className="text-sm text-muted-foreground text-center mt-2">
-              Step {currentStepIndex + 1} of {steps.length}: {steps[currentStepIndex].title}
+              Step {currentStepIndex + 1} of {steps.length}:{" "}
+              {steps[currentStepIndex].title}
             </p>
           </div>
 
@@ -209,7 +250,7 @@ const DispatchRegistration = () => {
             animate={{ opacity: 1, y: 0 }}
           >
             <AnimatePresence mode="wait">
-              {currentStep === 'personal' && (
+              {currentStep === "personal" && (
                 <motion.div
                   key="personal"
                   initial={{ opacity: 0, x: 20 }}
@@ -234,11 +275,20 @@ const DispatchRegistration = () => {
                       </Label>
                       <Input
                         value={formData.full_name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            full_name: e.target.value,
+                          }))
+                        }
                         placeholder="Enter your full name"
-                        className={errors.full_name ? 'border-destructive' : ''}
+                        className={errors.full_name ? "border-destructive" : ""}
                       />
-                      {errors.full_name && <p className="text-sm text-destructive mt-1">{errors.full_name}</p>}
+                      {errors.full_name && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.full_name}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -248,11 +298,20 @@ const DispatchRegistration = () => {
                       </Label>
                       <Input
                         value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            phone: e.target.value,
+                          }))
+                        }
                         placeholder="e.g., 08012345678"
-                        className={errors.phone ? 'border-destructive' : ''}
+                        className={errors.phone ? "border-destructive" : ""}
                       />
-                      {errors.phone && <p className="text-sm text-destructive mt-1">{errors.phone}</p>}
+                      {errors.phone && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.phone}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -263,11 +322,20 @@ const DispatchRegistration = () => {
                       <Input
                         type="email"
                         value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                          }))
+                        }
                         placeholder="you@example.com"
-                        className={errors.email ? 'border-destructive' : ''}
+                        className={errors.email ? "border-destructive" : ""}
                       />
-                      {errors.email && <p className="text-sm text-destructive mt-1">{errors.email}</p>}
+                      {errors.email && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.email}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -277,17 +345,28 @@ const DispatchRegistration = () => {
                       </Label>
                       <Input
                         value={formData.home_address}
-                        onChange={(e) => setFormData(prev => ({ ...prev, home_address: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            home_address: e.target.value,
+                          }))
+                        }
                         placeholder="Enter your home address"
-                        className={errors.home_address ? 'border-destructive' : ''}
+                        className={
+                          errors.home_address ? "border-destructive" : ""
+                        }
                       />
-                      {errors.home_address && <p className="text-sm text-destructive mt-1">{errors.home_address}</p>}
+                      {errors.home_address && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.home_address}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </motion.div>
               )}
 
-              {currentStep === 'delivery' && (
+              {currentStep === "delivery" && (
                 <motion.div
                   key="delivery"
                   initial={{ opacity: 0, x: 20 }}
@@ -312,30 +391,54 @@ const DispatchRegistration = () => {
                       </Label>
                       <Input
                         value={formData.area_of_operation}
-                        onChange={(e) => setFormData(prev => ({ ...prev, area_of_operation: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            area_of_operation: e.target.value,
+                          }))
+                        }
                         placeholder="e.g., Lagos Island, Victoria Island, Ikoyi"
-                        className={errors.area_of_operation ? 'border-destructive' : ''}
+                        className={
+                          errors.area_of_operation ? "border-destructive" : ""
+                        }
                       />
-                      {errors.area_of_operation && <p className="text-sm text-destructive mt-1">{errors.area_of_operation}</p>}
+                      {errors.area_of_operation && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.area_of_operation}
+                        </p>
+                      )}
                     </div>
 
                     <div>
-                      <Label className="text-foreground mb-3">What type of vehicle do you have?</Label>
+                      <Label className="text-foreground mb-3">
+                        What type of vehicle do you have?
+                      </Label>
                       <div className="grid grid-cols-3 gap-3">
                         {vehicleOptions.map(({ type, label, icon: Icon }) => (
                           <button
                             key={type}
                             type="button"
-                            onClick={() => setFormData(prev => ({ ...prev, vehicle_type: type }))}
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                vehicle_type: type,
+                              }))
+                            }
                             className={`
                               p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2
-                              ${formData.vehicle_type === type 
-                                ? 'border-doju-lime bg-doju-lime/10' 
-                                : 'border-border hover:border-doju-lime/50'}
+                              ${
+                                formData.vehicle_type === type
+                                  ? "border-doju-lime bg-doju-lime/10"
+                                  : "border-border hover:border-doju-lime/50"
+                              }
                             `}
                           >
-                            <Icon className={`h-6 w-6 ${formData.vehicle_type === type ? 'text-doju-lime' : 'text-muted-foreground'}`} />
-                            <span className={`text-sm font-medium ${formData.vehicle_type === type ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            <Icon
+                              className={`h-6 w-6 ${formData.vehicle_type === type ? "text-doju-lime" : "text-muted-foreground"}`}
+                            />
+                            <span
+                              className={`text-sm font-medium ${formData.vehicle_type === type ? "text-foreground" : "text-muted-foreground"}`}
+                            >
                               {label}
                             </span>
                           </button>
@@ -350,11 +453,22 @@ const DispatchRegistration = () => {
                       </Label>
                       <Input
                         value={formData.plate_number}
-                        onChange={(e) => setFormData(prev => ({ ...prev, plate_number: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            plate_number: e.target.value,
+                          }))
+                        }
                         placeholder="e.g., ABC-123-XY"
-                        className={errors.plate_number ? 'border-destructive' : ''}
+                        className={
+                          errors.plate_number ? "border-destructive" : ""
+                        }
                       />
-                      {errors.plate_number && <p className="text-sm text-destructive mt-1">{errors.plate_number}</p>}
+                      {errors.plate_number && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.plate_number}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -362,18 +476,28 @@ const DispatchRegistration = () => {
                         <Upload className="h-4 w-4" />
                         Upload your Government ID
                       </Label>
-                      <div className={`
+                      <div
+                        className={`
                         border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors
-                        ${errors.government_id ? 'border-destructive' : 'border-border hover:border-doju-lime/50'}
-                      `}>
+                        ${errors.government_id ? "border-destructive" : "border-border hover:border-doju-lime/50"}
+                      `}
+                      >
                         <input
                           type="file"
                           accept="image/*"
                           className="hidden"
                           id="government-id"
-                          onChange={(e) => handleFileChange('government_id', e.target.files?.[0] || null)}
+                          onChange={(e) =>
+                            handleFileChange(
+                              "government_id",
+                              e.target.files?.[0] || null,
+                            )
+                          }
                         />
-                        <label htmlFor="government-id" className="cursor-pointer">
+                        <label
+                          htmlFor="government-id"
+                          className="cursor-pointer"
+                        >
                           {formData.government_id ? (
                             <div className="flex items-center justify-center gap-2 text-doju-lime">
                               <CheckCircle className="h-5 w-5" />
@@ -387,7 +511,11 @@ const DispatchRegistration = () => {
                           )}
                         </label>
                       </div>
-                      {errors.government_id && <p className="text-sm text-destructive mt-1">{errors.government_id}</p>}
+                      {errors.government_id && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.government_id}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -395,16 +523,23 @@ const DispatchRegistration = () => {
                         <Camera className="h-4 w-4" />
                         Upload a selfie
                       </Label>
-                      <div className={`
+                      <div
+                        className={`
                         border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors
-                        ${errors.selfie ? 'border-destructive' : 'border-border hover:border-doju-lime/50'}
-                      `}>
+                        ${errors.selfie ? "border-destructive" : "border-border hover:border-doju-lime/50"}
+                      `}
+                      >
                         <input
                           type="file"
                           accept="image/*"
                           className="hidden"
                           id="selfie"
-                          onChange={(e) => handleFileChange('selfie', e.target.files?.[0] || null)}
+                          onChange={(e) =>
+                            handleFileChange(
+                              "selfie",
+                              e.target.files?.[0] || null,
+                            )
+                          }
                         />
                         <label htmlFor="selfie" className="cursor-pointer">
                           {formData.selfie ? (
@@ -420,13 +555,17 @@ const DispatchRegistration = () => {
                           )}
                         </label>
                       </div>
-                      {errors.selfie && <p className="text-sm text-destructive mt-1">{errors.selfie}</p>}
+                      {errors.selfie && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.selfie}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </motion.div>
               )}
 
-              {currentStep === 'bank' && (
+              {currentStep === "bank" && (
                 <motion.div
                   key="bank"
                   initial={{ opacity: 0, x: 20 }}
@@ -451,11 +590,22 @@ const DispatchRegistration = () => {
                       </Label>
                       <Input
                         value={formData.account_name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, account_name: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            account_name: e.target.value,
+                          }))
+                        }
                         placeholder="Enter your account name"
-                        className={errors.account_name ? 'border-destructive' : ''}
+                        className={
+                          errors.account_name ? "border-destructive" : ""
+                        }
                       />
-                      {errors.account_name && <p className="text-sm text-destructive mt-1">{errors.account_name}</p>}
+                      {errors.account_name && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.account_name}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -465,11 +615,22 @@ const DispatchRegistration = () => {
                       </Label>
                       <Input
                         value={formData.account_number}
-                        onChange={(e) => setFormData(prev => ({ ...prev, account_number: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            account_number: e.target.value,
+                          }))
+                        }
                         placeholder="Enter your 10-digit account number"
-                        className={errors.account_number ? 'border-destructive' : ''}
+                        className={
+                          errors.account_number ? "border-destructive" : ""
+                        }
                       />
-                      {errors.account_number && <p className="text-sm text-destructive mt-1">{errors.account_number}</p>}
+                      {errors.account_number && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.account_number}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -479,17 +640,26 @@ const DispatchRegistration = () => {
                       </Label>
                       <Input
                         value={formData.bank_name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, bank_name: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            bank_name: e.target.value,
+                          }))
+                        }
                         placeholder="e.g., First Bank, GTBank, Access Bank"
-                        className={errors.bank_name ? 'border-destructive' : ''}
+                        className={errors.bank_name ? "border-destructive" : ""}
                       />
-                      {errors.bank_name && <p className="text-sm text-destructive mt-1">{errors.bank_name}</p>}
+                      {errors.bank_name && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.bank_name}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </motion.div>
               )}
 
-              {currentStep === 'review' && (
+              {currentStep === "review" && (
                 <motion.div
                   key="review"
                   initial={{ opacity: 0, x: 20 }}
@@ -514,13 +684,17 @@ const DispatchRegistration = () => {
                       </h3>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div className="text-muted-foreground">Full Name:</div>
-                        <div className="text-foreground">{formData.full_name}</div>
+                        <div className="text-foreground">
+                          {formData.full_name}
+                        </div>
                         <div className="text-muted-foreground">Phone:</div>
                         <div className="text-foreground">{formData.phone}</div>
                         <div className="text-muted-foreground">Email:</div>
                         <div className="text-foreground">{formData.email}</div>
                         <div className="text-muted-foreground">Address:</div>
-                        <div className="text-foreground">{formData.home_address}</div>
+                        <div className="text-foreground">
+                          {formData.home_address}
+                        </div>
                       </div>
                     </div>
 
@@ -531,11 +705,19 @@ const DispatchRegistration = () => {
                       </h3>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div className="text-muted-foreground">Area:</div>
-                        <div className="text-foreground">{formData.area_of_operation}</div>
+                        <div className="text-foreground">
+                          {formData.area_of_operation}
+                        </div>
                         <div className="text-muted-foreground">Vehicle:</div>
-                        <div className="text-foreground capitalize">{formData.vehicle_type}</div>
-                        <div className="text-muted-foreground">Plate Number:</div>
-                        <div className="text-foreground">{formData.plate_number}</div>
+                        <div className="text-foreground capitalize">
+                          {formData.vehicle_type}
+                        </div>
+                        <div className="text-muted-foreground">
+                          Plate Number:
+                        </div>
+                        <div className="text-foreground">
+                          {formData.plate_number}
+                        </div>
                         <div className="text-muted-foreground">Documents:</div>
                         <div className="text-foreground flex items-center gap-1">
                           <CheckCircle className="h-3 w-3 text-doju-lime" />
@@ -550,12 +732,22 @@ const DispatchRegistration = () => {
                         Bank Details
                       </h3>
                       <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="text-muted-foreground">Account Name:</div>
-                        <div className="text-foreground">{formData.account_name}</div>
-                        <div className="text-muted-foreground">Account Number:</div>
-                        <div className="text-foreground">{formData.account_number}</div>
+                        <div className="text-muted-foreground">
+                          Account Name:
+                        </div>
+                        <div className="text-foreground">
+                          {formData.account_name}
+                        </div>
+                        <div className="text-muted-foreground">
+                          Account Number:
+                        </div>
+                        <div className="text-foreground">
+                          {formData.account_number}
+                        </div>
                         <div className="text-muted-foreground">Bank:</div>
-                        <div className="text-foreground">{formData.bank_name}</div>
+                        <div className="text-foreground">
+                          {formData.bank_name}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -565,7 +757,7 @@ const DispatchRegistration = () => {
 
             {/* Navigation Buttons */}
             <div className="flex justify-between mt-8 pt-6 border-t border-border">
-              {currentStep !== 'personal' ? (
+              {currentStep !== "personal" ? (
                 <Button
                   variant="outline"
                   onClick={handleBack}
@@ -578,7 +770,7 @@ const DispatchRegistration = () => {
                 <div />
               )}
 
-              {currentStep !== 'review' ? (
+              {currentStep !== "review" ? (
                 <Button
                   onClick={handleNext}
                   className="gap-2 bg-doju-lime text-doju-navy hover:bg-doju-lime-light"
@@ -609,7 +801,7 @@ const DispatchRegistration = () => {
           </motion.div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

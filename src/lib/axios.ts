@@ -64,7 +64,7 @@ API.interceptors.response.use(
       } catch (refreshError) {
         removeStoredTokens();
         console.log(refreshError)
-        // window.location.href = "/auth";
+        window.location.href = "/auth";
         return Promise.reject(refreshError);
       }
     }

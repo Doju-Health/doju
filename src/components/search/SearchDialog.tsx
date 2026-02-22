@@ -1,11 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Search, Package, ArrowRight } from 'lucide-react';
-import { allProducts, categories } from '@/data/mockData';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input/input";
+import { Badge } from "@/components/ui/badge";
+import { Search, Package, ArrowRight } from "lucide-react";
+import { allProducts, categories } from "@/data/mockData";
 
 interface SearchDialogProps {
   open: boolean;
@@ -14,7 +19,7 @@ interface SearchDialogProps {
 
 const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
   const navigate = useNavigate();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<typeof allProducts>([]);
 
   useEffect(() => {
@@ -24,47 +29,53 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
     }
 
     const searchTerm = query.toLowerCase();
-    const filtered = allProducts.filter(product => 
-      product.name.toLowerCase().includes(searchTerm) ||
-      product.category.toLowerCase().includes(searchTerm) ||
-      product.brand.toLowerCase().includes(searchTerm) ||
-      product.description.toLowerCase().includes(searchTerm) ||
-      product.sku.toLowerCase().includes(searchTerm)
-    ).slice(0, 6);
+    const filtered = allProducts
+      .filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchTerm) ||
+          product.category.toLowerCase().includes(searchTerm) ||
+          product.brand.toLowerCase().includes(searchTerm) ||
+          product.description.toLowerCase().includes(searchTerm) ||
+          product.sku.toLowerCase().includes(searchTerm),
+      )
+      .slice(0, 6);
 
     setResults(filtered);
   }, [query]);
 
   const handleProductClick = (productId: string) => {
     onOpenChange(false);
-    setQuery('');
+    setQuery("");
     navigate(`/product/${productId}`);
   };
 
   const handleCategoryClick = (categoryName: string) => {
     onOpenChange(false);
-    setQuery('');
+    setQuery("");
     navigate(`/marketplace?category=${encodeURIComponent(categoryName)}`);
   };
 
   const handleViewAll = () => {
     onOpenChange(false);
     navigate(`/marketplace?search=${encodeURIComponent(query)}`);
-    setQuery('');
+    setQuery("");
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
   };
 
-  const matchingCategories = query.trim().length >= 2
-    ? categories.filter(cat => cat.name.toLowerCase().includes(query.toLowerCase()))
-    : [];
+  const matchingCategories =
+    query.trim().length >= 2
+      ? categories.filter((cat) =>
+          cat.name.toLowerCase().includes(query.toLowerCase()),
+        )
+      : [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -93,9 +104,11 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
                 exit={{ opacity: 0 }}
                 className="p-4"
               >
-                <p className="text-sm text-muted-foreground mb-3">Popular categories</p>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Popular categories
+                </p>
                 <div className="flex flex-wrap gap-2">
-                  {categories.slice(0, 4).map(cat => (
+                  {categories.slice(0, 4).map((cat) => (
                     <Badge
                       key={cat.id}
                       variant="secondary"
@@ -118,9 +131,11 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
                 {/* Matching Categories */}
                 {matchingCategories.length > 0 && (
                   <div className="p-4">
-                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Categories</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+                      Categories
+                    </p>
                     <div className="flex flex-wrap gap-2">
-                      {matchingCategories.map(cat => (
+                      {matchingCategories.map((cat) => (
                         <Badge
                           key={cat.id}
                           variant="outline"
@@ -137,9 +152,11 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
                 {/* Product Results */}
                 {results.length > 0 && (
                   <div className="p-4">
-                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Products</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+                      Products
+                    </p>
                     <div className="space-y-2">
-                      {results.map(product => (
+                      {results.map((product) => (
                         <motion.div
                           key={product.id}
                           whileHover={{ x: 4 }}
@@ -148,16 +165,26 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
                         >
                           <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
                             {product.images[0] ? (
-                              <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
+                              <img
+                                src={product.images[0]}
+                                alt={product.name}
+                                className="h-full w-full object-cover"
+                              />
                             ) : (
                               <Package className="h-6 w-6 text-muted-foreground" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-foreground truncate">{product.name}</p>
-                            <p className="text-sm text-muted-foreground">{product.brand} • {product.category}</p>
+                            <p className="font-medium text-foreground truncate">
+                              {product.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {product.brand} • {product.category}
+                            </p>
                           </div>
-                          <p className="font-semibold text-doju-lime">{formatPrice(product.price)}</p>
+                          <p className="font-semibold text-doju-lime">
+                            {formatPrice(product.price)}
+                          </p>
                         </motion.div>
                       ))}
                     </div>
@@ -168,8 +195,12 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
                 {results.length === 0 && matchingCategories.length === 0 && (
                   <div className="p-8 text-center">
                     <Search className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                    <p className="font-medium text-foreground">No results found</p>
-                    <p className="text-sm text-muted-foreground">Try a different search term</p>
+                    <p className="font-medium text-foreground">
+                      No results found
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Try a different search term
+                    </p>
                   </div>
                 )}
 
