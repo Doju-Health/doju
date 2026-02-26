@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/redux/hooks";
-import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -23,24 +22,30 @@ import {
 } from "@/components/ui/dropdown-menu";
 import SearchDialog from "@/components/search/SearchDialog";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import { removeStoredTokens } from "@/lib/local-storage";
+import { queryClient } from "@/lib/react-query";
 import dojuLogo from "@/assets/doju-logo.jpg";
-import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
+import { logout } from "@/redux/slice/auth/auth-slice";
 
 const Header = () => {
   const { totalItems } = useCart();
-  const { data: userProfile } = useGetUserProfile();
+  const dispatch = useAppDispatch();
+  const authUser = useAppSelector((state) => state.authData.user);
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
 
   const navLinks = [
-    { label: "Home", href: "/" },
+    { label: "Home", href: "/home" },
     { label: "Categories", href: "/categories" },
     { label: "Products", href: "/marketplace" },
     { label: "Track Order", href: "/track-order" },
   ];
 
   const handleSignOut = async () => {
-    navigate("/");
+    removeStoredTokens();
+    dispatch(logout());
+    queryClient.clear();
   };
 
   return (
@@ -97,9 +102,9 @@ const Header = () => {
             </Button>
 
             {/* Notification Bell - only for logged in users */}
-            {userProfile && <NotificationBell />}
+            {authUser && <NotificationBell />}
 
-            {userProfile ? (
+            {authUser ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -113,11 +118,11 @@ const Header = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem className="text-muted-foreground text-xs">
-                    {userProfile.user.email}
+                    {authUser.email}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
 
-                  {userProfile.user.role === "seller" && (
+                  {authUser.role === "seller" && (
                     <DropdownMenuItem
                       onClick={() => navigate("/seller/overview")}
                     >
@@ -187,9 +192,9 @@ const Header = () => {
                     ))}
                   </nav>
                   <div className="border-t pt-4 space-y-2">
-                    {userProfile ? (
+                    {authUser ? (
                       <>
-                        {userProfile.user.role === "seller" && (
+                        {authUser.role === "seller" && (
                           <Link to="/seller-dashboard">
                             <Button
                               variant="doju-outline"

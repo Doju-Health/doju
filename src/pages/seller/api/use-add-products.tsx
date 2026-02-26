@@ -10,7 +10,7 @@ export const useAddProduct = () => {
       description: string;
       stock: number;
       categoryId: string;
-      imageUrl?: string;
+      imageUrl?: string[];
     }) => {
       const response = await API.post("/products", data);
       return response.data;

@@ -5,7 +5,7 @@ import Checkout from "@/pages/Checkout";
 import DispatchDashboard from "@/pages/dispatch/DispatchDashboard";
 import DispatchRegistration from "@/pages/dispatch/DispatchRegistration";
 import Index from "@/pages/Index";
-import Marketplace from "@/pages/Marketplace";
+import Marketplace from "@/pages/marketplace/Marketplace";
 import NotFound from "@/pages/NotFound";
 
 import OrderTracking from "@/pages/OrderTracking";
@@ -15,12 +15,17 @@ import ReturnPolicy from "@/pages/ReturnPolicy";
 import Terms from "@/pages/Terms";
 import { createBrowserRouter } from "react-router-dom";
 import { authRoutes } from "./auth";
-import ProductDetail from "@/pages/ProductDetail";
+import ProductDetail from "@/pages/marketplace/ProductDetail";
 import { sellerAppRoutes } from "./app";
 import { SellerAppLayout } from "@/pages/seller/layout/app-layout";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 export const allRoutes = [
   {
     path: "/",
+    element: <Marketplace />,
+  },
+  {
+    path: "/home",
     element: <Index />,
   },
   {
@@ -69,9 +74,16 @@ export const allRoutes = [
     element: <ReturnPolicy />,
   },
 
-  { path: "checkout", element: <Checkout /> },
+  {
+    path: "checkout",
+    element: (
+      <ProtectedRoute>
+        <Checkout />
+      </ProtectedRoute>
+    ),
+  },
 
-  { path: "carts", element: <Cart /> },
+  { path: "cart", element: <Cart /> },
 
   {
     path: "dispatch/dashboard",
