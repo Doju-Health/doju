@@ -275,7 +275,15 @@ const Auth = () => {
       {
         onSuccess: () => {
           setShowOtpModal(false);
-          navigate("/auth");
+          setIsLogin(true);
+          setCurrentStep(0);
+          setFormData({
+            fullName: "",
+            email: "",
+            password: "",
+            role: "",
+            phoneNumber: "",
+          });
         },
         onError: () => {
           setOtpError("Invalid OTP. Please try again.");

@@ -9,11 +9,43 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input/input";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { allProducts as mockProducts, categories } from "@/data/mockData";
-import { Product } from "@/types";
+import { Product, ApiProduct, ApiCategory } from "@/types";
 import { Search, ChevronDown, X, SlidersHorizontal } from "lucide-react";
+import { useGetProducts } from "./api/use-get-products";
+import { useGetCategories } from "../seller/api/use-get-categories";
+
+/** Map an API product to the internal Product shape used by ProductCard & cart */
+const mapApiProduct = (p: ApiProduct): Product => ({
+  id: p.id,
+  name: p.name,
+  description: p.description,
+  price: Number(p.price),
+  images: p.imageUrl?.filter(Boolean) ?? [],
+  category: p.category?.name ?? "Other",
+  brand: p.seller?.fullName ?? "DOJU Seller",
+  sku: `DB-${p.id.slice(0, 8)}`,
+  stock: p.stock,
+  sellerId: p.seller?.id ?? "",
+  approvalStatus: "approved",
+  createdAt: new Date(p.createdAt),
+});
 
 const Marketplace = () => {
+  const [page, setPage] = useState(1);
+  const limit = 12;
+  const { data: apiCategories = [], isLoading: categoriesLoading } =
+    useGetCategories();
+  const { data: productsResponse, isLoading: productsLoading } = useGetProducts(
+    { page, limit },
+  );
+
+  const apiProducts = productsResponse?.data ?? [];
+  const paginationMeta = productsResponse?.meta ?? {
+    total: 0,
+    page: 1,
+    limit,
+    totalPages: 1,
+  };
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Initialize state from URL params
@@ -26,60 +58,18 @@ const Marketplace = () => {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
   const [showFilters, setShowFilters] = useState(false);
-  const [dbProducts, setDbProducts] = useState<Product[]>([]);
 
-  // Fetch approved products from database
-  useEffect(() => {
-    const fetchApprovedProducts = async () => {
-      try {
-        const { data: products, error } = await supabase
-          .from("products")
-          .select("*")
-          .eq("status", "approved");
+  // Map API products to internal Product shape
+  const allProducts: Product[] = useMemo(() => {
+    return (apiProducts as ApiProduct[])
+      .filter((p) => p.isActive)
+      .map(mapApiProduct);
+  }, [apiProducts]);
 
-        if (error) throw error;
-
-        if (products && products.length > 0) {
-          // Fetch media for products
-          const productIds = products.map((p) => p.id);
-          const { data: mediaData } = await supabase
-            .from("product_media")
-            .select("*")
-            .in("product_id", productIds);
-
-          const productsWithMedia: Product[] = products.map((product) => ({
-            id: product.id,
-            name: product.name,
-            description: product.description || "",
-            price: Number(product.price),
-            images:
-              mediaData
-                ?.filter(
-                  (m) => m.product_id === product.id && m.type === "image",
-                )
-                .map((m) => m.url) || [],
-            category: product.category || "Other",
-            brand: "DOJU Seller",
-            sku: `DB-${product.id.slice(0, 8)}`,
-            stock: product.stock,
-            sellerId: product.seller_id,
-            approvalStatus: "approved" as const,
-            createdAt: new Date(product.created_at),
-          }));
-          setDbProducts(productsWithMedia);
-        }
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
-
-    fetchApprovedProducts();
-  }, []);
-
-  // Combine mock products with database products
-  const allProducts = useMemo(() => {
-    return [...mockProducts, ...dbProducts];
-  }, [dbProducts]);
+  // Map API categories
+  const categories: ApiCategory[] = useMemo(() => {
+    return (apiCategories as ApiCategory[]).filter((c) => c.isActive);
+  }, [apiCategories]);
 
   // Sync URL params to state
   useEffect(() => {
@@ -107,12 +97,7 @@ const Marketplace = () => {
       : 500000;
   }, [allProducts]);
 
-  // Filter only approved products for display
-  const approvedProducts = useMemo(() => {
-    return allProducts.filter((p) => p.approvalStatus === "approved");
-  }, [allProducts]);
-
-  const filteredProducts = approvedProducts.filter((product) => {
+  const filteredProducts = allProducts.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -249,24 +234,36 @@ const Marketplace = () => {
                       }`}
                     >
                       <span>All Categories</span>
-                      <span className="text-xs">{approvedProducts.length}</span>
+                      <span className="text-xs">{allProducts.length}</span>
                     </motion.button>
-                    {categories.map((category) => (
-                      <motion.button
-                        key={category.id}
-                        onClick={() => setSelectedCategory(category.name)}
-                        whileHover={{ x: 4 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-all ${
-                          selectedCategory === category.name
-                            ? "bg-doju-lime text-doju-navy font-semibold"
-                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        <span>{category.name}</span>
-                        <span className="text-xs">{category.productCount}</span>
-                      </motion.button>
-                    ))}
+                    {categoriesLoading ? (
+                      <div className="px-4 py-3 text-sm text-muted-foreground">
+                        Loading…
+                      </div>
+                    ) : (
+                      categories.map((category) => (
+                        <motion.button
+                          key={category.id}
+                          onClick={() => setSelectedCategory(category.name)}
+                          whileHover={{ x: 4 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-all ${
+                            selectedCategory === category.name
+                              ? "bg-doju-lime text-doju-navy font-semibold"
+                              : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <span>{category.name}</span>
+                          <span className="text-xs">
+                            {
+                              allProducts.filter(
+                                (p) => p.category === category.name,
+                              ).length
+                            }
+                          </span>
+                        </motion.button>
+                      ))
+                    )}
                   </div>
                 </motion.div>
 
@@ -293,10 +290,7 @@ const Marketplace = () => {
                       >
                         <span>{brand}</span>
                         <span className="text-xs">
-                          {
-                            approvedProducts.filter((p) => p.brand === brand)
-                              .length
-                          }
+                          {allProducts.filter((p) => p.brand === brand).length}
                         </span>
                       </motion.button>
                     ))}
@@ -439,7 +433,11 @@ const Marketplace = () => {
                 )}
               </AnimatePresence>
 
-              {filteredProducts.length > 0 ? (
+              {productsLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doju-lime"></div>
+                </div>
+              ) : filteredProducts.length > 0 ? (
                 <motion.div
                   className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-6"
                   variants={containerVariants}
@@ -474,35 +472,50 @@ const Marketplace = () => {
               )}
 
               {/* Pagination */}
-              {filteredProducts.length > 0 && (
+              {paginationMeta.totalPages > 1 && (
                 <motion.div
                   className="flex items-center justify-between mt-12 pt-8 border-t border-border"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <p className="text-sm text-muted-foreground">Page 1 of 1</p>
+                  <p className="text-sm text-muted-foreground">
+                    Page {paginationMeta.page} of {paginationMeta.totalPages}
+                  </p>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled
+                      disabled={page <= 1}
                       className="rounded-xl"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
                     >
                       Previous
                     </Button>
-                    <Button
-                      variant="doju-primary"
-                      size="sm"
-                      className="rounded-xl"
-                    >
-                      1
-                    </Button>
+                    {Array.from(
+                      { length: paginationMeta.totalPages },
+                      (_, i) => i + 1,
+                    ).map((pageNum) => (
+                      <Button
+                        key={pageNum}
+                        variant={pageNum === page ? "doju-primary" : "outline"}
+                        size="sm"
+                        className="rounded-xl"
+                        onClick={() => setPage(pageNum)}
+                      >
+                        {pageNum}
+                      </Button>
+                    ))}
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled
+                      disabled={page >= paginationMeta.totalPages}
                       className="rounded-xl"
+                      onClick={() =>
+                        setPage((p) =>
+                          Math.min(paginationMeta.totalPages, p + 1),
+                        )
+                      }
                     >
                       Next
                     </Button>

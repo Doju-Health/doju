@@ -2,10 +2,9 @@ import { Product } from "@/types";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/redux/hooks";
-import { useAuth } from "@/contexts/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Eye, Star, Users, LogIn } from "lucide-react";
+import { ShoppingCart, Eye, Star, Users } from "lucide-react";
 import { toast } from "sonner";
 
 interface ProductCardProps {
@@ -15,7 +14,6 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const { addToCart } = useCart();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleProductClick = () => {
@@ -111,34 +109,19 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
 
         <div className="flex gap-1.5 sm:gap-2 pt-1 sm:pt-2">
           <div className="flex-1">
-            {user ? (
-              <Button
-                variant="doju-outline"
-                size="sm"
-                className="w-full gap-1 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-3"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  addToCart(product);
-                }}
-              >
-                <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden xs:inline">Add</span>
-              </Button>
-            ) : (
-              <Button
-                variant="doju-outline"
-                size="sm"
-                className="w-full gap-1 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-3"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toast.info("Sign in to add items to your cart");
-                  navigate(`/auth?returnTo=/product/${product.id}`);
-                }}
-              >
-                <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden xs:inline">Sign in</span>
-              </Button>
-            )}
+            <Button
+              variant="doju-outline"
+              size="sm"
+              className="w-full gap-1 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-3"
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(product);
+                toast.success("Added to cart");
+              }}
+            >
+              <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Add</span>
+            </Button>
           </div>
           <div className="flex-1">
             <Button

@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { setStoredTokens } from "@/lib/local-storage";
 import { setUser } from "@/redux/slice/auth/auth-slice";
+import { store } from "@/redux/store";
 
 export const useLogin = () => {
   return useMutation({
@@ -15,7 +16,10 @@ export const useLogin = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      setStoredTokens(data.accessToken, data.accessToken);
+      setStoredTokens(data.accessToken, data.refreshToken ?? data.accessToken);
+      if (data.user) {
+        store.dispatch(setUser(data.user));
+      }
       toast.success("Login Successful.");
     },
     onError: (error: {

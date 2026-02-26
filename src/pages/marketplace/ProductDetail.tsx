@@ -1,99 +1,49 @@
-import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CartCheckoutBar from "@/components/cart/CartCheckoutBar";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/redux/hooks";
-import { useAuth } from "@/contexts/AuthContext";
-import { allProducts as mockProducts, featuredProducts } from "@/data/mockData";
-import { Product } from "@/types";
+import { Product, ApiProduct } from "@/types";
 import ProductCard from "@/components/products/ProductCard";
-import {
-  Shield,
-  Truck,
-  RotateCcw,
-  Heart,
-  ChevronRight,
-  LogIn,
-} from "lucide-react";
+import { Shield, Truck, RotateCcw, Heart, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { useGetAProduct } from "./api/use-get-a-product";
+import { useGetProducts } from "./api/use-get-products";
+
+/** Map an API product to the internal Product shape used by ProductCard & cart */
+const mapApiProduct = (p: ApiProduct): Product => ({
+  id: p.id,
+  name: p.name,
+  description: p.description,
+  price: Number(p.price),
+  images: p.imageUrl?.filter(Boolean) ?? [],
+  category: p.category?.name ?? "Other",
+  brand: p.seller?.fullName ?? "DOJU Seller",
+  sku: `DB-${p.id.slice(0, 8)}`,
+  stock: p.stock,
+  sellerId: p.seller?.id ?? "",
+  approvalStatus: "approved",
+  createdAt: new Date(p.createdAt),
+});
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const { data: apiProduct, isLoading } = useGetAProduct(id!);
+  const { data: productsResponse } = useGetProducts({ page: 1, limit: 5 });
   const { addToCart } = useCart();
-  const { user } = useAuth();
   const [quantity, setQuantity] = useState(1);
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      // First check mock products
-      const mockProduct = mockProducts.find((p) => p.id === id);
-      if (mockProduct) {
-        setProduct(mockProduct);
-        setLoading(false);
-        return;
-      }
+  const product = apiProduct ? mapApiProduct(apiProduct) : null;
 
-      // Then check database
-      try {
-        const { data, error } = await supabase
-          .from("products")
-          .select("*")
-          .eq("id", id)
-          .eq("status", "approved")
-          .single();
+  // Related products: other products from the same response, excluding current
+  const relatedProducts = (productsResponse?.data ?? [])
+    .filter((p: ApiProduct) => p.id !== id && p.isActive)
+    .slice(0, 4)
+    .map(mapApiProduct);
 
-        if (error || !data) {
-          setProduct(null);
-          setLoading(false);
-          return;
-        }
-
-        // Fetch media
-        const { data: mediaData } = await supabase
-          .from("product_media")
-          .select("*")
-          .eq("product_id", data.id);
-
-        const dbProduct: Product = {
-          id: data.id,
-          name: data.name,
-          description: data.description || "",
-          price: Number(data.price),
-          images:
-            mediaData?.filter((m) => m.type === "image").map((m) => m.url) ||
-            [],
-          category: data.category || "Other",
-          brand: "DOJU Seller",
-          sku: `DB-${data.id.slice(0, 8)}`,
-          stock: data.stock,
-          sellerId: data.seller_id,
-          approvalStatus: "approved",
-          createdAt: new Date(data.created_at),
-        };
-        setProduct(dbProduct);
-      } catch (error) {
-        console.error("Error fetching product:", error);
-        setProduct(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchProduct();
-    }
-  }, [id]);
-
-  const relatedProducts = featuredProducts
-    .filter((p) => p.id !== id)
-    .slice(0, 4);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -176,31 +126,18 @@ const ProductDetail = () => {
                   />
                 </div>
                 <div className="grid grid-cols-4 gap-2">
-                  {product.images.slice(0, 4).map((image, i) => (
+                  {product.images.slice(1, 5).map((image, i) => (
                     <div
                       key={i}
                       className="aspect-square rounded-lg border border-border bg-muted overflow-hidden cursor-pointer hover:border-doju-lime transition-colors"
                     >
                       <img
                         src={image || "/placeholder.svg"}
-                        alt={`${product.name} view ${i + 1}`}
+                        alt={`${product.name} view ${i + 2}`}
                         className="h-full w-full object-contain"
                       />
                     </div>
                   ))}
-                  {product.images.length < 4 &&
-                    [...Array(4 - product.images.length)].map((_, i) => (
-                      <div
-                        key={`placeholder-${i}`}
-                        className="aspect-square rounded-lg border border-border bg-muted overflow-hidden cursor-pointer hover:border-doju-lime transition-colors"
-                      >
-                        <img
-                          src={product.images[0] || "/placeholder.svg"}
-                          alt={`${product.name} view`}
-                          className="h-full w-full object-contain"
-                        />
-                      </div>
-                    ))}
                 </div>
               </div>
 
@@ -208,7 +145,7 @@ const ProductDetail = () => {
               <div className="space-y-4 sm:space-y-6">
                 <div>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    {product.brand} • SKU: {product.sku}
+                    Sold by {product.brand} • {product.category}
                   </p>
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mt-1">
                     {product.name}
@@ -230,7 +167,7 @@ const ProductDetail = () => {
                   </div>
                   <div className="rounded-lg border border-border p-2.5 sm:p-3">
                     <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      Brand
+                      Seller
                     </p>
                     <p className="text-xs sm:text-sm font-medium">
                       {product.brand}
@@ -310,27 +247,16 @@ const ProductDetail = () => {
                       <Heart className="h-4 w-4 mr-2" />
                       Add to wishlist
                     </Button>
-                    {user ? (
-                      <Button
-                        variant="doju-primary"
-                        className="flex-1 h-10 sm:h-11 text-sm"
-                        onClick={() => addToCart(product, quantity)}
-                      >
-                        Add to cart
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="doju-primary"
-                        className="flex-1 gap-2 h-10 sm:h-11 text-sm"
-                        onClick={() => {
-                          toast.info("Sign in to add items to your cart");
-                          navigate(`/auth?returnTo=/product/${id}`);
-                        }}
-                      >
-                        <LogIn className="h-4 w-4" />
-                        Sign in to buy
-                      </Button>
-                    )}
+                    <Button
+                      variant="doju-primary"
+                      className="flex-1 h-10 sm:h-11 text-sm"
+                      onClick={() => {
+                        addToCart(product, quantity);
+                        toast.success("Added to cart");
+                      }}
+                    >
+                      Add to cart
+                    </Button>
                   </div>
 
                   <div className="grid grid-cols-3 gap-1.5 sm:gap-2">

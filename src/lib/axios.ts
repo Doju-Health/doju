@@ -63,8 +63,9 @@ API.interceptors.response.use(
         }
       } catch (refreshError) {
         removeStoredTokens();
-        console.log(refreshError)
-        window.location.href = "/auth";
+        console.log(refreshError);
+        // Only redirect to auth if user had a session (was previously logged in)
+        // Don't redirect unauthenticated users who are just browsing
         return Promise.reject(refreshError);
       }
     }

@@ -1,9 +1,9 @@
 import { ReactNode } from "react";
 import { UseQueryResult } from "@tanstack/react-query";
-import { cn } from "@/utils/helpers";
-import { AlertIcon } from "@/assets/icons";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { RingSpinner } from "@/components/ui/spinner";
+import { Spinner } from "@/components/ui/spinner";
+import { AlertCircleIcon } from "lucide-react";
 
 interface QueryWrapperProps<TData = unknown, TError = unknown> {
   currentQuery: UseQueryResult<TData, TError>;
@@ -35,10 +35,10 @@ export const QueryWrapper: React.FC<QueryWrapperProps> = ({
         <div
           className={cn(
             "flex size-full min-h-56 items-center justify-center",
-            spinnerGroupClassName
+            spinnerGroupClassName,
           )}
         >
-          <RingSpinner />
+          <Spinner />
         </div>
       )
     );
@@ -50,7 +50,7 @@ export const QueryWrapper: React.FC<QueryWrapperProps> = ({
         className={cn("mx-auto max-w-[350px] py-[70px]", errorGroupClassName)}
       >
         <div className="flex flex-col items-center justify-center gap-5">
-          <AlertIcon />
+          <AlertCircleIcon />
           <p className="text-base font-medium">
             {error && typeof error === "object" && "message" in error
               ? (error as any).message

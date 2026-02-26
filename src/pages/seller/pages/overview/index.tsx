@@ -10,6 +10,27 @@ import {
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useGetOrders } from "../../api/use-get-orders";
+import { QueryWrapper } from "@/components/query-wrapper/query-wrapper";
+
+type ApiOrder = {
+  id: string;
+  buyer?: {
+    fullName?: string;
+    email?: string;
+  };
+  product?: {
+    name?: string;
+    price?: number;
+    imageUrl?: string[];
+  };
+  quantity?: number;
+  unitPrice?: number;
+  totalPrice?: number;
+  orderStatus?: string;
+  paymentStatus?: string;
+  createdAt?: string;
+};
 
 const STATIC_STATS = [
   {
@@ -38,40 +59,30 @@ const STATIC_STATS = [
   },
 ];
 
-const RECENT_ORDERS = [
-  {
-    id: "ORD-001",
-    number: "Order #ORD-001",
-    items: 3,
-    status: "confirmed",
-    statusLabel: "Confirmed",
-  },
-  {
-    id: "ORD-002",
-    number: "Order #ORD-002",
-    items: 1,
-    status: "in_transit",
-    statusLabel: "In Transit",
-  },
-  {
-    id: "ORD-003",
-    number: "Order #ORD-003",
-    items: 2,
-    status: "delivered",
-    statusLabel: "Delivered",
-  },
-];
-
 const getStatusColor = (status: string) => {
-  switch (status) {
+  switch (status?.toLowerCase()) {
     case "approved":
+    case "confirmed":
+    case "success":
+    case "completed":
+    case "paid":
       return "bg-green-100 text-green-700";
     case "pending":
+    case "processing":
       return "bg-yellow-100 text-yellow-700";
     case "rejected":
+    case "failed":
+    case "cancelled":
+    case "canceled":
       return "bg-red-100 text-red-700";
-    default:
+    case "in_transit":
+    case "shipped":
+    case "out_for_delivery":
       return "bg-blue-100 text-blue-700";
+    case "delivered":
+      return "bg-emerald-100 text-emerald-700";
+    default:
+      return "bg-slate-100 text-slate-700";
   }
 };
 
@@ -92,10 +103,28 @@ const getStatusBadge = (status: string) => {
         </Badge>
       );
     default:
-      return <Badge>{status}</Badge>;
+      return (
+        <Badge className={`${getStatusColor(status)} gap-1`}>
+          {status || "unknown"}
+        </Badge>
+      );
   }
 };
 export default function SellerDashboard() {
+  const getOrders = useGetOrders();
+  const { data: orders = [], isLoading, isError } = getOrders || {};
+  const recentOrders: ApiOrder[] = Array.isArray(orders)
+    ? (orders as ApiOrder[]).slice(0, 5)
+    : [];
+
+  const formatCurrency = (amount?: number) => {
+    if (typeof amount !== "number" || Number.isNaN(amount)) return "--";
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold mb-4">Seller Overview</h1>
@@ -120,22 +149,50 @@ export default function SellerDashboard() {
         </div>
 
         <div className="space-y-3">
-          {RECENT_ORDERS.map((order) => (
-            <div
-              key={order.id}
-              className="flex items-center justify-between gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
-            >
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground">{order.number}</p>
-                <p className="text-sm text-muted-foreground">
-                  {order.items} item(s)
-                </p>
-              </div>
-              <Badge className={`${getStatusColor(order.status)}`}>
-                {order.statusLabel}
-              </Badge>
-            </div>
-          ))}
+          <QueryWrapper currentQuery={getOrders}>
+            {recentOrders.length === 0 && (
+              <p className="text-sm text-muted-foreground">No orders yet.</p>
+            )}
+
+            {recentOrders.map((order) => {
+              const productName = order.product?.name || "Order";
+              const quantity = order.quantity ?? 0;
+              const total = order.totalPrice ?? order.unitPrice ?? 0;
+
+              return (
+                <div
+                  key={order.id}
+                  className="flex items-center justify-between gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate">
+                      {productName}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {quantity} item{quantity === 1 ? "" : "s"} •{" "}
+                      {formatCurrency(total)}
+                    </p>
+                    {order.buyer?.fullName && (
+                      <p className="text-xs text-muted-foreground">
+                        Buyer: {order.buyer.fullName}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {order.orderStatus && getStatusBadge(order.orderStatus)}
+                    {order.paymentStatus && (
+                      <Badge
+                        className={`${getStatusColor(order.paymentStatus)} gap-1`}
+                        variant="outline"
+                      >
+                        {order.paymentStatus}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </QueryWrapper>
         </div>
       </motion.div>
     </div>

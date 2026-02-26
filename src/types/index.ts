@@ -24,11 +24,11 @@ export interface User {
 
 export interface IUser {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
-  phone: string;
-  role: UserRole;
-  createdAt: Date;
+  phoneNumber: string;
+  role: string;
+  createdAt: string;
 }
 
 export interface SellerProfile {
@@ -127,7 +127,7 @@ export type IProductData = {
     createdAt: string;
     updatedAt: string;
   };
-  imageUrl: string;
+  imageUrl: string[];
   seller: {
     id: string;
     fullName: string;
@@ -137,3 +137,53 @@ export type IProductData = {
   createdAt: string;
   updatedAt: string;
 };
+
+// API response types
+export interface ApiCategory {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  stock: number;
+  imageUrl: string[];
+  seller: {
+    id: string;
+    fullName: string;
+    email: string;
+    phoneNumber?: string;
+    role?: string;
+    companyName?: string | null;
+    address?: string | null;
+    licenseNumber?: string | null;
+    isActive?: boolean;
+    emailVerified?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+  category: ApiCategory;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: PaginationMeta;
+}
