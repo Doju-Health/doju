@@ -1,24 +1,17 @@
-import { ReactNode } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import AuthRequiredPrompt from './AuthRequiredPrompt';
+import { ReactNode } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAppSelector } from "@/redux/hooks";
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doju-lime"></div>
-      </div>
-    );
-  }
+  const user = useAppSelector((state) => state.authData.user);
+  const location = useLocation();
 
   if (!user) {
-    return <AuthRequiredPrompt />;
+    return <Navigate to={`/auth?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   return <>{children}</>;

@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input/input";
 import { Textarea } from "@/components/ui/textarea/textarea";
 import { Progress } from "@/components/ui/progress";
-import { useCart } from "@/redux/hooks";
-import { useAuth } from "@/contexts/AuthContext";
+import { useCart, useAppSelector } from "@/redux/hooks";
 import { useOrders, Order } from "@/hooks/useOrders";
 import { toast } from "sonner";
 import {
@@ -75,7 +74,7 @@ const steps: CheckoutStep[] = [
 
 const Checkout = () => {
   const { items, totalAmount, clearCart } = useCart();
-  const { user } = useAuth();
+  const user = useAppSelector((state) => state.authData.user);
   const { createOrder } = useOrders();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
@@ -207,7 +206,7 @@ const Checkout = () => {
   // Order complete screen with delivery code
   if (isComplete && createdOrder) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen w-full bg-background flex flex-col">
         <header className="border-b border-border bg-card">
           <div className="container flex h-16 items-center justify-center">
             <Link to="/" className="flex items-center gap-2">
@@ -356,7 +355,7 @@ const Checkout = () => {
   // Order review screen
   if (showReview) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen w-full bg-background flex flex-col">
         <header className="border-b border-border bg-card">
           <div className="container flex h-16 items-center justify-between">
             <button
@@ -530,7 +529,7 @@ const Checkout = () => {
 
   // Step-by-step checkout
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen w-full bg-background flex flex-col">
       <header className="border-b border-border bg-card">
         <div className="container flex h-16 items-center justify-between">
           <button

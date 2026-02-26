@@ -180,8 +180,9 @@ const Auth = () => {
               onSuccess: () => {
                 setIsSubmitting(false);
                 // Navigate after successful login
+                const redirectUrl = searchParams.get("redirect");
                 setTimeout(() => {
-                  navigate("/");
+                  navigate(redirectUrl || "/");
                 }, 1000);
               },
               onError: () => {

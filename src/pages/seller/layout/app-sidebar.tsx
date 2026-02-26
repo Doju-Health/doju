@@ -27,7 +27,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader className="border-b py-5">
         <SidebarMenu>
           <SidebarMenuItem>
-            <img src={DojuLogo} alt="Doju Logo" className="w-28 h-14 mx-auto" />
+            <img src={DojuLogo} alt="Doju Logo" className="w-28 h-10 mx-auto object-cover" />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
