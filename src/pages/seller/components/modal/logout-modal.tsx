@@ -1,25 +1,24 @@
 import { Button } from "@/components/ui/button";
 import { Modal, ModalContent, ModalTrigger } from "@/components/ui/modal";
 import { removeStoredTokens } from "@/lib/local-storage";
-import { LogOutIcon } from "lucide-react";
-// import { logout } from "@/redux/features/auth/auth-slice";
 import { ReactNode, useState } from "react";
-import { useNavigate } from "react-router";
+import { useAppDispatch } from "@/redux/hooks";
+import { logout } from "@/redux/slice/auth/auth-slice";
+import { queryClient } from "@/lib/react-query";
 
 export const LogOutModal = ({
-  setOpenSidebar,
   children,
 }: {
   setOpenSidebar: (open: boolean) => void;
   children: ReactNode;
 }) => {
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
-  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const handleLogout = () => {
     removeStoredTokens();
-    setOpenSidebar(false);
-    navigate("/auth");
+    dispatch(logout());
+    queryClient.clear();
   };
 
   return (
@@ -39,7 +38,9 @@ export const LogOutModal = ({
           <Button onClick={() => setLogoutModalOpen(false)} variant="secondary">
             Cancel
           </Button>
-          <Button onClick={handleLogout} variant="doju-primary">Logout</Button>
+          <Button onClick={handleLogout} variant="doju-primary">
+            Logout
+          </Button>
         </div>
       </ModalContent>
     </Modal>
