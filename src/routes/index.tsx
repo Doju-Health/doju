@@ -1,14 +1,14 @@
 import About from "@/pages/About";
 import Careers from "@/pages/Careers";
 import Cart from "@/pages/Cart";
-import Checkout from "@/pages/Checkout";
+import Checkout from "@/pages/checkout/Checkout";
 import DispatchDashboard from "@/pages/dispatch/DispatchDashboard";
 import DispatchRegistration from "@/pages/dispatch/DispatchRegistration";
 import Index from "@/pages/Index";
 import Marketplace from "@/pages/marketplace/Marketplace";
 import NotFound from "@/pages/NotFound";
 
-import OrderTracking from "@/pages/OrderTracking";
+import OrderTracking from "@/pages/order-tracking/OrderTracking";
 import Press from "@/pages/Press";
 import Privacy from "@/pages/Privacy";
 import ReturnPolicy from "@/pages/ReturnPolicy";

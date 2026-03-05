@@ -58,7 +58,7 @@ const ActionCell = ({ productId }: { productId: string }) => {
 export const getProductsColumns = (): // onViewDetails,
 ColumnDef<IProductData>[] => [
   {
-    header: "Product",
+    header: "PRODUCT",
     accessorKey: "product",
     cell: ({ row }) => {
       const product = row.original.name;
@@ -84,7 +84,7 @@ ColumnDef<IProductData>[] => [
   },
 
   {
-    header: "Category",
+    header: "CATEGORY",
     accessorKey: "category",
     cell: ({ row }) => {
       const category = row.original.category.name;
@@ -94,7 +94,7 @@ ColumnDef<IProductData>[] => [
   },
 
   {
-    header: "Stock",
+    header: "STOCK",
     accessorKey: "stock",
     cell: ({ row }) => {
       const stock = row.original.stock;
@@ -102,7 +102,7 @@ ColumnDef<IProductData>[] => [
     },
   },
   {
-    header: "Price",
+    header: "PRICE",
     accessorKey: "price",
     cell: ({ row }) => {
       const price = row.original.price;
@@ -110,7 +110,7 @@ ColumnDef<IProductData>[] => [
     },
   },
   {
-    header: "Status",
+    header: "STATUS",
     accessorKey: "status",
     cell: ({ row }) => {
       const status = row.original.isActive;
@@ -128,7 +128,7 @@ ColumnDef<IProductData>[] => [
   },
 
   {
-    header: "Action",
+    header: "ACTION",
     accessorKey: "id",
     cell: ({ row }) => {
       const productId = row.original.id;

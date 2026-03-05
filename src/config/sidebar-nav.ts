@@ -29,6 +29,7 @@ export const sidebarNav: NavGroup[] = [
       {
         title: "Orders",
         icon: ShoppingCart,
+        href: "/seller/orders",
       },
       {
         title: "Messages",

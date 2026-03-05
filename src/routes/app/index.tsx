@@ -14,6 +14,10 @@ const sellerAppRoutesConfig = [
     path: "products/:id",
     component: () => import("@/pages/seller/pages/products/ProductDetails"),
   },
+  {
+    path: "orders",
+    component: () => import("@/pages/seller/pages/orders"),
+  },
 ];
 
 export const sellerAppRoutes = sellerAppRoutesConfig.map(
