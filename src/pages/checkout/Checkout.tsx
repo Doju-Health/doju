@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input/input";
 import { Textarea } from "@/components/ui/textarea/textarea";
 import { Progress } from "@/components/ui/progress";
 import { useCart, useAppSelector } from "@/redux/hooks";
-import { useOrders, Order } from "@/hooks/useOrders";
+import { useCreateOrder } from "@/pages/checkout/api/use-create-orders";
+import { useInitializePayment } from "@/pages/checkout/api/use-initialize-payment";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -18,20 +19,17 @@ import {
   MessageSquare,
   ShoppingBag,
   Shield,
-  Landmark,
   Copy,
   CheckCircle,
   Package,
 } from "lucide-react";
 import dojuLogo from "@/assets/doju-logo.jpg";
 
-type PaymentMethod = "card" | "bank_transfer" | null;
-
 interface CheckoutStep {
   id: string;
   question: string;
   placeholder: string;
-  type: "text" | "tel" | "textarea" | "payment";
+  type: "text" | "tel" | "textarea";
   icon: React.ReactNode;
   required: boolean;
 }
@@ -54,14 +52,6 @@ const steps: CheckoutStep[] = [
     required: true,
   },
   {
-    id: "payment",
-    question: "How would you like to pay?",
-    placeholder: "Card number",
-    type: "payment",
-    icon: <CreditCard className="h-6 w-6" />,
-    required: true,
-  },
-  {
     id: "notes",
     question: "Anything else you want us to know?",
     placeholder:
@@ -72,19 +62,37 @@ const steps: CheckoutStep[] = [
   },
 ];
 
+interface CreatedOrder {
+  id: string;
+  buyer: { id: string; fullName: string; email: string };
+  product: { id: string; name: string; price: number; imageUrl: string[] };
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  orderStatus: string;
+  paymentStatus: string;
+  deliveryAddress: string;
+  notes: string;
+  transactionId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const Checkout = () => {
   const { items, totalAmount, clearCart } = useCart();
   const user = useAppSelector((state) => state.authData.user);
-  const { createOrder } = useOrders();
+  const createOrderMutation = useCreateOrder();
+  const initializePaymentMutation = useInitializePayment();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Record<string, string>>({});
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
   const [showReview, setShowReview] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
-  const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
+  const [createdOrders, setCreatedOrders] = useState<CreatedOrder[] | null>(
+    null,
+  );
 
   const shipping = totalAmount > 50000 ? 0 : 2500;
   const tax = totalAmount * 0.075;
@@ -105,8 +113,7 @@ const Checkout = () => {
 
   const handleNext = () => {
     const step = steps[currentStep];
-    if (step.id === "payment" && !paymentMethod) return;
-    if (step.required && step.type !== "payment" && !formData[step.id]) return;
+    if (step.required && !formData[step.id]) return;
 
     if (currentStep < steps.length - 1) {
       setCurrentStep((prev) => prev + 1);
@@ -141,43 +148,39 @@ const Checkout = () => {
     setPlacingOrder(true);
 
     try {
-      // Create order in database
-      const order = await createOrder({
-        phone: formData.phone,
-        delivery_address: formData.address,
-        notes: formData.notes,
-        payment_method: paymentMethod || "card",
-        items: items.map((item) => ({
-          product_id: item.product.id,
-          product_name: item.product.name,
-          product_image: item.product.images?.[0] || "/placeholder.svg",
-          seller_id: item.product.sellerId || user.id, // Fallback for mock products
-          seller_name: item.product.brand || "DOJU Seller",
-          quantity: item.quantity,
-          unit_price: item.product.price,
-        })),
-        total_amount: total,
-        shipping_amount: shipping,
-        tax_amount: tax,
+      // Step 1: Create order via API
+      const orders: CreatedOrder[] = await createOrderMutation.mutateAsync({
+        productIds: items.map((item) => item.product.id),
+        quantities: items.map((item) => item.quantity),
+        deliveryAddress: formData.address,
+        note: formData.notes || undefined,
       });
 
-      if (order) {
-        setCreatedOrder(order);
-        setIsComplete(true);
-        clearCart();
-        toast.success("Order placed successfully!");
+      if (orders && orders.length > 0) {
+        setCreatedOrders(orders);
+
+        // Step 2: Initialize payment using the first order's ID
+        const paymentData = await initializePaymentMutation.mutateAsync({
+          orderId: orders[0].id,
+          callbackUrl: `${import.meta.env.VITE_APP_URL || window.location.origin}/track-order`,
+        });
+
+        if (paymentData?.authorizationUrl) {
+          clearCart();
+          // Redirect to Paystack checkout
+          window.location.href = paymentData.authorizationUrl;
+        }
       }
     } catch (error) {
       console.error("Error placing order:", error);
-      toast.error("Failed to place order. Please try again.");
     } finally {
       setPlacingOrder(false);
     }
   };
 
-  const copyDeliveryCode = () => {
-    if (createdOrder) {
-      navigator.clipboard.writeText(createdOrder.delivery_code);
+  const copyTransactionId = () => {
+    if (createdOrders && createdOrders.length > 0) {
+      navigator.clipboard.writeText(createdOrders[0].transactionId);
       setCodeCopied(true);
       setTimeout(() => setCodeCopied(false), 2000);
     }
@@ -185,12 +188,7 @@ const Checkout = () => {
 
   const currentValue = formData[steps[currentStep]?.id] || "";
   const currentStepData = steps[currentStep];
-  const isValid =
-    currentStepData?.id === "payment"
-      ? paymentMethod !== null
-      : currentStepData?.required
-        ? currentValue.length > 0
-        : true;
+  const isValid = currentStepData?.required ? currentValue.length > 0 : true;
 
   const pageVariants = {
     initial: { opacity: 0, x: 20 },
@@ -203,8 +201,8 @@ const Checkout = () => {
     return `DJ-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
   }, []);
 
-  // Order complete screen with delivery code
-  if (isComplete && createdOrder) {
+  // Order complete screen
+  if (isComplete && createdOrders && createdOrders.length > 0) {
     return (
       <div className="min-h-screen w-full bg-background flex flex-col">
         <header className="border-b border-border bg-card">
@@ -269,31 +267,21 @@ const Checkout = () => {
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Shield className="h-5 w-5 text-doju-lime" />
                 <h3 className="font-semibold text-foreground">
-                  Your 5-Digit Order Code
+                  Your Transaction ID
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Share this code with the delivery driver to confirm receipt
+                Keep this for your records
               </p>
               <div className="flex items-center justify-center gap-3">
-                <div className="flex gap-1.5">
-                  {createdOrder.delivery_code.split("").map((digit, i) => (
-                    <motion.span
-                      key={i}
-                      className="w-12 h-14 md:w-14 md:h-16 flex items-center justify-center bg-card border-2 border-doju-lime rounded-xl text-2xl md:text-3xl font-bold text-foreground shadow-sm"
-                      initial={{ scale: 0, rotateY: 180 }}
-                      animate={{ scale: 1, rotateY: 0 }}
-                      transition={{ delay: 0.6 + i * 0.1, type: "spring" }}
-                    >
-                      {digit}
-                    </motion.span>
-                  ))}
-                </div>
+                <span className="text-lg font-semibold text-foreground">
+                  {createdOrders[0].transactionId}
+                </span>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-10 w-10"
-                  onClick={copyDeliveryCode}
+                  onClick={copyTransactionId}
                 >
                   {codeCopied ? (
                     <CheckCircle className="h-5 w-5 text-doju-lime" />
@@ -304,7 +292,7 @@ const Checkout = () => {
               </div>
               <p className="text-xs text-muted-foreground mt-3">
                 Order ID:{" "}
-                <span className="font-medium">{createdOrder.order_number}</span>
+                <span className="font-medium">{createdOrders[0].id}</span>
               </p>
             </motion.div>
 
@@ -317,7 +305,7 @@ const Checkout = () => {
             >
               <Link
                 to="/track-order"
-                state={{ orderData: createdOrder }}
+                state={{ orderData: createdOrders }}
                 className="block"
               >
                 <Button
@@ -457,21 +445,10 @@ const Checkout = () => {
                   <h2 className="font-semibold text-foreground">Payment</h2>
                 </div>
                 <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-muted/50">
-                  {paymentMethod === "card" ? (
-                    <>
-                      <CreditCard className="h-4 w-4 text-doju-lime" />
-                      <span className="text-sm text-foreground">
-                        Card Payment
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Landmark className="h-4 w-4 text-doju-lime" />
-                      <span className="text-sm text-foreground">
-                        Bank Transfer
-                      </span>
-                    </>
-                  )}
+                  <CreditCard className="h-4 w-4 text-doju-lime" />
+                  <span className="text-sm text-foreground">
+                    Pay via Paystack
+                  </span>
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -589,122 +566,7 @@ const Checkout = () => {
                 {currentStepData.question}
               </h1>
 
-              {/* Payment method selection */}
-              {currentStepData.type === "payment" ? (
-                <div className="space-y-4 mb-6">
-                  <motion.button
-                    type="button"
-                    className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
-                      paymentMethod === "card"
-                        ? "border-doju-lime bg-doju-lime/10"
-                        : "border-border bg-card hover:border-doju-lime/50"
-                    }`}
-                    onClick={() => setPaymentMethod("card")}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div
-                      className={`h-12 w-12 rounded-xl flex items-center justify-center ${
-                        paymentMethod === "card"
-                          ? "bg-doju-lime text-doju-navy"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      <CreditCard className="h-6 w-6" />
-                    </div>
-                    <div className="text-left flex-1">
-                      <p className="font-semibold text-foreground">
-                        Card Payment
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Pay with debit or credit card
-                      </p>
-                    </div>
-                    {paymentMethod === "card" && (
-                      <Check className="h-5 w-5 text-doju-lime" />
-                    )}
-                  </motion.button>
-
-                  <motion.button
-                    type="button"
-                    className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
-                      paymentMethod === "bank_transfer"
-                        ? "border-doju-lime bg-doju-lime/10"
-                        : "border-border bg-card hover:border-doju-lime/50"
-                    }`}
-                    onClick={() => setPaymentMethod("bank_transfer")}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div
-                      className={`h-12 w-12 rounded-xl flex items-center justify-center ${
-                        paymentMethod === "bank_transfer"
-                          ? "bg-doju-lime text-doju-navy"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      <Landmark className="h-6 w-6" />
-                    </div>
-                    <div className="text-left flex-1">
-                      <p className="font-semibold text-foreground">
-                        Bank Transfer
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Transfer directly to our account
-                      </p>
-                    </div>
-                    {paymentMethod === "bank_transfer" && (
-                      <Check className="h-5 w-5 text-doju-lime" />
-                    )}
-                  </motion.button>
-
-                  {/* Card details if card selected */}
-                  {paymentMethod === "card" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="space-y-3 pt-2"
-                    >
-                      <Input
-                        type="text"
-                        placeholder="Card number"
-                        className="h-12"
-                      />
-                      <div className="grid grid-cols-2 gap-3">
-                        <Input
-                          type="text"
-                          placeholder="MM/YY"
-                          className="h-12"
-                        />
-                        <Input type="text" placeholder="CVV" className="h-12" />
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Bank transfer info if selected */}
-                  {paymentMethod === "bank_transfer" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="p-4 rounded-xl bg-muted/50 border border-border"
-                    >
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Transfer to:
-                      </p>
-                      <p className="font-semibold text-foreground">
-                        DOJU Medical Supplies
-                      </p>
-                      <p className="text-sm text-foreground">
-                        Bank: First Bank Nigeria
-                      </p>
-                      <p className="text-sm text-foreground">
-                        Account: 0123456789
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Order will be processed after payment confirmation
-                      </p>
-                    </motion.div>
-                  )}
-                </div>
-              ) : currentStepData.type === "textarea" ? (
+              {currentStepData.type === "textarea" ? (
                 <Textarea
                   placeholder={currentStepData.placeholder}
                   value={currentValue}

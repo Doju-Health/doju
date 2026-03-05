@@ -187,3 +187,28 @@ export interface PaginatedResponse<T> {
   data: T[];
   meta: PaginationMeta;
 }
+
+export interface ISellerOrder {
+  id: string;
+  buyer: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    imageUrl: string[];
+  };
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  orderStatus: "pending" | "shipped" | "delivered" | "cancelled";
+  paymentStatus: "pending" | "paid" | "failed";
+  deliveryAddress: string;
+  notes: string | null;
+  transactionId: string;
+  createdAt: string;
+  updatedAt: string;
+}

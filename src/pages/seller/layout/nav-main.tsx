@@ -21,7 +21,7 @@ export function NavMain({ groups }: NavMainProps) {
     <>
       {groups.map((group) => (
         <SidebarGroup key={group.label}>
-          <SidebarMenu>
+          <SidebarMenu className="gap-1">
             {group.items.map((item) => {
               const isActive = item.href && pathname === item.href;
 
