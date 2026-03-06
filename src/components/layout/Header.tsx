@@ -195,7 +195,7 @@ const Header = () => {
                     {authUser ? (
                       <>
                         {authUser.role === "seller" && (
-                          <Link to="/seller-dashboard">
+                          <Link to="/seller/overview">
                             <Button
                               variant="doju-outline"
                               className="w-full gap-2"

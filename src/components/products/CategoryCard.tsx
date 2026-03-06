@@ -9,8 +9,11 @@ interface CategoryCardProps {
 }
 
 const CategoryCard = ({ category, index = 0 }: CategoryCardProps) => {
+  // the marketplace currently filters by category name, so use that here
+  const url = `/marketplace?category=${encodeURIComponent(category.name)}`;
+
   return (
-    <Link to={`/marketplace?category=${category.id}`}>
+    <Link to={url}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

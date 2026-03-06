@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,7 +10,9 @@ import {
 import { Input } from "@/components/ui/input/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Package, ArrowRight } from "lucide-react";
-import { allProducts, categories } from "@/data/mockData";
+import { allProducts, categories as mockCategories } from "@/data/mockData";
+import { useGetCategories } from "@/pages/seller/api/use-get-categories";
+import { ApiCategory, Category } from "@/types";
 
 interface SearchDialogProps {
   open: boolean;
@@ -21,6 +23,25 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<typeof allProducts>([]);
+
+  const { data: apiCategories = [], isLoading: categoriesLoading } =
+    useGetCategories();
+
+  const categories: Category[] = useMemo(() => {
+    if (categoriesLoading || !apiCategories || apiCategories.length === 0) {
+      return mockCategories;
+    }
+    return (apiCategories as ApiCategory[])
+      .filter((c) => c.isActive)
+      .map((c) => ({
+        id: c.id,
+        name: c.name,
+        description: c.description,
+        icon: '',
+        productCount: 0,
+        image: c.imageUrl,
+      }));
+  }, [apiCategories, categoriesLoading]);
 
   useEffect(() => {
     if (query.trim().length < 2) {

@@ -55,6 +55,18 @@ const Marketplace = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     searchParams.get("category") || null,
   );
+
+  // if the query param is a category id we want to translate it to a name so
+  // that our filtering logic (which compares against product.category/name)
+  // works correctly.  categories list comes from the API below.
+  const resolvedCategoryName = useMemo(() => {
+    if (!selectedCategory) return null;
+    // look up by id first
+    const byId = categories.find((c) => c.id === selectedCategory);
+    if (byId) return byId.name;
+    // otherwise maybe the value is already a name
+    return selectedCategory;
+  }, [selectedCategory, categories]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
   const [showFilters, setShowFilters] = useState(false);
@@ -103,7 +115,7 @@ const Marketplace = () => {
       product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
-      !selectedCategory || product.category === selectedCategory;
+      !resolvedCategoryName || product.category === resolvedCategoryName;
     const matchesBrand =
       selectedBrands.length === 0 || selectedBrands.includes(product.brand);
     const matchesPrice =
@@ -171,7 +183,7 @@ const Marketplace = () => {
             >
               <div>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-foreground">
-                  {selectedCategory || "All Products"}
+                  {resolvedCategoryName || "All Products"}
                 </h1>
                 <p className="text-primary-foreground/70 mt-1 text-sm sm:text-base">
                   {filteredProducts.length} products available
@@ -371,12 +383,12 @@ const Marketplace = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    {selectedCategory && (
+                    {resolvedCategoryName && (
                       <Badge
                         variant="secondary"
                         className="gap-1 py-1.5 px-3 rounded-full"
                       >
-                        {selectedCategory}
+                        {resolvedCategoryName}
                         <button
                           onClick={() => setSelectedCategory(null)}
                           className="ml-1 hover:text-destructive"

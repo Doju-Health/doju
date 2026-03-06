@@ -9,7 +9,9 @@ import CategoryCard from '@/components/products/CategoryCard';
 import AnimatedStat from '@/components/home/AnimatedStat';
 import TopSellingCarousel from '@/components/home/TopSellingCarousel';
 import DispatchAgentSection from '@/components/home/DispatchAgentSection';
-import { categories, featuredProducts } from '@/data/mockData';
+import { featuredProducts, categories as mockCategories } from '@/data/mockData';
+import { useGetCategories } from '@/pages/seller/api/use-get-categories';
+import { ApiCategory, Category } from '@/types';
 import { 
   Shield, Truck, BadgeCheck, Headphones, 
   CheckCircle, Zap, Heart, Globe, 
@@ -19,7 +21,7 @@ import heroImage from '@/assets/hero-medical.jpg';
 import dojuLogo from '@/assets/doju-logo.jpg';
 import heroHospitalBg from '@/assets/hero-hospital-bg.jpg';
 import CartCheckoutBar from '@/components/cart/CartCheckoutBar';
-import { useRef, useCallback, useEffect, useState } from 'react';
+import { useRef, useCallback, useEffect, useState, useMemo } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 
 // Top 4 products for homepage
@@ -34,6 +36,34 @@ const Index = () => {
   
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 150]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+
+  // fetch categories from the API rather than relying on mock data
+  const {
+    data: apiCategories = [],
+    isLoading: categoriesLoading,
+  } = useGetCategories();
+
+  // convert API data to UI Category format; fall back to mock data if something goes wrong
+  const categories: Category[] = useMemo(() => {
+    if (categoriesLoading) {
+      // while loading show the mock set so the page doesn't appear empty
+      return mockCategories;
+    }
+    if (!apiCategories || apiCategories.length === 0) {
+      return mockCategories;
+    }
+
+    return (apiCategories as ApiCategory[])
+      .filter((c) => c.isActive)
+      .map((c) => ({
+        id: c.id,
+        name: c.name,
+        description: c.description,
+        icon: '', // not provided by the API; fallback to empty
+        productCount: 0, // server doesn't supply counts yet
+        image: c.imageUrl,
+      }));
+  }, [apiCategories, categoriesLoading]);
 
   const whyChooseDoju = [
     { 
@@ -218,7 +248,7 @@ const Index = () => {
                       <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </Link>
-                  <Link to="/seller-onboarding" className="w-full sm:w-auto">
+                  <Link to="/auth" className="w-full sm:w-auto">
                     <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary-foreground/30 text-foreground hover:bg-primary-foreground/10 font-bold gap-2 h-12 sm:h-14 text-sm sm:text-base">
                       Sell Through Us
                       <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -361,9 +391,15 @@ const Index = () => {
             </motion.div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {categories.map((category, index) => (
-                <CategoryCard key={category.id} category={category} index={index} />
-              ))}
+              {categoriesLoading && categories.length === 0 ? (
+                <p className="text-center text-muted-foreground w-full">
+                  Loading categories…
+                </p>
+              ) : (
+                categories.map((category, index) => (
+                  <CategoryCard key={category.id} category={category} index={index} />
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -517,25 +553,7 @@ const Index = () => {
                 </Link>
               </motion.div>
 
-              {/* Admin Login - positioned at the bottom */}
-              <motion.div 
-                className="mt-12 pt-8 border-t border-primary-foreground/10"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4 }}
-              >
-                <Link to="/auth?admin=true">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-primary-foreground/50 hover:text-primary-foreground hover:bg-primary-foreground/10 gap-2"
-                  >
-                    <Shield className="h-4 w-4" />
-                    Admin Login
-                  </Button>
-                </Link>
-              </motion.div>
+              
             </motion.div>
           </div>
         </section>

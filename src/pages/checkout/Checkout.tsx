@@ -597,7 +597,7 @@ const Checkout = () => {
               >
                 <Button
                   variant="doju-primary"
-                  size="lg"
+                  size="lg"        
                   className="w-full"
                   disabled={!isValid}
                   onClick={handleNext}
