@@ -56,9 +56,14 @@ const Marketplace = () => {
     searchParams.get("category") || null,
   );
 
+  // Map API categories
+  const categories: ApiCategory[] = useMemo(() => {
+    return (apiCategories as ApiCategory[]).filter((c) => c.isActive);
+  }, [apiCategories]);
+
   // if the query param is a category id we want to translate it to a name so
   // that our filtering logic (which compares against product.category/name)
-  // works correctly.  categories list comes from the API below.
+  // works correctly.
   const resolvedCategoryName = useMemo(() => {
     if (!selectedCategory) return null;
     // look up by id first
@@ -67,6 +72,7 @@ const Marketplace = () => {
     // otherwise maybe the value is already a name
     return selectedCategory;
   }, [selectedCategory, categories]);
+
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
   const [showFilters, setShowFilters] = useState(false);
@@ -77,11 +83,6 @@ const Marketplace = () => {
       .filter((p) => p.isActive)
       .map(mapApiProduct);
   }, [apiProducts]);
-
-  // Map API categories
-  const categories: ApiCategory[] = useMemo(() => {
-    return (apiCategories as ApiCategory[]).filter((c) => c.isActive);
-  }, [apiCategories]);
 
   // Sync URL params to state
   useEffect(() => {
