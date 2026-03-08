@@ -12,22 +12,45 @@ import { useUploadImage } from "../../api/use-upload-image";
 import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
+import { useEditProduct } from "../../api/use-edit-product";
+import { IProductData } from "@/types";
+import { useEffect } from "react";
+
+const MAX_IMAGE_SIZE_BYTES = 10485760;
 
 export const CreateProductModal = ({
   children,
+  mode = "create",
+  initialProduct,
+  open: controlledOpen,
+  onOpenChange,
 }: {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  mode?: "create" | "edit";
+  initialProduct?: IProductData | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) => {
   const { data: categories, isPending: isCategoriesLoading } =
     useGetCategories();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState<string>("");
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { mutate: addProduct, isPending: isAddingProduct } = useAddProduct();
+  const { mutate: editProduct, isPending: isEditingProduct } = useEditProduct();
   const { mutateAsync: uploadImages, isPending: isUploading } =
     useUploadImage();
+
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = (value: boolean) => {
+    if (controlledOpen === undefined) {
+      setInternalOpen(value);
+    }
+    onOpenChange?.(value);
+  };
 
   const {
     values,
@@ -60,19 +83,46 @@ export const CreateProductModal = ({
       categoryId: yup.string().required("Category is required"),
     }),
     onSubmit: async () => {
-      if (selectedFiles.length === 0) {
-        setFileError("Please upload at least one image");
-        return;
-      }
-
       try {
-        // Upload images first
+        if (mode === "edit") {
+          if (!initialProduct?.id) return;
+
+          let imageUrlArray = existingImageUrls;
+          if (selectedFiles.length > 0) {
+            const uploadedUrls = await uploadImages(selectedFiles);
+            imageUrlArray = Array.isArray(uploadedUrls)
+              ? uploadedUrls
+              : [uploadedUrls];
+          }
+
+          editProduct(
+            {
+              id: initialProduct.id,
+              ...values,
+              imageUrl: imageUrlArray,
+            },
+            {
+              onSuccess: () => {
+                setOpen(false);
+                setSelectedFiles([]);
+                setFileError("");
+                resetForm();
+              },
+            },
+          );
+          return;
+        }
+
+        if (selectedFiles.length === 0) {
+          setFileError("Please upload at least one image");
+          return;
+        }
+
         const uploadedUrls = await uploadImages(selectedFiles);
         const imageUrlArray = Array.isArray(uploadedUrls)
           ? uploadedUrls
           : [uploadedUrls];
 
-        // Submit product with image URLs
         addProduct(
           { ...values, imageUrl: imageUrlArray },
           {
@@ -90,12 +140,62 @@ export const CreateProductModal = ({
     },
   });
 
+  useEffect(() => {
+    if (!open) return;
+
+    if (mode === "edit" && initialProduct) {
+      setValues({
+        name: initialProduct.name,
+        description: initialProduct.description,
+        price: initialProduct.price,
+        stock: initialProduct.stock,
+        categoryId: initialProduct.category.id,
+      });
+      setExistingImageUrls(initialProduct.imageUrl || []);
+      setSelectedFiles([]);
+      setFileError("");
+      return;
+    }
+
+    setValues({
+      name: "",
+      description: "",
+      price: 0,
+      stock: 0,
+      categoryId: "",
+    });
+    setExistingImageUrls([]);
+    setSelectedFiles([]);
+    setFileError("");
+  }, [open, mode, initialProduct, setValues]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
       const newFiles = Array.from(files);
-      setSelectedFiles((prev) => [...prev, ...newFiles]);
-      setFileError("");
+      const oversizedFiles = newFiles.filter(
+        (file) => file.size > MAX_IMAGE_SIZE_BYTES,
+      );
+
+      if (oversizedFiles.length > 0) {
+        const oversizedNames = oversizedFiles
+          .map((file) => file.name)
+          .join(", ");
+        setFileError(
+          `${oversizedNames} exceed 10MB. Please upload images smaller than 10MB.`,
+        );
+      }
+
+      const validFiles = newFiles.filter(
+        (file) => file.size <= MAX_IMAGE_SIZE_BYTES,
+      );
+
+      if (validFiles.length > 0) {
+        setSelectedFiles((prev) => [...prev, ...validFiles]);
+        if (oversizedFiles.length === 0) {
+          setFileError("");
+        }
+      }
     }
     // Reset input so same file can be selected again
     if (fileInputRef.current) {
@@ -111,6 +211,7 @@ export const CreateProductModal = ({
     setOpen(isOpen);
     if (!isOpen) {
       setSelectedFiles([]);
+      setExistingImageUrls([]);
       setFileError("");
       resetForm();
     }
@@ -120,7 +221,7 @@ export const CreateProductModal = ({
       open={open}
       openChange={handleModalClose}
       trigger={children}
-      title="Create New Product"
+      title={mode === "edit" ? "Edit Product" : "Create New Product"}
       position="right"
     >
       <form action="" className="space-y-4" onSubmit={handleSubmit}>
@@ -174,8 +275,28 @@ export const CreateProductModal = ({
         {/* Multi-file Image Upload */}
         <div className="w-full font-reddit">
           <Label className="text-sm font-reddit font-medium leading-none mb-2 block">
-            Product Images
+            Product Images {mode === "edit" ? "(optional)" : ""}
           </Label>
+
+          {mode === "edit" && existingImageUrls.length > 0 && (
+            <div className="mb-3 space-y-2">
+              <p className="text-sm text-muted-foreground">Current images</p>
+              <div className="grid grid-cols-3 gap-2">
+                {existingImageUrls.map((imageUrl, index) => (
+                  <div
+                    key={`${imageUrl}-${index}`}
+                    className="rounded-lg overflow-hidden border border-border"
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`Product ${index + 1}`}
+                      className="w-full h-20 object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <input
             type="file"
@@ -247,12 +368,16 @@ export const CreateProductModal = ({
         </div>
 
         <Button
-          isLoading={isAddingProduct || isUploading}
+          isLoading={isAddingProduct || isEditingProduct || isUploading}
           type="submit"
           variant="doju-primary"
           className="w-full"
         >
-          {isUploading ? "Uploading images..." : "Submit"}
+          {isUploading
+            ? "Uploading images..."
+            : mode === "edit"
+              ? "Save Changes"
+              : "Submit"}
         </Button>
       </form>
     </CustomModal>

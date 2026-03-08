@@ -1,7 +1,12 @@
-import { Link } from 'react-router-dom';
-import dojuLogo from '@/assets/doju-logo.jpg';
+import { Link } from "react-router-dom";
+import dojuLogo from "@/assets/doju-logo.jpg";
+import { useAppSelector } from "@/redux/hooks";
 
 const Footer = () => {
+  const isAuthenticated = useAppSelector(
+    (state) => state.authData.isAuthenticated,
+  );
+
   return (
     <footer className="border-t border-border bg-card">
       <div className="container py-8 sm:py-12 px-4 sm:px-6">
@@ -9,17 +14,34 @@ const Footer = () => {
           {/* Brand */}
           <div className="col-span-2 sm:col-span-2 md:col-span-1 space-y-3 sm:space-y-4">
             <Link to="/" className="flex items-center gap-2 sm:gap-3">
-              <img src={dojuLogo} alt="Doju" className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover shadow-md" />
-              <span className="text-lg sm:text-xl font-bold text-foreground">Doju</span>
+              <img
+                src={dojuLogo}
+                alt="Doju"
+                className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover shadow-md"
+              />
+              <span className="text-lg sm:text-xl font-bold text-foreground">
+                Doju
+              </span>
             </Link>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Your trusted source for clinical-grade medical equipment and supplies.
+              Your trusted source for clinical-grade medical equipment and
+              supplies.
             </p>
             <div className="flex gap-4">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Twitter
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
                 LinkedIn
               </a>
             </div>
@@ -27,7 +49,9 @@ const Footer = () => {
 
           {/* Contact */}
           <div className="space-y-3 sm:space-y-4">
-            <h4 className="font-semibold text-foreground text-sm sm:text-base">Contact</h4>
+            <h4 className="font-semibold text-foreground text-sm sm:text-base">
+              Contact
+            </h4>
             <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
               <p className="break-all">dojuhealthltd@gmail.com</p>
               <p>+234 13 456 689</p>
@@ -37,15 +61,26 @@ const Footer = () => {
 
           {/* Legal */}
           <div className="space-y-3 sm:space-y-4">
-            <h4 className="font-semibold text-foreground text-sm sm:text-base">Legal</h4>
+            <h4 className="font-semibold text-foreground text-sm sm:text-base">
+              Legal
+            </h4>
             <div className="flex flex-col gap-1.5 sm:gap-2 text-xs sm:text-sm">
-              <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                to="/terms"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Terms of Service
               </Link>
-              <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                to="/privacy"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Privacy Policy
               </Link>
-              <Link to="/return-policy" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                to="/return-policy"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Return Policy
               </Link>
             </div>
@@ -53,18 +88,34 @@ const Footer = () => {
 
           {/* Company */}
           <div className="space-y-3 sm:space-y-4">
-            <h4 className="font-semibold text-foreground text-sm sm:text-base">Company</h4>
+            <h4 className="font-semibold text-foreground text-sm sm:text-base">
+              Company
+            </h4>
             <div className="flex flex-col gap-1.5 sm:gap-2 text-xs sm:text-sm">
-              <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                to="/about"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 About
               </Link>
-              <Link to="/track-order" className="text-muted-foreground hover:text-foreground transition-colors">
-                Track Order
-              </Link>
-              <Link to="/careers" className="text-muted-foreground hover:text-foreground transition-colors">
+              {isAuthenticated && (
+                <Link
+                  to="/track-order"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Track Order
+                </Link>
+              )}
+              <Link
+                to="/careers"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Careers
               </Link>
-              <Link to="/press" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                to="/press"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Press
               </Link>
             </div>

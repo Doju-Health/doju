@@ -9,6 +9,7 @@ import { useCart, useAppSelector } from "@/redux/hooks";
 import { useCreateOrder } from "@/pages/checkout/api/use-create-orders";
 import { useInitializePayment } from "@/pages/checkout/api/use-initialize-payment";
 import { toast } from "sonner";
+import { City, State } from "country-state-city";
 import {
   ArrowLeft,
   ArrowRight,
@@ -29,7 +30,7 @@ interface CheckoutStep {
   id: string;
   question: string;
   placeholder: string;
-  type: "text" | "tel" | "textarea";
+  type: "text" | "tel" | "textarea" | "select";
   icon: React.ReactNode;
   required: boolean;
 }
@@ -44,9 +45,25 @@ const steps: CheckoutStep[] = [
     required: true,
   },
   {
+    id: "stateCode",
+    question: "Select your state",
+    placeholder: "Choose your state",
+    type: "select",
+    icon: <MapPin className="h-6 w-6" />,
+    required: true,
+  },
+  {
+    id: "city",
+    question: "Select your city",
+    placeholder: "Choose your city",
+    type: "select",
+    icon: <MapPin className="h-6 w-6" />,
+    required: true,
+  },
+  {
     id: "address",
-    question: "Where should we deliver your order?",
-    placeholder: "Enter your full delivery address",
+    question: "What's your street address?",
+    placeholder: "House number, street, area",
     type: "text",
     icon: <MapPin className="h-6 w-6" />,
     required: true,
@@ -133,6 +150,15 @@ const Checkout = () => {
   };
 
   const handleInputChange = (value: string) => {
+    if (steps[currentStep].id === "stateCode") {
+      setFormData((prev) => ({
+        ...prev,
+        stateCode: value,
+        city: "",
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [steps[currentStep].id]: value,
@@ -148,11 +174,19 @@ const Checkout = () => {
     setPlacingOrder(true);
 
     try {
+      const combinedDeliveryAddress = [
+        formData.address,
+        formData.city,
+        selectedStateName,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
       // Step 1: Create order via API
       const orders: CreatedOrder[] = await createOrderMutation.mutateAsync({
         productIds: items.map((item) => item.product.id),
         quantities: items.map((item) => item.quantity),
-        deliveryAddress: formData.address,
+        deliveryAddress: combinedDeliveryAddress,
         note: formData.notes || undefined,
       });
 
@@ -188,7 +222,32 @@ const Checkout = () => {
 
   const currentValue = formData[steps[currentStep]?.id] || "";
   const currentStepData = steps[currentStep];
+  const nigeriaStates = useMemo(
+    () =>
+      State.getStatesOfCountry("NG").sort((a, b) =>
+        a.name.localeCompare(b.name),
+      ),
+    [],
+  );
+  const selectedState = nigeriaStates.find(
+    (state) => state.isoCode === formData.stateCode,
+  );
+  const selectedStateName = selectedState?.name || "";
+  const cityOptions = formData.stateCode
+    ? City.getCitiesOfState("NG", formData.stateCode).sort((a, b) =>
+        a.name.localeCompare(b.name),
+      )
+    : [];
   const isValid = currentStepData?.required ? currentValue.length > 0 : true;
+  const canSelectCurrentStep =
+    currentStepData?.id !== "city" || Boolean(formData.stateCode);
+  const reviewDeliveryAddress = [
+    formData.address,
+    formData.city,
+    selectedStateName,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   const pageVariants = {
     initial: { opacity: 0, x: 20 },
@@ -426,7 +485,7 @@ const Checkout = () => {
                   <h2 className="font-semibold text-foreground">Delivery</h2>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {formData.address}
+                  {reviewDeliveryAddress}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   {formData.phone}
@@ -574,6 +633,34 @@ const Checkout = () => {
                   className="text-lg min-h-[120px] mb-6"
                   autoFocus
                 />
+              ) : currentStepData.type === "select" ? (
+                <select
+                  value={currentValue}
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-3 text-base md:text-lg h-14 mb-6"
+                  autoFocus
+                  disabled={!canSelectCurrentStep}
+                >
+                  <option value="" disabled>
+                    {canSelectCurrentStep
+                      ? currentStepData.placeholder
+                      : "Please select state first"}
+                  </option>
+                  {(currentStepData.id === "stateCode"
+                    ? nigeriaStates.map((state) => ({
+                        label: state.name,
+                        value: state.isoCode,
+                      }))
+                    : cityOptions.map((city) => ({
+                        label: city.name,
+                        value: city.name,
+                      }))
+                  ).map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               ) : (
                 <Input
                   type={currentStepData.type}
@@ -597,7 +684,7 @@ const Checkout = () => {
               >
                 <Button
                   variant="doju-primary"
-                  size="lg"        
+                  size="lg"
                   className="w-full"
                   disabled={!isValid}
                   onClick={handleNext}

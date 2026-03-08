@@ -205,7 +205,7 @@ const SellerOnboarding = () => {
 
       toast.success("Welcome back!");
       // Force reload to refresh auth context
-      window.location.href = "/seller/dashboard";
+      window.location.href = "/seller/overview";
     } catch (error: any) {
       console.error("Signin error:", error);
       setError(error.message || "Failed to sign in");
@@ -329,7 +329,7 @@ const SellerOnboarding = () => {
                 className="w-full gap-2"
                 onClick={() => {
                   // Force page reload to refresh auth context
-                  window.location.href = "/seller/dashboard";
+                  window.location.href = "/seller/overview";
                 }}
               >
                 <Store className="h-5 w-5" />

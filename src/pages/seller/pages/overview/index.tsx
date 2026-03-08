@@ -6,6 +6,7 @@ import {
   Clock,
   DollarSign,
   Package,
+  Plus,
   ShoppingCart,
   TrendingUp,
   Users,
@@ -32,25 +33,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-
-type RecentOrder = {
-  id: string;
-  buyer?: {
-    fullName?: string;
-    email?: string;
-  };
-  product?: {
-    name?: string;
-    price?: number;
-    imageUrl?: string[];
-  };
-  quantity?: number;
-  unitPrice?: number;
-  totalPrice?: number;
-  orderStatus?: string;
-  paymentStatus?: string;
-  createdAt?: string;
-};
+import { CreateProductModal } from "../../components/modal/create-product-modal";
 
 type TopProduct = {
   id: string;
@@ -58,6 +41,15 @@ type TopProduct = {
   imageUrl?: string;
   totalSold?: number;
   revenue?: number;
+};
+
+type RecentOrder = {
+  id: string;
+  productName: string;
+  buyerName: string;
+  amount: string;
+  status: string;
+  createdAt: string;
 };
 
 type DashboardOverview = {
@@ -211,17 +203,25 @@ export default function SellerDashboard() {
   ];
 
   const recentOrders: RecentOrder[] = Array.isArray(overview?.recentOrders)
-    ? overview.recentOrders
+    ? overview.recentOrders.slice(0, 5)
     : [];
 
   const topProducts: TopProduct[] = Array.isArray(overview?.topProducts)
-    ? overview.topProducts
+    ? overview.topProducts.slice(0,5)
     : [];
 
   return (
     <QueryWrapper currentQuery={dashboardQuery}>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold mb-4">Seller Overview</h1>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold">Seller Overview</h1>
+          <CreateProductModal>
+            <Button variant="doju-primary" size="sm" className="gap-2">
+              <Plus className="h-4 w-4" />
+              Quick Add Product
+            </Button>
+          </CreateProductModal>
+        </div>
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -550,44 +550,29 @@ export default function SellerDashboard() {
               <p className="text-sm text-muted-foreground">No orders yet.</p>
             )}
 
-            {recentOrders.map((order) => {
-              const productName = order.product?.name || "Order";
-              const quantity = order.quantity ?? 0;
-              const total = order.totalPrice ?? order.unitPrice ?? 0;
-
-              return (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate">
-                      {productName}
+            {recentOrders.map((order) => (
+              <div
+                key={order.id}
+                className="flex items-center justify-between gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-foreground truncate">
+                    {order.productName || "Order"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatCurrency(parseFloat(order.amount))}
+                  </p>
+                  {order.buyerName && (
+                    <p className="text-xs text-muted-foreground">
+                      Buyer: {order.buyerName}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      {quantity} item{quantity === 1 ? "" : "s"} •{" "}
-                      {formatCurrency(total)}
-                    </p>
-                    {order.buyer?.fullName && (
-                      <p className="text-xs text-muted-foreground">
-                        Buyer: {order.buyer.fullName}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {order.orderStatus && getStatusBadge(order.orderStatus)}
-                    {order.paymentStatus && (
-                      <Badge
-                        className={`${getStatusColor(order.paymentStatus)} gap-1`}
-                        variant="outline"
-                      >
-                        {order.paymentStatus}
-                      </Badge>
-                    )}
-                  </div>
+                  )}
                 </div>
-              );
-            })}
+                <div className="flex items-center gap-2">
+                  {getStatusBadge(order.status)}
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
 

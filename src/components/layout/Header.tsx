@@ -1,14 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import {
-  Search,
-  ShoppingCart,
-  User,
-  Menu,
-  LogOut,
-  Shield,
-  Store,
-  Truck,
-} from "lucide-react";
+import { Search, ShoppingCart, User, Menu, LogOut, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/redux/hooks";
 import { useState } from "react";
@@ -32,6 +23,9 @@ const Header = () => {
   const { totalItems } = useCart();
   const dispatch = useAppDispatch();
   const authUser = useAppSelector((state) => state.authData.user);
+  const isAuthenticated = useAppSelector(
+    (state) => state.authData.isAuthenticated,
+  );
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -41,6 +35,9 @@ const Header = () => {
     { label: "Products", href: "/marketplace" },
     { label: "Track Order", href: "/track-order" },
   ];
+  const visibleNavLinks = isAuthenticated
+    ? navLinks
+    : navLinks.filter((link) => link.href !== "/track-order");
 
   const handleSignOut = async () => {
     removeStoredTokens();
@@ -63,7 +60,7 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
+            {visibleNavLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
@@ -102,9 +99,9 @@ const Header = () => {
             </Button>
 
             {/* Notification Bell - only for logged in users */}
-            {authUser && <NotificationBell />}
+            {isAuthenticated && <NotificationBell />}
 
-            {authUser ? (
+            {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -118,11 +115,11 @@ const Header = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem className="text-muted-foreground text-xs">
-                    {authUser.email}
+                    {authUser?.email}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
 
-                  {authUser.role === "seller" && (
+                  {authUser?.role === "seller" && (
                     <DropdownMenuItem
                       onClick={() => navigate("/seller/overview")}
                     >
@@ -181,7 +178,7 @@ const Header = () => {
                     Search products...
                   </Button>
                   <nav className="flex flex-col gap-2">
-                    {navLinks.map((link) => (
+                    {visibleNavLinks.map((link) => (
                       <Link
                         key={link.href}
                         to={link.href}
@@ -192,9 +189,9 @@ const Header = () => {
                     ))}
                   </nav>
                   <div className="border-t pt-4 space-y-2">
-                    {authUser ? (
+                    {isAuthenticated ? (
                       <>
-                        {authUser.role === "seller" && (
+                        {authUser?.role === "seller" && (
                           <Link to="/seller/overview">
                             <Button
                               variant="doju-outline"

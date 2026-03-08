@@ -156,7 +156,7 @@ const Marketplace = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col w-full">
       <Header />
 
       <main className="flex-1">
@@ -186,9 +186,7 @@ const Marketplace = () => {
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-foreground">
                   {resolvedCategoryName || "All Products"}
                 </h1>
-                <p className="text-primary-foreground/70 mt-1 text-sm sm:text-base">
-                  {filteredProducts.length} products available
-                </p>
+               
               </div>
               <div className="flex items-center gap-2">
                 <Button

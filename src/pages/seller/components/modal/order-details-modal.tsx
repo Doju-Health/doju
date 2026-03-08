@@ -13,7 +13,8 @@ import { ISellerOrder } from "@/types";
 import { cn, formatPriceAmount } from "@/lib/utils";
 import { getStatusBadge } from "../orders-table/order-table-column";
 import { useMarkAsShipped } from "../../api/use-mark-as-shipped";
-import { Truck } from "lucide-react";
+import { useMarkAsDelivered } from "../../api/use-mark-as-delivered";
+import { CheckCircle, Truck } from "lucide-react";
 import { format } from "date-fns";
 
 interface OrderDetailsModalProps {
@@ -27,15 +28,30 @@ export const OrderDetailsModal = ({
   open,
   onOpenChange,
 }: OrderDetailsModalProps) => {
-  const { mutate, isPending } = useMarkAsShipped();
+  const { mutate: markAsShipped, isPending: isMarkingAsShipped } =
+    useMarkAsShipped();
+  const { mutate: markAsDelivered, isPending: isMarkingAsDelivered } =
+    useMarkAsDelivered();
+
+  const normalizedPaymentStatus = order?.paymentStatus?.toLowerCase();
+  const normalizedOrderStatus = order?.orderStatus?.toLowerCase();
 
   const canMarkAsShipped =
-    order?.paymentStatus.toLowerCase() === "paid" &&
-    order?.orderStatus.toLowerCase() === "confirmed";
+    normalizedPaymentStatus === "paid" && normalizedOrderStatus === "confirmed";
+  const canMarkAsDelivered = normalizedOrderStatus === "shipped";
 
   const handleMarkAsShipped = () => {
     if (!order) return;
-    mutate(order.id, {
+    markAsShipped(order.id, {
+      onSuccess: () => {
+        onOpenChange(false);
+      },
+    });
+  };
+
+  const handleMarkAsDelivered = () => {
+    if (!order) return;
+    markAsDelivered(order.id, {
       onSuccess: () => {
         onOpenChange(false);
       },
@@ -126,7 +142,7 @@ export const OrderDetailsModal = ({
                     <Badge
                       className={cn(
                         "text-xs rounded-full",
-                        order.paymentStatus === "paid"
+                        order.paymentStatus.toLowerCase() === "paid"
                           ? "bg-green-100 text-green-700"
                           : order.paymentStatus === "pending"
                             ? "bg-yellow-100 text-yellow-700"
@@ -206,19 +222,33 @@ export const OrderDetailsModal = ({
               </div>
             </div>
 
-            {canMarkAsShipped && (
+            {(canMarkAsShipped || canMarkAsDelivered) && (
               <>
                 <Separator />
                 <SheetFooter className="pt-2">
-                  <Button
-                    className="w-full gap-2"
-                    onClick={handleMarkAsShipped}
-                    disabled={isPending}
-                    isLoading={isPending}
-                  >
-                    <Truck className="h-4 w-4" />
-                    Mark as Shipped
-                  </Button>
+                  {canMarkAsShipped && (
+                    <Button
+                      className="w-full gap-2"
+                      onClick={handleMarkAsShipped}
+                      disabled={isMarkingAsShipped}
+                      isLoading={isMarkingAsShipped}
+                    >
+                      <Truck className="h-4 w-4" />
+                      Mark as Shipped
+                    </Button>
+                  )}
+
+                  {canMarkAsDelivered && (
+                    <Button
+                      className="w-full gap-2"
+                      onClick={handleMarkAsDelivered}
+                      disabled={isMarkingAsDelivered}
+                      isLoading={isMarkingAsDelivered}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                      Mark as Delivered
+                    </Button>
+                  )}
                 </SheetFooter>
               </>
             )}

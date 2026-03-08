@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -34,8 +34,20 @@ const ProductDetail = () => {
   const { data: productsResponse } = useGetProducts({ page: 1, limit: 5 });
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const product = apiProduct ? mapApiProduct(apiProduct) : null;
+
+  useEffect(() => {
+    setSelectedImageIndex(0);
+  }, [product?.id]);
+
+  const selectedImage =
+    product?.images?.[selectedImageIndex] || "/placeholder.svg";
+  const nonSelectedImages = (product?.images || [])
+    .map((image, index) => ({ image, index }))
+    .filter(({ index }) => index !== selectedImageIndex)
+    .slice(0, 4);
 
   // Related products: other products from the same response, excluding current
   const relatedProducts = (productsResponse?.data ?? [])
@@ -120,20 +132,21 @@ const ProductDetail = () => {
               <div className="space-y-3 sm:space-y-4">
                 <div className="aspect-square rounded-xl border border-border bg-muted overflow-hidden">
                   <img
-                    src={product.images[0] || "/placeholder.svg"}
+                    src={selectedImage || "/placeholder.svg"}
                     alt={product.name}
                     className="h-full w-full object-contain"
                   />
                 </div>
                 <div className="grid grid-cols-4 gap-2">
-                  {product.images.slice(1, 5).map((image, i) => (
+                  {nonSelectedImages.map(({ image, index }) => (
                     <div
-                      key={i}
+                      key={`${image}-${index}`}
                       className="aspect-square rounded-lg border border-border bg-muted overflow-hidden cursor-pointer hover:border-doju-lime transition-colors"
+                      onClick={() => setSelectedImageIndex(index)}
                     >
                       <img
                         src={image || "/placeholder.svg"}
-                        alt={`${product.name} view ${i + 2}`}
+                        alt={`${product.name} view ${index + 1}`}
                         className="h-full w-full object-contain"
                       />
                     </div>

@@ -120,7 +120,7 @@ const Index = () => {
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen flex flex-col overflow-x-hidden">
+    <div ref={containerRef} className="min-h-screen flex flex-col overflow-x-hidden w-full">
       <Header />
       
       <main className="flex-1">

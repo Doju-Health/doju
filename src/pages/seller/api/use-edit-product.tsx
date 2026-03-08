@@ -2,16 +2,25 @@ import { API } from "@/lib/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export const useMarkAsShipped = () => {
+export const useEditProduct = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (orderId: string) => {
-      const response = await API.patch(`/orders/${orderId}/ship`);
+    mutationFn: async (data: {
+      id: string;
+      name: string;
+      price: number;
+      description: string;
+      stock: number;
+      categoryId: string;
+      imageUrl?: string[];
+    }) => {
+      const response = await API.patch(`/products/${data.id}`, data);
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Order marked as shipped successfully.");
-      queryClient.invalidateQueries({ queryKey: ["seller-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["sellersProducts"] });
+      toast.success("Product updated successfully.");
     },
     onError: (error: {
       response?: { data?: { message?: string } };

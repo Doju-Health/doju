@@ -1,0 +1,35 @@
+import { API } from "@/lib/axios";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { setStoredTokens } from "@/lib/local-storage";
+import { setUser } from "@/redux/slice/auth/auth-slice";
+import { store } from "@/redux/store";
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: async (data: {
+      email: string;
+      otp: string;
+      newPassword: string;
+    }) => {
+      const response = await API.post("/auth/reset-password", data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setStoredTokens(data.accessToken, data.refreshToken ?? data.accessToken);
+      if (data.user) {
+        store.dispatch(setUser(data.user));
+      }
+      toast.success("Password reset successfully.");
+    },
+    onError: (error: {
+      response?: { data?: { message?: string } };
+      message: string;
+      error: string;
+    }) => {
+      const errorMessage =
+        error?.response?.data?.message || error?.message || error?.error;
+      toast.error(`Failed: ${errorMessage}`);
+    },
+  });
+};

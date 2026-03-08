@@ -1,17 +1,15 @@
 import { API } from "@/lib/axios";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export const useMarkAsShipped = () => {
-  const queryClient = useQueryClient();
+export const useForgotPassword = () => {
   return useMutation({
-    mutationFn: async (orderId: string) => {
-      const response = await API.patch(`/orders/${orderId}/ship`);
+    mutationFn: async (data: { email: string }) => {
+      const response = await API.post("/auth/forgot-password", data);
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Order marked as shipped successfully.");
-      queryClient.invalidateQueries({ queryKey: ["seller-orders"] });
+      toast.success("Password reset link sent.");
     },
     onError: (error: {
       response?: { data?: { message?: string } };

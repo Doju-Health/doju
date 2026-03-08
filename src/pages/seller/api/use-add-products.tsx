@@ -1,8 +1,9 @@
 import { API } from "@/lib/axios";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export const useAddProduct = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: {
       name: string;
@@ -17,6 +18,7 @@ export const useAddProduct = () => {
     },
     onSuccess: () => {
       toast.success("Product Added Successfully.");
+      queryClient.invalidateQueries({ queryKey: ["sellersProducts"] });
     },
     onError: (error: {
       response?: { data?: { message?: string } };
