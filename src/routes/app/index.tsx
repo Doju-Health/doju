@@ -14,9 +14,13 @@ const sellerAppRoutesConfig = [
     path: "products/:id",
     component: () => import("@/pages/seller/pages/products/ProductDetails"),
   },
-  {
+  { 
     path: "orders",
     component: () => import("@/pages/seller/pages/orders"),
+  },
+  {
+    path: "categories",
+    component: () => import("@/pages/seller/pages/categories"),
   },
 ];
 

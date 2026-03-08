@@ -4,6 +4,7 @@ import {
   ShoppingCart,
   MessageCircle,
   Settings,
+  LayoutGrid,
 } from "lucide-react";
 import type { NavGroup } from "@/types";
 
@@ -30,6 +31,11 @@ export const sidebarNav: NavGroup[] = [
         title: "Orders",
         icon: ShoppingCart,
         href: "/seller/orders",
+      },
+      {
+        title: "Categories",
+        icon:LayoutGrid ,
+        href: "/seller/categories",
       },
       {
         title: "Messages",

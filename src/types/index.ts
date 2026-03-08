@@ -212,3 +212,21 @@ export interface ISellerOrder {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ICategories {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CategoryDetail {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  isActive: boolean;
+  createdAt: string;
+}

@@ -8,6 +8,10 @@ const authRoutesConfig = [
     path: "forgot-password",
     component: () => import("@/pages/ForgotPassword"),
   },
+  {
+    path: "reset-password",
+    component: () => import("@/pages/ResetPassword"),
+  },
 ];
 
 export const authRoutes = authRoutesConfig.map(({ path, component }) => {

@@ -20,6 +20,7 @@ import {
   MyOrder,
 } from "@/pages/order-tracking/api/use-get-my-orders";
 import { useDeleteOrder } from "@/pages/order-tracking/api/use-delete-order";
+import { useCompleteOrder } from "@/pages/order-tracking/api/use-complete-order";
 import {
   Package,
   Truck,
@@ -150,12 +151,23 @@ const formatDateTime = (dateStr: string) => {
 const OrderTracking = () => {
   const { data: orders, isLoading, isError, refetch } = useGetMyOrders();
   const deleteOrderMutation = useDeleteOrder();
+  const completeOrderMutation = useCompleteOrder();
   const [selectedOrder, setSelectedOrder] = useState<MyOrder | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
 
   const handleDeleteOrder = async (orderId: string) => {
     try {
       await deleteOrderMutation.mutateAsync(orderId);
+      setSelectedOrder(null);
+      refetch();
+    } catch {
+      // Error handled by mutation's onError
+    }
+  };
+
+  const handleCompleteOrder = async (orderId: string) => {
+    try {
+      await completeOrderMutation.mutateAsync(orderId);
       setSelectedOrder(null);
       refetch();
     } catch {
@@ -179,7 +191,7 @@ const OrderTracking = () => {
     const stepIndex = getCurrentStepIndex(selectedOrder.orderStatus);
 
     return (
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-background w-full">
         <Header />
         <main className="flex-1">
           <section className="py-8 md:py-12">
@@ -421,6 +433,24 @@ const OrderTracking = () => {
                       Back to Home
                     </Button>
                   </Link>
+
+                  {selectedOrder.orderStatus.toUpperCase() === "DELIVERED" && (
+                    <Button
+                      variant="doju-primary"
+                      size="lg"
+                      className="gap-2"
+                      onClick={() => handleCompleteOrder(selectedOrder.id)}
+                      disabled={completeOrderMutation.isPending}
+                    >
+                      {completeOrderMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4" />
+                      )}
+                      Mark as Complete
+                    </Button>
+                  )}
+
                   {["PENDING", "CONFIRMED"].includes(
                     selectedOrder.orderStatus.toUpperCase(),
                   ) && (

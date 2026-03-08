@@ -177,12 +177,14 @@ const Auth = () => {
               role: "seller",
             },
             {
-              onSuccess: () => {
+              onSuccess: (data) => {
                 setIsSubmitting(false);
                 // Navigate after successful login
                 const redirectUrl = searchParams.get("redirect");
+                const defaultRoute =
+                  data?.user?.role === "seller" ? "/seller/overview" : "/";
                 setTimeout(() => {
-                  navigate(redirectUrl || "/");
+                  navigate(redirectUrl || defaultRoute);
                 }, 1000);
               },
               onError: () => {
@@ -295,7 +297,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background w-full">
       <Header />
 
       <main className="flex-1 flex items-center justify-center py-12 px-4">
@@ -509,7 +511,7 @@ const Auth = () => {
             </div>
 
             {/* Forgot Password */}
-            {isLogin && currentStepData.field === "password" && (
+            {isLogin && (
               <div className="mt-4 text-center">
                 <button
                   onClick={() => navigate("/forgot-password")}

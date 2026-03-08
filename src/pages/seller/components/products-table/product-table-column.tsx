@@ -33,7 +33,13 @@ const getStatusBadge = (status: string) => {
   }
 };
 
-const ActionCell = ({ productId }: { productId: string }) => {
+const ActionCell = ({
+  product,
+  onEdit,
+}: {
+  product: IProductData;
+  onEdit?: (product: IProductData) => void;
+}) => {
   const navigate = useNavigate();
 
   return (
@@ -44,18 +50,25 @@ const ActionCell = ({ productId }: { productId: string }) => {
       <DropdownMenuContent>
         <DropdownMenuItem
           className="hover:text-white! cursor-pointer"
-          onClick={() => navigate(`/seller/products/${productId}`)}
+          onClick={() => navigate(`/seller/products/${product.id}`)}
         >
           View Details
         </DropdownMenuItem>
-        <DropdownMenuItem className="justify-cente">Edit</DropdownMenuItem>
+        <DropdownMenuItem
+          className="justify-cente"
+          onClick={() => onEdit?.(product)}
+        >
+          Edit
+        </DropdownMenuItem>
         <DropdownMenuItem className="justify-cente">Delete</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
 
-export const getProductsColumns = (): // onViewDetails,
+export const getProductsColumns = (
+  onEdit?: (product: IProductData) => void,
+): // onViewDetails,
 ColumnDef<IProductData>[] => [
   {
     header: "PRODUCT",
@@ -131,8 +144,8 @@ ColumnDef<IProductData>[] => [
     header: "ACTION",
     accessorKey: "id",
     cell: ({ row }) => {
-      const productId = row.original.id;
-      return <ActionCell productId={productId} />;
+      const product = row.original;
+      return <ActionCell product={product} onEdit={onEdit} />;
     },
   },
 ];

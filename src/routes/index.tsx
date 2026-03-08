@@ -42,7 +42,11 @@ export const allRoutes = [
   },
   {
     path: "/track-order",
-    element: <OrderTracking />,
+    element: (
+      <ProtectedRoute>
+        <OrderTracking />
+      </ProtectedRoute>
+    ),
   },
 
   {
