@@ -9,7 +9,12 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  build: {
+    target: ["es2020", "safari14", "chrome87", "firefox78", "edge88"],
+  },
+  plugins: [react(), mode === "development" && componentTagger()].filter(
+    Boolean,
+  ),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
