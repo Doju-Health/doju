@@ -524,7 +524,7 @@ const Auth = () => {
                   </div>
                 </div>
 
-                <Button
+                {/* <Button
                   type="button"
                   variant="outline"
                   size="lg"
@@ -555,7 +555,7 @@ const Auth = () => {
                     />
                   </svg>
                   {isLogin ? "Continue with Google" : "Sign up with Google"}
-                </Button>
+                </Button> */}
               </motion.div>
             </AnimatePresence>
 
