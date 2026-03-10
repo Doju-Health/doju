@@ -23,6 +23,7 @@ import { z } from "zod";
 import { useRegister } from "./api/use-register";
 import { useVerifyEmail } from "./api/use-verify-email";
 import { useLogin } from "./api/use-login";
+import { baseUrl } from "@/lib/axios";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z
@@ -296,6 +297,23 @@ const Auth = () => {
     );
   };
 
+  const handleGoogleAuth = () => {
+    const redirectUrl = searchParams.get("redirect") || "/";
+    const appOrigin = import.meta.env.VITE_APP_URL || window.location.origin;
+    const appCallbackUrl = `${appOrigin}/auth/google/callback`;
+
+    const googleUrl = new URL("/auth/google", baseUrl);
+    googleUrl.searchParams.set("redirect_uri", appCallbackUrl);
+    googleUrl.searchParams.set("callbackUrl", appCallbackUrl);
+    googleUrl.searchParams.set("redirect", redirectUrl);
+
+    if (!isLogin && formData.role) {
+      googleUrl.searchParams.set("role", formData.role);
+    }
+
+    window.location.href = googleUrl.toString();
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background w-full">
       <Header />
@@ -494,6 +512,50 @@ const Auth = () => {
                     )}
                   </Button>
                 </div>
+
+                <div className="relative py-1">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      or
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  onClick={handleGoogleAuth}
+                  className="w-full gap-2"
+                  disabled={isSubmitting || isLoggingIn || isPending}
+                >
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                  >
+                    <path
+                      fill="#4285F4"
+                      d="M23.49 12.27c0-.79-.07-1.55-.2-2.27H12v4.31h6.47a5.53 5.53 0 0 1-2.4 3.63v3.01h3.88c2.27-2.09 3.54-5.16 3.54-8.68z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 24c3.24 0 5.95-1.07 7.93-2.91l-3.88-3.01c-1.07.72-2.44 1.15-4.05 1.15-3.11 0-5.74-2.1-6.68-4.93H1.33v3.09A12 12 0 0 0 12 24z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.32 14.3A7.2 7.2 0 0 1 4.95 12c0-.8.14-1.58.37-2.3V6.61H1.33A12 12 0 0 0 0 12c0 1.94.46 3.78 1.33 5.39l3.99-3.09z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 4.77c1.76 0 3.35.61 4.6 1.81l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.33 6.61l3.99 3.09c.94-2.83 3.57-4.93 6.68-4.93z"
+                    />
+                  </svg>
+                  {isLogin ? "Continue with Google" : "Sign up with Google"}
+                </Button>
               </motion.div>
             </AnimatePresence>
 

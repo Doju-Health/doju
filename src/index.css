@@ -107,30 +107,48 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }
 
 @layer components {
   /* DOJU Custom Component Styles */
   .doju-gradient-hero {
-    background: linear-gradient(135deg, hsl(var(--doju-navy)) 0%, hsl(var(--doju-navy-light)) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--doju-navy)) 0%,
+      hsl(var(--doju-navy-light)) 100%
+    );
   }
 
   .doju-gradient-accent {
-    background: linear-gradient(135deg, hsl(var(--doju-lime)) 0%, hsl(var(--doju-lime-light)) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--doju-lime)) 0%,
+      hsl(var(--doju-lime-light)) 100%
+    );
   }
 
   .doju-card-shadow {
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 0.05),
+      0 1px 2px -1px rgb(0 0 0 / 0.05);
   }
 
   .doju-card-shadow-hover {
-    box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+    box-shadow:
+      0 10px 25px -5px rgb(0 0 0 / 0.08),
+      0 8px 10px -6px rgb(0 0 0 / 0.04);
   }
 
   .doju-text-gradient {
-    background: linear-gradient(135deg, hsl(var(--doju-navy)) 0%, hsl(var(--doju-teal)) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--doju-navy)) 0%,
+      hsl(var(--doju-teal)) 100%
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -171,5 +189,7 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+    /* Fallback for Safari < 17.5 */
+    -webkit-hyphens: auto;
   }
 }

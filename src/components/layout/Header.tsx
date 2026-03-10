@@ -213,7 +213,7 @@ const Header = () => {
                         </Button>
                       </>
                     ) : (
-                      <>
+                      <div className="flex flex-col gap-4">
                         <Link to="/auth">
                           <Button variant="doju-outline" className="w-full">
                             Sign in
@@ -224,7 +224,7 @@ const Header = () => {
                             Create account
                           </Button>
                         </Link>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>

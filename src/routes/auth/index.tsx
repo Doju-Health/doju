@@ -3,6 +3,10 @@ import { withSuspense } from "@/components/suspense/suspense";
 
 const authRoutesConfig = [
   { path: "auth", component: () => import("@/pages/Auth/Auth") },
+  {
+    path: "auth/google/callback",
+    component: () => import("@/pages/Auth/GoogleAuthCallback"),
+  },
 
   {
     path: "forgot-password",
