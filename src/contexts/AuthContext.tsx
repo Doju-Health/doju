@@ -63,6 +63,32 @@ const mockUsers: Record<
   },
 };
 
+// Safe localStorage helper functions
+const safeGetItem = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch (e) {
+    console.error("localStorage.getItem failed:", e);
+    return null;
+  }
+};
+
+const safeSetItem = (key: string, value: string): void => {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    console.error("localStorage.setItem failed:", e);
+  }
+};
+
+const safeRemoveItem = (key: string): void => {
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {
+    console.error("localStorage.removeItem failed:", e);
+  }
+};
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -70,20 +96,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<AppRole[]>([]);
-  
+
   useEffect(() => {
     // Load session from localStorage on mount
-    const savedSession = localStorage.getItem("auth_session");
+    // Using safeGetItem to avoid iOS private mode crash
+    const savedSession = safeGetItem("auth_session");
     if (savedSession) {
       try {
         const parsed = JSON.parse(savedSession);
         setSession(parsed.session);
         setUser(parsed.session.user);
         if (parsed.role) {
-          setRoles([parsed.role]); 
+          setRoles([parsed.role]);
         }
       } catch (e) {
-        console.error("Error loading session:", e);
+        console.error("Error parsing saved session:", e);
       }
     }
     setLoading(false);
@@ -110,7 +137,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setUser(newUser);
       setSession(newSession);
       setRoles([mockUser.role]);
-      localStorage.setItem(
+
+      // Using safeSetItem to avoid iOS private mode crash
+      safeSetItem(
         "auth_session",
         JSON.stringify({ session: newSession, role: mockUser.role }),
       );
@@ -147,7 +176,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setUser(newUser);
       setSession(newSession);
       setRoles(["buyer"]);
-      localStorage.setItem(
+
+      // Using safeSetItem to avoid iOS private mode crash
+      safeSetItem(
         "auth_session",
         JSON.stringify({ session: newSession, role: "buyer" }),
       );
@@ -161,7 +192,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setUser(null);
     setSession(null);
     setRoles([]);
-    localStorage.removeItem("auth_session");
+    // Using safeRemoveItem to avoid iOS private mode crash
+    safeRemoveItem("auth_session");
   };
 
   const isAdmin = roles.includes("admin");
