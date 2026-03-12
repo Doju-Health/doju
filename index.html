@@ -35,5 +35,16 @@
   >
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      window.onerror = function(msg, src, line, col, err) {
+        document.body.style.background = 'white';
+        document.body.innerHTML = '<div style="padding:20px;font-family:sans-serif;color:red;font-size:14px">'
+          + '<b>Error:</b> ' + msg + '<br/>'
+          + '<b>File:</b> ' + src + '<br/>'
+          + '<b>Line:</b> ' + line
+          + '</div>';
+      }
+    </script>
   </body>
 </html>
