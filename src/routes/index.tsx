@@ -19,6 +19,11 @@ import ProductDetail from "@/pages/marketplace/ProductDetail";
 import { sellerAppRoutes } from "./app";
 import { SellerAppLayout } from "@/pages/seller/layout/app-layout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { lazy, Suspense } from "react";
+
+
+const Checkout = lazy(() => import("@/pages/checkout/Checkout"));
+
 export const allRoutes = [
   {
     path: "/",
@@ -82,7 +87,9 @@ export const allRoutes = [
     path: "checkout",
     element: (
       <ProtectedRoute>
-        <Checkout />
+        <Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>Loading...</div>}>
+          <Checkout />
+        </Suspense>
       </ProtectedRoute>
     ),
   },
