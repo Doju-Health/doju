@@ -11,7 +11,11 @@ export const useCreateOrder = () => {
       note?: string;
     }) => {
       const response = await API.post("/orders/bulk", data);
-      return response.data;
+      return response.data as {
+        orderId: string;
+        totalPrice: number;
+        orders: any[];
+      };
     },
     onSuccess: () => {
       toast.success("Order Created Successfully.");

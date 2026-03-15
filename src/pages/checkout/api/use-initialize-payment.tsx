@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 export const useInitializePayment = () => {
   return useMutation({
-    mutationFn: async (data: { orderId: string; callbackUrl: string }) => {
+    mutationFn: async (data: { bulkOrderId: string; callbackUrl: string }) => {
       const response = await API.post("/payments/initialize", data);
       return response.data;
     },

@@ -86,6 +86,7 @@ interface CreatedOrder {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  bulkOrderId?: string; // included on individual orders now
   orderStatus: string;
   paymentStatus: string;
   deliveryAddress: string;
@@ -93,6 +94,12 @@ interface CreatedOrder {
   transactionId: string;
   createdAt: string;
   updatedAt: string;
+}
+
+interface BulkOrderResponse {
+  orderId: string;
+  totalPrice: number;
+  orders: CreatedOrder[];
 }
 
 const Checkout = () => {
@@ -107,13 +114,13 @@ const Checkout = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
-  const [createdOrders, setCreatedOrders] = useState<CreatedOrder[] | null>(
+  const [orderResult, setOrderResult] = useState<BulkOrderResponse | null>(
     null,
   );
 
   const shipping = totalAmount > 50000 ? 0 : 2500;
-  const tax = totalAmount * 0.075;
-  const total = totalAmount + shipping + tax;
+  // tax has been removed per requirement
+  const total = totalAmount + shipping; // no tax added
 
   const progress = showReview
     ? 100
@@ -182,26 +189,25 @@ const Checkout = () => {
         .filter(Boolean)
         .join(", ");
 
-      // Step 1: Create order via API
-      const orders: CreatedOrder[] = await createOrderMutation.mutateAsync({
+      // Step 1: Create bulk order via API
+      const result: BulkOrderResponse = await createOrderMutation.mutateAsync({
         productIds: items.map((item) => item.product.id),
         quantities: items.map((item) => item.quantity),
         deliveryAddress: combinedDeliveryAddress,
         note: formData.notes || undefined,
       });
 
-      if (orders && orders.length > 0) {
-        setCreatedOrders(orders);
+      if (result && result.orders && result.orders.length > 0) {
+        setOrderResult(result);
 
-        // Step 2: Initialize payment using the first order's ID
+        // Step 2: Initialize payment using bulk order id
         const paymentData = await initializePaymentMutation.mutateAsync({
-          orderId: orders[0].id,
+          bulkOrderId: result.orderId,
           callbackUrl: `${import.meta.env.VITE_APP_URL || window.location.origin}/track-order`,
         });
 
         if (paymentData?.authorizationUrl) {
-          clearCart();
-          // Redirect to Paystack checkout
+          // Redirect to Paystack checkout — cart is cleared on callback, not here
           window.location.href = paymentData.authorizationUrl;
         }
       }
@@ -213,8 +219,8 @@ const Checkout = () => {
   };
 
   const copyTransactionId = () => {
-    if (createdOrders && createdOrders.length > 0) {
-      navigator.clipboard.writeText(createdOrders[0].transactionId);
+    if (orderResult && orderResult.orders.length > 0) {
+      navigator.clipboard.writeText(orderResult.orders[0].transactionId);
       setCodeCopied(true);
       setTimeout(() => setCodeCopied(false), 2000);
     }
@@ -261,7 +267,7 @@ const Checkout = () => {
   }, []);
 
   // Order complete screen
-  if (isComplete && createdOrders && createdOrders.length > 0) {
+  if (isComplete && orderResult && orderResult.orders.length > 0) {
     return (
       <div className="min-h-screen w-full bg-background flex flex-col">
         <header className="border-b border-border bg-card">
@@ -334,7 +340,7 @@ const Checkout = () => {
               </p>
               <div className="flex items-center justify-center gap-3">
                 <span className="text-lg font-semibold text-foreground">
-                  {createdOrders[0].transactionId}
+                  {orderResult?.orders[0].transactionId}
                 </span>
                 <Button
                   variant="ghost"
@@ -351,7 +357,7 @@ const Checkout = () => {
               </div>
               <p className="text-xs text-muted-foreground mt-3">
                 Order ID:{" "}
-                <span className="font-medium">{createdOrders[0].id}</span>
+                <span className="font-medium">{orderResult?.orders[0].id}</span>
               </p>
             </motion.div>
 
@@ -364,7 +370,7 @@ const Checkout = () => {
             >
               <Link
                 to="/track-order"
-                state={{ orderData: createdOrders }}
+                state={{ orderData: orderResult?.orders }}
                 className="block"
               >
                 <Button
@@ -522,10 +528,7 @@ const Checkout = () => {
                       {shipping === 0 ? "Free" : formatPrice(shipping)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tax</span>
-                    <span className="text-foreground">{formatPrice(tax)}</span>
-                  </div>
+                  {/* tax removed */}
                   <div className="border-t border-border my-2" />
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total</span>

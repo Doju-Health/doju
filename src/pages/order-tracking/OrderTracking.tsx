@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +40,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useCart } from "@/redux/hooks";
 
 type OrderStatusKey =
   | "PENDING"
@@ -152,8 +153,17 @@ const OrderTracking = () => {
   const { data: orders, isLoading, isError, refetch } = useGetMyOrders();
   const deleteOrderMutation = useDeleteOrder();
   const completeOrderMutation = useCompleteOrder();
+  const { clearCart } = useCart();
+  const [searchParams] = useSearchParams();
   const [selectedOrder, setSelectedOrder] = useState<MyOrder | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
+
+  // Clear cart when redirected back from Paystack after payment
+  useEffect(() => {
+    if (searchParams.get("reference") || searchParams.get("trxref")) {
+      clearCart();
+    }
+  }, []);
 
   const handleDeleteOrder = async (orderId: string) => {
     try {
