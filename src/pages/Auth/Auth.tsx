@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input/input";
@@ -507,6 +508,18 @@ const Auth = () => {
                 >
                   {isLogin ? "Create an account" : "Sign in"}
                 </button>
+              </p>
+              <p className="mt-3 text-xs text-muted-foreground max-w-[26rem] mx-auto">
+                By {isLogin ? "signing in" : "creating an account"}, you agree
+                to Doju’s{" "}
+                <Link to="/terms" className="text-doju-lime hover:underline">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link to="/privacy" className="text-doju-lime hover:underline">
+                  Privacy Policy
+                </Link>
+                .
               </p>
             </div>
 

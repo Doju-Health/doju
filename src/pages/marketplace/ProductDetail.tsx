@@ -288,7 +288,7 @@ const ProductDetail = () => {
                     <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/50">
                       <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-0.5 sm:mb-1 text-doju-lime" />
                       <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        30-day returns
+                        3-day returns
                       </p>
                     </div>
                   </div>

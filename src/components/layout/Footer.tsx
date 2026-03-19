@@ -83,6 +83,18 @@ const Footer = () => {
               >
                 Return Policy
               </Link>
+              <Link
+                to="/refund-policy"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Refund Policy
+              </Link>
+              <Link
+                to="/dispute-resolution"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Dispute Resolution Policy
+              </Link>
             </div>
           </div>
 

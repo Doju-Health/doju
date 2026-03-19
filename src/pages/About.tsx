@@ -6,8 +6,8 @@ import { Shield, Heart, Users, Award } from 'lucide-react';
 const About = () => {
   const values = [
     { icon: Shield, title: 'Trust & Safety', description: 'Every product verified, every seller vetted.' },
-    { icon: Heart, title: 'Healthcare First', description: 'Supporting medical professionals worldwide.' },
-    { icon: Users, title: 'Community Driven', description: 'Built by healthcare workers, for healthcare workers.' },
+    { icon: Heart, title: 'Healthcare First', description: 'Supporting access to health and wellness for everyone, everywhere.' },
+    { icon: Users, title: 'Community Driven', description: 'Built by people who care, for a healthier community.' },
     { icon: Award, title: 'Quality Assured', description: 'Only FDA-compliant, certified equipment.' },
   ];
 

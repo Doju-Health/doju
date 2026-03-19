@@ -1,7 +1,6 @@
 import About from "@/pages/About";
 import Careers from "@/pages/Careers";
 import Cart from "@/pages/Cart";
-import Checkout from "@/pages/checkout/Checkout";
 import DispatchDashboard from "@/pages/dispatch/DispatchDashboard";
 import DispatchRegistration from "@/pages/dispatch/DispatchRegistration";
 import Index from "@/pages/Index";
@@ -11,7 +10,9 @@ import NotFound from "@/pages/NotFound";
 import OrderTracking from "@/pages/order-tracking/OrderTracking";
 import Press from "@/pages/Press";
 import Privacy from "@/pages/Privacy";
+import RefundPolicy from "@/pages/RefundPolicy";
 import ReturnPolicy from "@/pages/ReturnPolicy";
+import DisputePolicy from "@/pages/DisputePolicy";
 import Terms from "@/pages/Terms";
 import { createBrowserRouter } from "react-router-dom";
 import { authRoutes } from "./auth";
@@ -20,7 +21,9 @@ import { sellerAppRoutes } from "./app";
 import { SellerAppLayout } from "@/pages/seller/layout/app-layout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { lazy, Suspense } from "react";
-
+import AdminLogin from "@/pages/admin/pages/login";
+import { AdminAppLayout } from "@/pages/admin/layout/admin-app-layout";
+import { adminAppRoutes } from "./admin";
 
 const Checkout = lazy(() => import("@/pages/checkout/Checkout"));
 
@@ -79,15 +82,35 @@ export const allRoutes = [
     element: <Privacy />,
   },
   {
+    path: "/refund-policy",
+    element: <RefundPolicy />,
+  },
+  {
+    path: "/dispute-resolution",
+    element: <DisputePolicy />,
+  },
+  {
     path: "/return-policy",
     element: <ReturnPolicy />,
   },
-
   {
     path: "checkout",
     element: (
       <ProtectedRoute>
-        <Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>Loading...</div>}>
+        <Suspense
+          fallback={
+            <div
+              style={{
+                minHeight: "100vh",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              Loading...
+            </div>
+          }
+        >
           <Checkout />
         </Suspense>
       </ProtectedRoute>
@@ -114,6 +137,16 @@ export const allRoutes = [
     element: <SellerAppLayout />,
     children: sellerAppRoutes,
   },
+  {
+    path: "/admin/login",
+    element: <AdminLogin />,
+  },
+  {
+    path:'/admin',
+    element: <AdminAppLayout />,
+    children: adminAppRoutes
+  }
+
 ];
 
 export const router = createBrowserRouter(allRoutes);
