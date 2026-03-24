@@ -7,6 +7,8 @@ import {
   LayoutGrid,
   LayoutDashboard,
   Shield,
+  UserRound,
+  Store,
 } from "lucide-react";
 import type { NavGroup } from "@/types";
 
@@ -65,7 +67,7 @@ export const adminSidebarNav: NavGroup[] = [
       {
         title: "Dashboard",
         icon: LayoutDashboard,
-        href: "/seller/dashboard",
+        href: "/admin/dashboard",
       },
     ],
   },
@@ -73,24 +75,14 @@ export const adminSidebarNav: NavGroup[] = [
     label: "Management",
     items: [
       {
-        title: "Products",
-        icon: Package,
-        href: "/seller/products",
+        title: "Buyers",
+        icon: UserRound,
+        href: "/admin/buyers",
       },
       {
-        title: "Orders",
-        icon: ShoppingCart,
-        href: "/seller/orders",
-      },
-      {
-        title: "Categories",
-        icon: LayoutGrid,
-        href: "/seller/categories",
-      },
-      {
-        title: "Messages",
-        icon: MessageCircle,
-        href: "/seller/messages",
+        title: "Sellers",
+        icon: Store,
+        href: "/admin/sellers",
       },
     ],
   },

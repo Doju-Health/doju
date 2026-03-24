@@ -230,3 +230,44 @@ export interface CategoryDetail {
   isActive: boolean;
   createdAt: string;
 }
+
+export interface IUsers {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  role: string;
+  companyName: string | null;
+  address: string | null;
+  profileImageUrl: string | null;
+  licenseNumber: string | null;
+  paystackRecipientCode: string | null;
+  emailVerified: boolean;
+  isVerified: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type FilterProps = {
+  from?: string;
+  to?: string;
+  page?: number;
+  size?: number;
+  search?: string;
+  type?: string | null;
+  programId?: string;
+  status?: string;
+};
+
+export type Meta = {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
+export type PaginatedUsersData = {
+  data: IUsers[];
+  meta: Meta;
+};

@@ -3,8 +3,12 @@ import { CustomInput } from "@/components/ui/input/custom-input";
 import { Button } from "@/components/ui/button";
 import { useFormHandler } from "@/hooks/use-form-handler";
 import * as yup from "yup";
+import { useLogin } from "@/pages/Auth/api/use-login";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminLogin() {
+  const { mutate, isPending } = useLogin();
+  const navigate = useNavigate();
   const { values, errors, touched, handleChange, handleSubmit, resetForm } =
     useFormHandler({
       initialValues: {
@@ -22,7 +26,12 @@ export default function AdminLogin() {
           .required("Password is required"),
       }),
       onSubmit: () => {
-        // TODO: implement admin login action
+        mutate(values, {
+          onSuccess: () => {
+            resetForm();
+            navigate("/admin/dashboard");
+          },
+        });
       },
     });
 
@@ -82,7 +91,7 @@ export default function AdminLogin() {
             </button>
           </div>
 
-          <Button type="submit" className="w-full" variant="doju-primary">
+          <Button type="submit" className="w-full" variant="doju-primary" isLoading={isPending}>
             Sign in
           </Button>
 

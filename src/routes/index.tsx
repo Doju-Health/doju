@@ -24,6 +24,8 @@ import { lazy, Suspense } from "react";
 import AdminLogin from "@/pages/admin/pages/login";
 import { AdminAppLayout } from "@/pages/admin/layout/admin-app-layout";
 import { adminAppRoutes } from "./admin";
+import AdminProtectedRoute from "@/components/auth/AdminProtectedRoute";
+import AdminLoginGuestRoute from "@/components/auth/AdminLoginGuestRoute";
 
 const Checkout = lazy(() => import("@/pages/checkout/Checkout"));
 
@@ -139,14 +141,21 @@ export const allRoutes = [
   },
   {
     path: "/admin/login",
-    element: <AdminLogin />,
+    element: (
+      <AdminLoginGuestRoute>
+        <AdminLogin />
+      </AdminLoginGuestRoute>
+    ),
   },
   {
-    path:'/admin',
-    element: <AdminAppLayout />,
-    children: adminAppRoutes
-  }
-
+    path: "/admin",
+    element: (
+      <AdminProtectedRoute>
+        <AdminAppLayout />
+      </AdminProtectedRoute>
+    ),
+    children: adminAppRoutes,
+  },
 ];
 
 export const router = createBrowserRouter(allRoutes);
