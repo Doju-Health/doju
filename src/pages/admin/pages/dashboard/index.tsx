@@ -1,6 +1,7 @@
 import { QueryWrapper } from "@/components/query-wrapper/query-wrapper";
 import { useGetAdminDashboardStats } from "../../api/use-get-dashboard-stats";
 import { StatCard } from "../../components/StatCard";
+import { RecentTransactionsChart } from "../../components/RecentTransactionsChart";
 import {
   Users,
   ShoppingBag,
@@ -91,6 +92,8 @@ export default function AdminDashboard() {
           />
         </div>
       </QueryWrapper>
+
+      <RecentTransactionsChart />
     </div>
   );
 }

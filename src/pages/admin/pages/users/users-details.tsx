@@ -1,0 +1,459 @@
+import { format } from "date-fns";
+import {
+  ArrowLeft,
+  Building2,
+  BadgeCheck,
+  CalendarClock,
+  Mail,
+  Phone,
+  Shield,
+  Trash2,
+  UserRound,
+} from "lucide-react";
+import { useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { QueryWrapper } from "@/components/query-wrapper/query-wrapper";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { IUsers } from "@/types";
+import { cn } from "@/lib/utils";
+import { useGetAUser } from "../../api/use-get-a-user";
+import { useDeleteUser } from "../../api/use-delete-user";
+import { useVerifySeller } from "../../api/use-verify-seller";
+import { AdminSellerProductsTable } from "../../components/seller-products-table/seller-products-table";
+import { AdminBuyerOrdersTable } from "../../components/buyer-orders-table/buyer-orders-table";
+
+const getInitials = (name: string) => {
+  const parts = name.trim().split(" ").filter(Boolean);
+  if (!parts.length) return "U";
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+};
+
+const formatNullable = (value: string | null) => {
+  if (!value || !value.trim()) return "Not provided";
+  return value;
+};
+
+const getRoleBadgeClass = (role: string) => {
+  if (role === "admin") return "bg-blue-100 text-blue-700 border-blue-200";
+  if (role === "seller")
+    return "bg-orange-100 text-orange-700 border-orange-200";
+  if (role === "dispatch") {
+    return "bg-violet-100 text-violet-700 border-violet-200";
+  }
+  return "bg-slate-100 text-slate-700 border-slate-200";
+};
+
+export default function UserDetails() {
+  const navigate = useNavigate();
+  const { id = "" } = useParams();
+  const getUser = useGetAUser(id);
+  const { mutate: deleteUser, isPending } = useDeleteUser();
+  const [deleteMode, setDeleteMode] = useState<"soft" | "hard" | null>(null);
+  const { mutate: verifySeller, isPending: isVerifyPending } =
+    useVerifySeller();
+  const [isVerifySellerModalOpen, setIsVerifySellerModalOpen] = useState(false);
+
+  const queryPayload = getUser.data as { data?: IUsers } | IUsers | undefined;
+  const user: IUsers | undefined =
+    queryPayload && typeof queryPayload === "object" && "data" in queryPayload
+      ? queryPayload.data
+      : (queryPayload as IUsers | undefined);
+
+  const createdAt = user?.createdAt
+    ? format(new Date(user.createdAt), "PPP p")
+    : "N/A";
+  const updatedAt = user?.updatedAt
+    ? format(new Date(user.updatedAt), "PPP p")
+    : "N/A";
+
+  const handleDeleteUser = (hard: boolean) => {
+    if (!user?.id) return;
+
+    setDeleteMode(hard ? "hard" : "soft");
+
+    deleteUser(
+      { id: user.id, hard },
+      {
+        onSuccess: () => {
+          navigate("/admin/users");
+        },
+        onError: () => {
+          setDeleteMode(null);
+        },
+      },
+    );
+  };
+
+  const handleVerifySeller = () => {
+    if (!user?.id) return;
+
+    verifySeller(
+      { id: user.id },
+      {
+        onSuccess: () => {
+          setIsVerifySellerModalOpen(false);
+        },
+      },
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-2">
+          <div className="space-y-2">
+            <Link
+              to="/admin/users"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" />
+              Back to users
+            </Link>
+            <h1 className="text-2xl font-bold">User details</h1>
+            <p className="text-muted-foreground">
+              Review account profile, verification state, and contact
+              information.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2 w-full sm:w-auto">
+            {user?.role === "seller" && !user?.isVerified && (
+              <AlertDialog
+                open={isVerifySellerModalOpen}
+                onOpenChange={setIsVerifySellerModalOpen}
+              >
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="default"
+                    className="w-full sm:w-auto"
+                    disabled={!user || isVerifyPending}
+                  >
+                    <BadgeCheck className="size-4" />
+                    Verify seller
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Verify this seller?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      You are about to verify {user?.fullName ?? "this seller"}.
+                      They will be able to start selling on the platform.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isVerifyPending}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <Button
+                      type="button"
+                      onClick={handleVerifySeller}
+                      disabled={isVerifyPending}
+                    >
+                      {isVerifyPending ? "Verifying..." : "Confirm"}
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="w-full sm:w-auto"
+                  disabled={!user || isPending}
+                >
+                  <Trash2 className="size-4" />
+                  Delete user
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this user?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Choose how to delete this account. Soft delete keeps the
+                    record for potential recovery, while hard delete permanently
+                    removes it. The account for{" "}
+                    <span className="font-medium text-foreground">
+                      {user?.fullName ?? "this user"}
+                    </span>{" "}
+                    is about to be deleted.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isPending}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleDeleteUser(false)}
+                    disabled={isPending}
+                  >
+                    {isPending && deleteMode === "soft"
+                      ? "Soft deleting..."
+                      : "Soft delete"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => handleDeleteUser(true)}
+                    disabled={isPending}
+                  >
+                    {isPending && deleteMode === "hard"
+                      ? "Hard deleting..."
+                      : "Hard delete"}
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      </div>
+
+      <QueryWrapper
+        currentQuery={getUser}
+        customLoader={
+          <div className="space-y-4">
+            <Skeleton className="h-48 w-full rounded-lg" />
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Skeleton className="h-64 w-full rounded-lg" />
+              <Skeleton className="h-64 w-full rounded-lg" />
+            </div>
+          </div>
+        }
+      >
+        {!user ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>User not found</CardTitle>
+              <CardDescription>
+                We could not load this user profile. Please go back and try
+                another account.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="size-16 border">
+                      <AvatarImage
+                        src={user.profileImageUrl ?? undefined}
+                        alt={user.fullName}
+                      />
+                      <AvatarFallback className="text-base font-semibold">
+                        {getInitials(user.fullName)}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="space-y-2">
+                      <div>
+                        <h2 className="text-xl font-semibold">
+                          {user.fullName}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "capitalize",
+                            getRoleBadgeClass(user.role),
+                          )}
+                        >
+                          {user.role}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            user.isActive
+                              ? "border-green-200 bg-green-100 text-green-700"
+                              : "border-red-200 bg-red-100 text-red-700",
+                          )}
+                        >
+                          {user.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            user.emailVerified
+                              ? "border-green-200 bg-green-100 text-green-700"
+                              : "border-amber-200 bg-amber-100 text-amber-700",
+                          )}
+                        >
+                          {user.emailVerified
+                            ? "Email verified"
+                            : "Email unverified"}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            user.isVerified
+                              ? "border-green-200 bg-green-100 text-green-700"
+                              : "border-amber-200 bg-amber-100 text-amber-700",
+                          )}
+                        >
+                          {user.isVerified
+                            ? "Identity verified"
+                            : "Identity pending"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2 rounded-lg border bg-muted/30 p-4 text-sm lg:min-w-[280px]">
+                    <p className="flex items-center gap-2 text-muted-foreground">
+                      <CalendarClock className="size-4" />
+                      Joined
+                    </p>
+                    <p className="font-medium">{createdAt}</p>
+                    <Separator className="my-1" />
+                    <p className="text-muted-foreground">Last updated</p>
+                    <p className="font-medium">{updatedAt}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Contact information</CardTitle>
+                  <CardDescription>Primary personal details.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                      <Mail className="size-4" />
+                      Email
+                    </p>
+                    <p className="font-medium break-all">{user.email}</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                      <Phone className="size-4" />
+                      Phone number
+                    </p>
+                    <p className="font-medium">
+                      {formatNullable(user.phoneNumber)}
+                    </p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                      <UserRound className="size-4" />
+                      Address
+                    </p>
+                    <p className="font-medium">
+                      {formatNullable(user.address)}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Business details</CardTitle>
+                  <CardDescription>
+                    Information used for settlements and seller compliance.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                      <Building2 className="size-4" />
+                      Company name
+                    </p>
+                    <p className="font-medium">
+                      {formatNullable(user.companyName)}
+                    </p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                      <Shield className="size-4" />
+                      License number
+                    </p>
+                    <p className="font-medium">
+                      {formatNullable(user.licenseNumber)}
+                    </p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                      <BadgeCheck className="size-4" />
+                      Paystack recipient code
+                    </p>
+                    <p className="font-medium">
+                      {formatNullable(user.paystackRecipientCode)}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {user.role === "seller" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Seller products</CardTitle>
+                  <CardDescription>
+                    Products currently listed by this seller.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AdminSellerProductsTable sellerId={user.id} />
+                </CardContent>
+              </Card>
+            )}
+            {user.role === "buyer" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Buyer Orders</CardTitle>
+                  <CardDescription>
+                    Orders currently placed by this buyer.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AdminBuyerOrdersTable buyerId={user.id} />
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+      </QueryWrapper>
+    </div>
+  );
+}

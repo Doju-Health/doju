@@ -136,6 +136,7 @@ export type IProductData = {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  isApproved?: boolean; // Optional field to indicate approval status
 };
 
 // API response types
@@ -256,7 +257,6 @@ export type FilterProps = {
   size?: number;
   search?: string;
   type?: string | null;
-  programId?: string;
   status?: string;
 };
 
@@ -269,5 +269,165 @@ export type Meta = {
 
 export type PaginatedUsersData = {
   data: IUsers[];
+  meta: Meta;
+};
+
+export type IBuyerOrders = {
+  id: string;
+  buyer: {
+    id: string;
+    fullName: string;
+    email: string;
+    password: string;
+    phoneNumber: string;
+    role: string;
+    googleId: string | null;
+    emailVerified: boolean;
+    verificationOtp: string;
+    verificationOtpExpires: string;
+    passwordResetOtp: string | null;
+    passwordResetOtpExpires: string | null;
+    companyName: string | null;
+    address: string | null;
+    profileImageUrl: string | null;
+    licenseNumber: string | null;
+    paystackRecipientCode: string | null;
+    isVerified: boolean;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  product: {
+    id: string;
+    name: string;
+    description: string;
+    price: string;
+    stock: number;
+    imageUrl: string[];
+    seller: {
+      id: string;
+      fullName: string;
+      email: string;
+      password: string;
+      phoneNumber: string;
+      role: "seller";
+      googleId: string | null;
+      emailVerified: boolean;
+      verificationOtp: string;
+      verificationOtpExpires: string;
+      passwordResetOtp: string | null;
+      passwordResetOtpExpires: string | null;
+      companyName: string | null;
+      address: string | null;
+      profileImageUrl: string | null;
+      licenseNumber: string | null;
+      paystackRecipientCode: string | null;
+      isVerified: boolean;
+      isActive: boolean;
+      createdAt: string;
+      updatedAt: string;
+    };
+    isActive: boolean;
+    isApproved: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  quantity: number;
+  unitPrice: string;
+  totalPrice: string;
+  bulkOrderId: string | null;
+  orderStatus: "COMPLETED" | "PENDING" | "CANCELLED";
+  paymentStatus: "PAID" | "PENDING" | "FAILED";
+  deliveryAddress: string;
+  notes: string | null;
+  transactionId: string;
+  trackingNumber: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PaginatedBuyerOrdersData = {
+  data: IBuyerOrders[];
+  meta: Meta;
+};
+
+export type ITransactions = {
+  id: string;
+  order: {
+    id: string;
+    product: {
+      id: string;
+      name: string;
+      description: string;
+      price: string;
+      stock: number;
+      imageUrl: string[];
+      seller: {
+        id: string;
+        fullName: string;
+        email: string;
+        phoneNumber: string;
+        profileImageUrl: string | null;
+        licenseNumber: string | null;
+        paystackRecipientCode: string | null;
+        isVerified: boolean;
+        isActive: boolean;
+        createdAt: string;
+      };
+      isActive: true;
+      isApproved: false;
+      createdAt: string;
+    };
+    quantity: number;
+    unitPrice: string;
+    totalPrice: string;
+    bulkOrderId: string | null;
+    orderStatus: string;
+    paymentStatus: string;
+    deliveryAddress: string;
+    notes: string | null;
+    transactionId: string | null;
+    trackingNumber: string | null;
+    shippedAt: string | null;
+    deliveredAt: string | null;
+    completedAt: string | null;
+    cancelledAt: string | null;
+  };
+  orderId: string;
+  buyer: {
+    id: string;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    role: string;
+    profileImageUrl: string | null;
+    isVerified: boolean;
+    isActive: boolean;
+    createdAt: string;
+  };
+  buyerId: string;
+  amount: string;
+  reference: string;
+  accessCode: string;
+  status: string;
+  escrowStatus: string;
+  provider: string;
+  channel: string | null;
+  paystackResponse: Record<string, any> | null;
+  paidAt: string | null;
+  escrowHeldAt: string | null;
+  escrowReleasedAt: string | null;
+  refundedAt: string | null;
+  transferReference: string | null;
+  transferredAt: string | null;
+  createdAt: string;
+};
+
+export type PaginatedTransactionsData = {
+  data: ITransactions[];
   meta: Meta;
 };

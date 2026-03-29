@@ -9,6 +9,9 @@ import {
   Shield,
   UserRound,
   Store,
+  Users,
+  CreditCard,
+  History,
 } from "lucide-react";
 import type { NavGroup } from "@/types";
 
@@ -75,6 +78,11 @@ export const adminSidebarNav: NavGroup[] = [
     label: "Management",
     items: [
       {
+        title: "Users",
+        icon: Users,
+        href: "/admin/users",
+      },
+      {
         title: "Buyers",
         icon: UserRound,
         href: "/admin/buyers",
@@ -83,6 +91,11 @@ export const adminSidebarNav: NavGroup[] = [
         title: "Sellers",
         icon: Store,
         href: "/admin/sellers",
+      },
+      {
+        title: "Transactions",
+        icon: History,
+        href: "/admin/transactions",
       },
     ],
   },

@@ -1,20 +1,37 @@
-import { motion } from 'framer-motion';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import { Shield, Heart, Users, Award } from 'lucide-react';
+import { motion } from "framer-motion";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import { Shield, Heart, Users, Award } from "lucide-react";
 
 const About = () => {
   const values = [
-    { icon: Shield, title: 'Trust & Safety', description: 'Every product verified, every seller vetted.' },
-    { icon: Heart, title: 'Healthcare First', description: 'Supporting access to health and wellness for everyone, everywhere.' },
-    { icon: Users, title: 'Community Driven', description: 'Built by people who care, for a healthier community.' },
-    { icon: Award, title: 'Quality Assured', description: 'Only FDA-compliant, certified equipment.' },
+    {
+      icon: Shield,
+      title: "Trust & Safety",
+      description: "Every product verified, every seller vetted.",
+    },
+    {
+      icon: Heart,
+      title: "Healthcare First",
+      description:
+        "Supporting access to health and wellness for everyone, everywhere.",
+    },
+    {
+      icon: Users,
+      title: "Community Driven",
+      description: "Built by people who care, for a healthier community.",
+    },
+    {
+      icon: Award,
+      title: "Quality Assured",
+      description: "Only FDA-compliant, certified equipment.",
+    },
   ];
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
+
       <main className="flex-1">
         <section className="py-20 bg-doju-navy">
           <div className="container">
@@ -28,7 +45,8 @@ const About = () => {
                 About Doju
               </h1>
               <p className="text-xl text-primary-foreground/80">
-                We're on a mission to make quality medical equipment accessible to healthcare providers everywhere.
+                We envision a future where every African can access health and
+                wellness products seamlessly,reliably, and with dignity.
               </p>
             </motion.div>
           </div>
@@ -43,12 +61,18 @@ const About = () => {
               className="grid md:grid-cols-2 gap-12 items-center"
             >
               <div>
-                <h2 className="text-3xl font-bold text-foreground mb-4">Our Story</h2>
+                <h2 className="text-3xl font-bold text-foreground mb-4">
+                  Our Story
+                </h2>
                 <p className="text-muted-foreground mb-4">
-                  Founded in 2024, Doju started with a simple observation: healthcare professionals struggled to find reliable, quality medical equipment from trusted sources.
+                  Founded in 2024, Doju started with a simple observation:
+                  healthcare professionals struggled to find reliable, quality
+                  medical equipment from trusted sources.
                 </p>
                 <p className="text-muted-foreground">
-                  Today, we connect thousands of verified sellers with healthcare providers, ensuring every transaction is secure, transparent, and backed by our quality guarantee.
+                  Today, we connect thousands of verified sellers with
+                  healthcare providers, ensuring every transaction is secure,
+                  transparent, and backed by our quality guarantee.
                 </p>
               </div>
               <div className="rounded-2xl bg-muted aspect-video flex items-center justify-center">
@@ -81,8 +105,12 @@ const About = () => {
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-doju-lime-pale text-doju-lime mb-4">
                     <value.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">{value.title}</h3>
-                  <p className="text-sm text-muted-foreground">{value.description}</p>
+                  <h3 className="font-semibold text-foreground mb-2">
+                    {value.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {value.description}
+                  </p>
                 </motion.div>
               ))}
             </div>

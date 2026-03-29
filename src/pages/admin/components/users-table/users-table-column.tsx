@@ -1,48 +1,114 @@
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  CheckCircle,
-  Clock,
-  EllipsisVertical,
-  Truck,
-  XCircle,
-  PackageCheck,
-} from "lucide-react";
+import { EllipsisVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
-import { Badge } from "@/components/ui/badge";
-import { ISellerOrder, IUsers } from "@/types";
-import { cn, formatPriceAmount } from "@/lib/utils";
+import { IUsers } from "@/types";
+import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "date-fns";
+import { useState } from "react";
+import { useDeactivateUser } from "../../api/use-deactivate-user";
 
-const ActionCell = ({ id }: { id: string }) => {
+const ActionCell = ({
+  id,
+  fullName,
+  isActive,
+}: {
+  id: string;
+  fullName: string;
+  isActive: boolean;
+}) => {
   const navigate = useNavigate();
+  const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
+  const { mutate: deactivateUser, isPending } = useDeactivateUser();
+
+  const handleViewDetails = () => {
+    navigate(`/admin/users/${id}`);
+  };
+
+  const handleDeactivateUser = () => {
+    deactivateUser(
+      { id },
+      {
+        onSuccess: () => {
+          setIsDeactivateModalOpen(false);
+        },
+      },
+    );
+  };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="cursor-pointer">
-        <EllipsisVertical className="size-5 text-gray-600 dark:text-gray-400" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem className="hover:text-white! cursor-pointer">
-          View Details
-        </DropdownMenuItem>
-        <DropdownMenuItem className="justify-cente">
-          Deactivate
-        </DropdownMenuItem>
-        <DropdownMenuItem className="justify-cente">Delete</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="cursor-pointer">
+          <EllipsisVertical className="size-5 text-gray-600 dark:text-gray-400" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem
+            className="hover:text-white! cursor-pointer"
+            onClick={handleViewDetails}
+          >
+            View Details
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="justify-cente"
+            disabled={!isActive}
+            onSelect={(event) => {
+              event.preventDefault();
+              setIsDeactivateModalOpen(true);
+            }}
+          >
+            Deactivate
+          </DropdownMenuItem>
+          <DropdownMenuItem className="justify-cente">Delete</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog
+        open={isDeactivateModalOpen}
+        onOpenChange={setIsDeactivateModalOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deactivate this user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to deactivate {fullName}. The user will lose access
+              until reactivated.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeactivateUser}
+              disabled={isPending}
+            >
+              {isPending ? "Deactivating..." : "Confirm"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
-export const getUsersColumn = (): 
-ColumnDef<IUsers>[] => [
+export const getUsersColumn = (): ColumnDef<IUsers>[] => [
   {
     header: "NAME",
     accessorKey: "name",
@@ -115,7 +181,9 @@ ColumnDef<IUsers>[] => [
     accessorKey: "createdAt",
     cell: ({ row }) => {
       const id = row.original.id;
-      return <ActionCell id={id} />;
+      const fullName = row.original.fullName;
+      const isActive = row.original.isActive;
+      return <ActionCell id={id} fullName={fullName} isActive={isActive} />;
     },
   },
 ];

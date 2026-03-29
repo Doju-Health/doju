@@ -11,6 +11,17 @@ export const API = axios.create({
   baseURL: baseUrl,
 });
 
+const getUnauthorizedRedirectPath = (requestUrl?: string) => {
+  if (typeof window === "undefined") {
+    return "/auth";
+  }
+
+  const isAdminRequest = requestUrl?.startsWith("/admin/");
+  const isAdminPath = window.location.pathname.startsWith("/admin");
+
+  return isAdminRequest || isAdminPath ? "/admin/login" : "/auth";
+};
+
 API.interceptors.request.use(
   (request) => {
     if (request.data instanceof FormData) {
@@ -37,7 +48,7 @@ API.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    const isAuthRequest = originalRequest.url?.startsWith("/auth/");
+    const isAuthRequest = originalRequest?.url?.startsWith("/auth/");
 
     if (
       error.response &&
@@ -65,8 +76,13 @@ API.interceptors.response.use(
           throw new Error("No refresh token available");
         }
       } catch (refreshError) {
-        removeStoredTokens();
-        window.location.href = "/auth";
+        if (typeof window !== "undefined") {
+          localStorage.clear();
+          removeStoredTokens();
+          window.location.href = getUnauthorizedRedirectPath(
+            originalRequest?.url,
+          );
+        }
         console.log(refreshError);
         // Only redirect to auth if user had a session (was previously logged in)
         // Don't redirect unauthenticated users who are just browsing

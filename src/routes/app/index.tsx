@@ -22,6 +22,10 @@ const sellerAppRoutesConfig = [
     path: "categories",
     component: () => import("@/pages/seller/pages/categories"),
   },
+  {
+    path: "kyc-verification",
+    component: () => import("@/pages/seller/pages/kyc-verification"),
+  },
 ];
 
 export const sellerAppRoutes = sellerAppRoutesConfig.map(

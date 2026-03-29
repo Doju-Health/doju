@@ -1,12 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  CheckCircle,
-  Clock,
-  EllipsisVertical,
-  Truck,
-  XCircle,
-  PackageCheck,
-} from "lucide-react";
+import { EllipsisVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,18 +7,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Badge } from "@/components/ui/badge";
-import { ISellerOrder, IUsers } from "@/types";
-import { cn, formatPriceAmount } from "@/lib/utils";
+import { IUsers } from "@/types";
+import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "date-fns";
 
 const ActionCell = ({ id }: { id: string }) => {
   const navigate = useNavigate();
+  const handleViewDetails = () => {
+    navigate(`/admin/users/${id}`);
+  };
 
-const handleViewDetails = () => {
-  navigate(`/admin/users/${id}`);
-}
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="cursor-pointer">
@@ -44,8 +36,7 @@ const handleViewDetails = () => {
   );
 };
 
-export const getSellersColumn = (): 
-ColumnDef<IUsers>[] => [
+export const getBuyersColumn = (): ColumnDef<IUsers>[] => [
   {
     header: "NAME",
     accessorKey: "name",
