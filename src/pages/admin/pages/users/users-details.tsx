@@ -425,6 +425,68 @@ export default function UserDetails() {
               </Card>
             </div>
 
+            {user.role === "seller" && !user.isVerified && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">
+                    Verification documents
+                  </CardTitle>
+                  <CardDescription>
+                    Documents submitted by this seller for identity
+                    verification.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                        NIN
+                      </p>
+                      {user.ninUrl ? (
+                        <a
+                          href={user.ninUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <img
+                            src={user.ninUrl}
+                            alt="NIN document"
+                            className="rounded-lg border object-cover w-full max-h-64 hover:opacity-90 transition-opacity"
+                          />
+                        </a>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Not provided
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                        CAC
+                      </p>
+                      {user.cacUrl ? (
+                        <a
+                          href={user.cacUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <img
+                            src={user.cacUrl}
+                            alt="CAC document"
+                            className="rounded-lg border object-cover w-full max-h-64 hover:opacity-90 transition-opacity"
+                          />
+                        </a>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Not provided
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {user.role === "seller" && (
               <Card>
                 <CardHeader>

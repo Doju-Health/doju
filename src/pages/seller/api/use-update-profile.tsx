@@ -2,18 +2,25 @@ import { API } from "@/lib/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export const useVerifySeller = () => {
+export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async (data: { id: string }) => {
-      const response = await API.patch(`/admin/sellers/${data.id}/verify`);
+    mutationFn: async (data: {
+      fullName?: string;
+      phoneNumber?: string;
+      address?: string;
+      companyName?: string;
+      licenseNumber?: string;
+      profileImageUrl?: string;
+      cacUrl?: string;
+      ninUrl?: string;
+    }) => {
+      const response = await API.patch("users/profile", data);
       return response.data;
     },
-    onSuccess: () => { 
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-      toast.success("Seller verified successfully.");
+    onSuccess: () => {
+      toast.success("Profile Updated Successfully.");
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
     onError: (error: {
       response?: { data?: { message?: string } };

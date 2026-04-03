@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { useEditProduct } from "../../api/use-edit-product";
 import { IProductData } from "@/types";
 import { useEffect } from "react";
+import { Progress } from "@/components/ui/progress";
 
 const MAX_IMAGE_SIZE_BYTES = 10485760;
 
@@ -37,6 +38,7 @@ export const CreateProductModal = ({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState<string>("");
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { mutate: addProduct, isPending: isAddingProduct } = useAddProduct();
@@ -89,7 +91,11 @@ export const CreateProductModal = ({
 
           let imageUrlArray = existingImageUrls;
           if (selectedFiles.length > 0) {
-            const uploadedUrls = await uploadImages(selectedFiles);
+            setUploadProgress(0);
+            const uploadedUrls = await uploadImages({
+              files: selectedFiles,
+              onUploadProgress: setUploadProgress,
+            });
             imageUrlArray = Array.isArray(uploadedUrls)
               ? uploadedUrls
               : [uploadedUrls];
@@ -106,6 +112,7 @@ export const CreateProductModal = ({
                 setOpen(false);
                 setSelectedFiles([]);
                 setFileError("");
+                setUploadProgress(0);
                 resetForm();
               },
             },
@@ -118,7 +125,11 @@ export const CreateProductModal = ({
           return;
         }
 
-        const uploadedUrls = await uploadImages(selectedFiles);
+        setUploadProgress(0);
+        const uploadedUrls = await uploadImages({
+          files: selectedFiles,
+          onUploadProgress: setUploadProgress,
+        });
         const imageUrlArray = Array.isArray(uploadedUrls)
           ? uploadedUrls
           : [uploadedUrls];
@@ -130,12 +141,14 @@ export const CreateProductModal = ({
               setOpen(false);
               setSelectedFiles([]);
               setFileError("");
+              setUploadProgress(0);
               resetForm();
             },
           },
         );
       } catch {
         // Error is handled by useUploadImage hook
+        setUploadProgress(0);
       }
     },
   });
@@ -154,6 +167,7 @@ export const CreateProductModal = ({
       setExistingImageUrls(initialProduct.imageUrl || []);
       setSelectedFiles([]);
       setFileError("");
+      setUploadProgress(0);
       return;
     }
 
@@ -167,6 +181,7 @@ export const CreateProductModal = ({
     setExistingImageUrls([]);
     setSelectedFiles([]);
     setFileError("");
+    setUploadProgress(0);
   }, [open, mode, initialProduct, setValues]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -213,6 +228,7 @@ export const CreateProductModal = ({
       setSelectedFiles([]);
       setExistingImageUrls([]);
       setFileError("");
+      setUploadProgress(0);
       resetForm();
     }
   };
@@ -366,6 +382,16 @@ export const CreateProductModal = ({
             </div>
           )}
         </div>
+
+        {isUploading && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Uploading product images...</span>
+              <span>{uploadProgress}%</span>
+            </div>
+            <Progress value={uploadProgress} className="h-2" />
+          </div>
+        )}
 
         <Button
           isLoading={isAddingProduct || isEditingProduct || isUploading}

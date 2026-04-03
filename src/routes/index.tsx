@@ -26,10 +26,15 @@ import { AdminAppLayout } from "@/pages/admin/layout/admin-app-layout";
 import { adminAppRoutes } from "./admin";
 import AdminProtectedRoute from "@/components/auth/AdminProtectedRoute";
 import AdminLoginGuestRoute from "@/components/auth/AdminLoginGuestRoute";
+import GoogleCallback from "@/pages/Auth/GoogleCallback";
 
 const Checkout = lazy(() => import("@/pages/checkout/Checkout"));
 
 export const allRoutes = [
+  {
+    path: "/auth/google/callback",
+    element: <GoogleCallback />,
+  },
   {
     path: "/",
     element: <Marketplace />,

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 export const useGetOrders = () => {
   const getOrders = async () => {
     const response = await API.get(`/orders/seller/my-sales`);
-    return response.data;
+    return response.data.data;
   };
 
   return useQuery({

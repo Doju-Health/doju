@@ -14,6 +14,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useFormHandler } from "@/hooks/use-form-handler";
+import { useUploadImage } from "../../api/use-upload-image";
+import { useUpdateProfile } from "../../api/use-update-profile";
+import { Progress } from "@/components/ui/progress";
 
 type FileErrors = {
   ninImage?: string;
@@ -27,11 +30,14 @@ export default function KYCVerificationPage() {
   const [cacDocument, setCacDocument] = useState<File | null>(null);
   const [fileErrors, setFileErrors] = useState<FileErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [ninPreviewUrl, setNinPreviewUrl] = useState("");
   const [cacPreviewUrl, setCacPreviewUrl] = useState("");
 
   const ninInputRef = useRef<HTMLInputElement>(null);
   const cacInputRef = useRef<HTMLInputElement>(null);
+  const { mutateAsync: uploadImage } = useUploadImage();
+  const { mutateAsync: updateProfile } = useUpdateProfile();
 
   useEffect(() => {
     if (!ninImage || !ninImage.type.startsWith("image/")) {
@@ -86,14 +92,38 @@ export default function KYCVerificationPage() {
         if (Object.keys(nextFileErrors).length > 0) return;
 
         setIsSubmitting(true);
+        setUploadProgress(0);
         try {
-          const payload = new FormData();
-          payload.append("businessName", values.businessName.trim());
-          payload.append("businessRcNumber", values.businessRcNumber.trim());
-          payload.append("ninImage", ninImage as File);
-          payload.append("cacDocument", cacDocument as File);
+          const [ninUrl] = await uploadImage({
+            files: [ninImage as File],
+            onUploadProgress: (progress) => {
+              setUploadProgress(Math.round(progress * 0.5));
+            },
+          });
+
+          const [cacUrl] = await uploadImage({
+            files: [cacDocument as File],
+            onUploadProgress: (progress) => {
+              setUploadProgress(50 + Math.round(progress * 0.5));
+            },
+          });
+
+          setUploadProgress(100);
+
+          await updateProfile({
+            companyName: values.businessName.trim(),
+            licenseNumber: values.businessRcNumber.trim(),
+            ninUrl,
+            cacUrl,
+          });
 
           toast.success("KYC submitted for verification.");
+          resetForm();
+          setNinImage(null);
+          setCacDocument(null);
+          setFileErrors({});
+        } catch {
+          // Errors are handled by the upload and profile hooks.
         } finally {
           setIsSubmitting(false);
         }
@@ -347,6 +377,16 @@ export default function KYCVerificationPage() {
                 {isSubmitting ? "Submitting..." : "Submit for Verification"}
               </Button>
             </div>
+
+            {isSubmitting && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Uploading documents and submitting...</span>
+                  <span>{uploadProgress}%</span>
+                </div>
+                <Progress value={uploadProgress} className="h-2" />
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>

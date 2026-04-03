@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import CartCheckoutBar from "@/components/cart/CartCheckoutBar";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/redux/hooks";
 import { Product, ApiProduct } from "@/types";
@@ -313,7 +312,6 @@ const ProductDetail = () => {
         </section>
       </main>
 
-      <CartCheckoutBar />
       <Footer />
     </div>
   );

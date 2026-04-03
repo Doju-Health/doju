@@ -65,14 +65,37 @@ const About = () => {
                   Our Story
                 </h2>
                 <p className="text-muted-foreground mb-4">
-                  Founded in 2024, Doju started with a simple observation:
-                  healthcare professionals struggled to find reliable, quality
-                  medical equipment from trusted sources.
+                  Doju was born out of a clear and persistent need, to make
+                  access to health and wellness products simpler, more reliable,
+                  less stressful, and more dignifying.
                 </p>
                 <p className="text-muted-foreground">
-                  Today, we connect thousands of verified sellers with
-                  healthcare providers, ensuring every transaction is secure,
-                  transparent, and backed by our quality guarantee.
+                  For many people, getting basic medical supplies,
+                  rehabilitation consumables, or even quality medical apparel
+                  often means moving from one vendor to another, dealing with
+                  uncertainty, and spending unnecessary time and effort.
+                </p>
+                <p className="text-muted-foreground">
+                  A year ago, that gap became a burden we could no longer
+                  ignore. We envisioned a centralized marketplace; one platform
+                  where individuals, healthcare professionals, and organizations
+                  can easily find, compare, and purchase trusted health and
+                  wellness products with confidence, transparency, and ease.
+                </p>
+                <p className="text-muted-foreground">
+                  That vision became Doju.
+                </p>
+                <p className="text-muted-foreground">
+                  At Doju, we are not only building a marketplace; we are
+                  creating a system that restores dignity to how people access
+                  care-related products, empowers vendors to reach wider
+                  audiences and grow, and simplifies the entire buying
+                  experience.
+                </p> 
+                <p className="text-muted-foreground">
+                  We are just getting started, but we remain committed to
+                  building something reliable, accessible, and truly impactful.
+                  Welcome to Doju.
                 </p>
               </div>
               <div className="rounded-2xl bg-muted aspect-video flex items-center justify-center">

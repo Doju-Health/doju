@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/products/ProductCard";
-import CartCheckoutBar from "@/components/cart/CartCheckoutBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input/input";
 import { Badge } from "@/components/ui/badge";
@@ -186,7 +185,6 @@ const Marketplace = () => {
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-foreground">
                   {resolvedCategoryName || "All Products"}
                 </h1>
-               
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -538,7 +536,6 @@ const Marketplace = () => {
         </div>
       </main>
 
-      <CartCheckoutBar />
       <Footer />
     </div>
   );

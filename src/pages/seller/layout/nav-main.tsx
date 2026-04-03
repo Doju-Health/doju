@@ -6,6 +6,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import type { NavGroup } from "@/types";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ interface NavMainProps {
 
 export function NavMain({ groups }: NavMainProps) {
   const { pathname } = useLocation();
+  const { setOpenMobile } = useSidebar();
 
   return (
     <>
@@ -36,7 +38,7 @@ export function NavMain({ groups }: NavMainProps) {
                       isActive && "bg-doju-lime-pale text-doju-lime",
                     )}
                   >
-                    <Link to={item.href!}>
+                    <Link to={item.href!} onClick={() => setOpenMobile(false)}>
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>

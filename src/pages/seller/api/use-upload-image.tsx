@@ -1,17 +1,30 @@
 import { API } from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
+import { AxiosProgressEvent } from "axios";
 import { toast } from "sonner";
 
 const MAX_IMAGE_SIZE_BYTES = 10485760;
 
+type UploadImagePayload =
+  | File[]
+  | {
+      files: File[];
+      onUploadProgress?: (progress: number) => void;
+    };
+
 export const useUploadImage = () => {
   return useMutation({
-    mutationFn: async (payload: File[]) => {
-      if (!Array.isArray(payload) || payload.length === 0) {
+    mutationFn: async (payload: UploadImagePayload) => {
+      const files = Array.isArray(payload) ? payload : payload.files;
+      const onUploadProgress = Array.isArray(payload)
+        ? undefined
+        : payload.onUploadProgress;
+
+      if (!Array.isArray(files) || files.length === 0) {
         throw new Error("Please select at least one image to upload");
       }
 
-      const oversizedFile = payload.find(
+      const oversizedFile = files.find(
         (file) => file.size > MAX_IMAGE_SIZE_BYTES,
       );
       if (oversizedFile) {
@@ -21,9 +34,15 @@ export const useUploadImage = () => {
       }
 
       const formData = new FormData();
-      payload.forEach((file) => formData.append("files", file));
+      files.forEach((file) => formData.append("files", file));
 
-      const response = await API.post(`/cloudinary/upload-multiple`, formData);
+      const response = await API.post(`/cloudinary/upload-multiple`, formData, {
+        onUploadProgress: (event: AxiosProgressEvent) => {
+          if (!onUploadProgress || !event.total) return;
+          const progress = Math.round((event.loaded * 100) / event.total);
+          onUploadProgress(progress);
+        },
+      });
 
       const urls =
         response?.data?.url || response?.data?.urls || response?.data?.data;

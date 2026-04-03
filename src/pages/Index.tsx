@@ -1,28 +1,37 @@
-import { Link } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import ProductCard from '@/components/products/ProductCard';
-import CategoryCard from '@/components/products/CategoryCard';
-import AnimatedStat from '@/components/home/AnimatedStat';
-import TopSellingCarousel from '@/components/home/TopSellingCarousel';
-import DispatchAgentSection from '@/components/home/DispatchAgentSection';
-import { featuredProducts, categories as mockCategories } from '@/data/mockData';
-import { useGetCategories } from '@/pages/seller/api/use-get-categories';
-import { ApiCategory, Category } from '@/types';
-import { 
-  Shield, Truck, BadgeCheck, Headphones, 
-  CheckCircle, Zap, Heart, Globe, 
-  ArrowRight, Star, Users, Package, ChevronLeft, ChevronRight
-} from 'lucide-react';
-import heroImage from '@/assets/hero-medical.jpg';
-import dojuLogo from '@/assets/doju-logo.jpg';
-import heroHospitalBg from '@/assets/hero-hospital-bg.jpg';
-import CartCheckoutBar from '@/components/cart/CartCheckoutBar';
-import { useRef, useCallback, useEffect, useState, useMemo } from 'react';
-import useEmblaCarousel from 'embla-carousel-react';
+import { Link } from "react-router-dom";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import ProductCard from "@/components/products/ProductCard";
+import CategoryCard from "@/components/products/CategoryCard";
+import AnimatedStat from "@/components/home/AnimatedStat";
+import TopSellingCarousel from "@/components/home/TopSellingCarousel";
+import DispatchAgentSection from "@/components/home/DispatchAgentSection";
+import {
+  featuredProducts,
+  categories as mockCategories,
+} from "@/data/mockData";
+import { useGetCategories } from "@/pages/seller/api/use-get-categories";
+import { ApiCategory, Category } from "@/types";
+import {
+  Shield,
+  Truck,
+  BadgeCheck,
+  Headphones,
+  CheckCircle,
+  Zap,
+  Heart,
+  Globe,
+  ArrowRight,
+  Star,
+  Package,
+} from "lucide-react";
+import heroImage from "@/assets/hero-medical.jpg";
+import dojuLogo from "@/assets/doju-logo.jpg";
+import heroHospitalBg from "@/assets/hero-hospital-bg.jpg";
+import { useRef, useEffect, useState, useMemo } from "react";
 
 // Top 4 products for homepage
 const topProducts = featuredProducts.slice(0, 4);
@@ -31,17 +40,15 @@ const Index = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start start", "end start"]
+    offset: ["start start", "end start"],
   });
-  
+
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 150]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   // fetch categories from the API rather than relying on mock data
-  const {
-    data: apiCategories = [],
-    isLoading: categoriesLoading,
-  } = useGetCategories();
+  const { data: apiCategories = [], isLoading: categoriesLoading } =
+    useGetCategories();
 
   // convert API data to UI Category format; fall back to mock data if something goes wrong
   const categories: Category[] = useMemo(() => {
@@ -59,51 +66,71 @@ const Index = () => {
         id: c.id,
         name: c.name,
         description: c.description,
-        icon: '', // not provided by the API; fallback to empty
+        icon: "", // not provided by the API; fallback to empty
         productCount: 0, // server doesn't supply counts yet
         image: c.imageUrl,
       }));
   }, [apiCategories, categoriesLoading]);
 
   const whyChooseDoju = [
-    { 
-      icon: Shield, 
-      title: 'Trusted & Reliable', 
-      description: 'Every product is certified and quality-checked. Shop with confidence knowing you\'re buying directly from DOJU.',
-      color: 'bg-blue-500/10 text-blue-600'
+    {
+      icon: Shield,
+      title: "Trusted & Reliable",
+      description:
+        "Every product is certified and quality-checked. Shop with confidence knowing you're buying directly from DOJU.",
+      color: "bg-blue-500/10 text-blue-600",
     },
-    { 
-      icon: Zap, 
-      title: 'Fast & Reliable', 
-      description: 'Swift delivery across Nigeria. Track your order in real-time and receive updates at every step.',
-      color: 'bg-yellow-500/10 text-yellow-600'
+    {
+      icon: Zap,
+      title: "Fast & Reliable",
+      description:
+        "Swift delivery across Nigeria. Track your order in real-time and receive updates at every step.",
+      color: "bg-yellow-500/10 text-yellow-600",
     },
-    { 
-      icon: Heart, 
-      title: 'Healthcare First', 
-      description: 'Built by healthcare professionals, for healthcare professionals. We understand your needs.',
-      color: 'bg-red-500/10 text-red-600'
+    {
+      icon: Heart,
+      title: "Healthcare First",
+      description:
+        "Built by healthcare professionals, for healthcare professionals. We understand your needs.",
+      color: "bg-red-500/10 text-red-600",
     },
-    { 
-      icon: Globe, 
-      title: 'Wide Selection', 
-      description: 'From diagnostics to mobility aids, find everything you need from one trusted source — DOJU.',
-      color: 'bg-green-500/10 text-green-600'
+    {
+      icon: Globe,
+      title: "Wide Selection",
+      description:
+        "From diagnostics to mobility aids, find everything you need from one trusted source — DOJU.",
+      color: "bg-green-500/10 text-green-600",
     },
   ];
 
   const stats = [
-    { value: '10K+', label: 'Products', icon: Package },
-    { value: '50K+', label: 'Happy Customers', icon: Heart },
-    { value: '99%', label: 'Satisfaction Rate', icon: Star },
-    { value: '24/7', label: 'Support', icon: Headphones },
+    { value: "10K+", label: "Products", icon: Package },
+    { value: "50K+", label: "Happy Customers", icon: Heart },
+    { value: "99%", label: "Satisfaction Rate", icon: Star },
+    { value: "24/7", label: "Support", icon: Headphones },
   ];
 
   const trustBadges = [
-    { icon: Shield, label: 'Secure Checkout', description: 'Bank-grade encryption' },
-    { icon: Truck, label: 'Nationwide Delivery', description: 'Fast & tracked shipping' },
-    { icon: BadgeCheck, label: 'Quality Guarantee', description: '100% authentic products' },
-    { icon: Headphones, label: 'Expert Support', description: 'Clinical guidance 24/7' },
+    {
+      icon: Shield,
+      label: "Secure Checkout",
+      description: "Bank-grade encryption",
+    },
+    {
+      icon: Truck,
+      label: "Nationwide Delivery",
+      description: "Fast & tracked shipping",
+    },
+    {
+      icon: BadgeCheck,
+      label: "Quality Guarantee",
+      description: "100% authentic products",
+    },
+    {
+      icon: Headphones,
+      label: "Expert Support",
+      description: "Clinical guidance 24/7",
+    },
   ];
 
   const containerVariants = {
@@ -120,35 +147,38 @@ const Index = () => {
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen flex flex-col overflow-x-hidden w-full">
+    <div
+      ref={containerRef}
+      className="min-h-screen flex flex-col overflow-x-hidden w-full"
+    >
       <Header />
-      
+
       <main className="flex-1">
         {/* Hero Section - Full Background */}
         <section className="relative overflow-hidden min-h-[85vh] sm:min-h-[90vh] flex items-center">
           {/* Full-width hospital background image */}
           <div className="absolute inset-0">
-            <img 
-              src={heroHospitalBg} 
-              alt="" 
+            <img
+              src={heroHospitalBg}
+              alt=""
               className="w-full h-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/70 sm:from-background/95 sm:via-background/80 sm:to-background/60" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40" />
           </div>
-          
+
           {/* Animated overlay elements - reduced on mobile */}
-          <motion.div 
+          <motion.div
             className="absolute top-20 left-4 sm:left-10 w-40 h-40 sm:w-72 sm:h-72 bg-doju-lime/10 rounded-full blur-3xl"
-            animate={{ 
+            animate={{
               scale: [1, 1.2, 1],
               opacity: [0.1, 0.2, 0.1],
             }}
             transition={{ duration: 8, repeat: Infinity }}
           />
-          <motion.div 
+          <motion.div
             className="absolute bottom-20 right-4 sm:right-10 w-52 h-52 sm:w-96 sm:h-96 bg-doju-navy/5 rounded-full blur-3xl"
-            animate={{ 
+            animate={{
               scale: [1.2, 1, 1.2],
               opacity: [0.05, 0.1, 0.05],
             }}
@@ -157,7 +187,7 @@ const Index = () => {
 
           <div className="container relative z-10 py-8 sm:py-16 md:py-24 px-4 sm:px-6">
             {/* Animated Logo Section */}
-            <motion.div 
+            <motion.div
               className="flex justify-center mb-8 sm:mb-12 md:mb-16"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -165,39 +195,39 @@ const Index = () => {
             >
               <motion.div
                 className="relative"
-                animate={{ 
+                animate={{
                   y: [0, -5, 0],
                   scale: [1, 1.02, 1],
                 }}
-                transition={{ 
-                  duration: 4, 
-                  repeat: Infinity, 
-                  ease: "easeInOut" 
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
                 }}
               >
                 {/* Glow effect */}
                 <motion.div
                   className="absolute inset-0 bg-doju-lime/30 rounded-full blur-xl sm:blur-2xl"
-                  animate={{ 
+                  animate={{
                     scale: [1, 1.3, 1],
                     opacity: [0.3, 0.5, 0.3],
                   }}
-                  transition={{ 
-                    duration: 3, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
                   }}
                 />
-                <img 
-                  src={dojuLogo} 
-                  alt="DOJU Logo" 
+                <img
+                  src={dojuLogo}
+                  alt="DOJU Logo"
                   className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 rounded-full object-cover shadow-2xl border-3 sm:border-4 border-background"
                 />
               </motion.div>
             </motion.div>
 
             <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <motion.div 
+              <motion.div
                 className="space-y-8"
                 style={{ y: heroY, opacity: heroOpacity }}
               >
@@ -211,45 +241,53 @@ const Index = () => {
                     Nigeria's Trusted Medical Supply Store
                   </Badge>
                 </motion.div>
-                
-                <motion.h1 
+
+                <motion.h1
                   className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.6 }}
                 >
-                  Your complete medical supply store,{' '}
+                  Your complete medical supply store,{" "}
                   <span className="text-doju-lime">in one app.</span>
                 </motion.h1>
-                
-                <motion.div 
+
+                <motion.div
                   className="space-y-2 sm:space-y-3 max-w-lg"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.6 }}
                 >
                   <p className="text-base sm:text-xl md:text-2xl text-foreground/90 font-medium leading-relaxed">
-                    Durable medical equipment. Fast delivery. Secure payments. Expert support.
+                    Durable medical equipment. Fast delivery. Secure payments.
+                    Expert support.
                   </p>
                   <p className="text-base sm:text-lg text-doju-lime font-semibold">
                     All from DOJU.
                   </p>
                 </motion.div>
-                
-                <motion.div 
+
+                <motion.div
                   className="flex flex-col sm:flex-row gap-3 sm:gap-4"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.6 }}
                 >
                   <Link to="/marketplace" className="w-full sm:w-auto">
-                    <Button size="lg" className="w-full sm:w-auto bg-doju-lime text-doju-navy hover:bg-doju-lime-light font-bold gap-2 group h-12 sm:h-14 text-sm sm:text-base">
+                    <Button
+                      size="lg"
+                      className="w-full sm:w-auto bg-doju-lime text-doju-navy hover:bg-doju-lime-light font-bold gap-2 group h-12 sm:h-14 text-sm sm:text-base"
+                    >
                       Buy from Us Now!
                       <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </Link>
                   <Link to="/auth" className="w-full sm:w-auto">
-                    <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary-foreground/30 text-foreground hover:bg-primary-foreground/10 font-bold gap-2 h-12 sm:h-14 text-sm sm:text-base">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full sm:w-auto border-primary-foreground/30 text-foreground hover:bg-primary-foreground/10 font-bold gap-2 h-12 sm:h-14 text-sm sm:text-base"
+                    >
                       Sell Through Us
                       <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
@@ -257,32 +295,37 @@ const Index = () => {
                 </motion.div>
 
                 {/* Trust indicators - horizontal scroll on mobile */}
-                <motion.div 
+                <motion.div
                   className="flex flex-wrap gap-3 sm:gap-6 pt-2 sm:pt-4"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
                 >
                   {[
-                    { icon: Shield, text: 'Secure Payments' },
-                    { icon: Truck, text: 'Fast Delivery' },
-                    { icon: BadgeCheck, text: 'Quality Guaranteed' },
+                    { icon: Shield, text: "Secure Payments" },
+                    { icon: Truck, text: "Fast Delivery" },
+                    { icon: BadgeCheck, text: "Quality Guaranteed" },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
+                    <div
+                      key={i}
+                      className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground"
+                    >
                       <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-doju-lime flex-shrink-0" />
-                      <span className="text-xs sm:text-sm whitespace-nowrap">{item.text}</span>
+                      <span className="text-xs sm:text-sm whitespace-nowrap">
+                        {item.text}
+                      </span>
                     </div>
                   ))}
                 </motion.div>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 className="relative hidden lg:block"
                 initial={{ opacity: 0, scale: 0.9, x: 50 }}
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
-                <motion.div 
+                <motion.div
                   className="relative rounded-3xl overflow-hidden shadow-2xl"
                   whileHover={{ scale: 1.02, rotateY: 5 }}
                   transition={{ duration: 0.4 }}
@@ -309,7 +352,9 @@ const Index = () => {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-foreground">10K+</p>
-                      <p className="text-sm text-muted-foreground">Products Available</p>
+                      <p className="text-sm text-muted-foreground">
+                        Products Available
+                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -327,7 +372,9 @@ const Index = () => {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-foreground">50K+</p>
-                      <p className="text-sm text-muted-foreground">Happy Customers</p>
+                      <p className="text-sm text-muted-foreground">
+                        Happy Customers
+                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -339,7 +386,7 @@ const Index = () => {
         {/* Stats Bar */}
         <section className="bg-card border-y border-border py-6 sm:py-8">
           <div className="container px-4 sm:px-6">
-            <motion.div 
+            <motion.div
               className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8"
               initial="hidden"
               whileInView="visible"
@@ -365,7 +412,7 @@ const Index = () => {
         {/* Shop By Category */}
         <section className="py-12 sm:py-20 bg-card">
           <div className="container px-4 sm:px-6">
-            <motion.div 
+            <motion.div
               className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-12 gap-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -379,17 +426,21 @@ const Index = () => {
                   Shop By Category
                 </h2>
                 <p className="text-muted-foreground mt-1.5 sm:mt-2 max-w-lg text-sm sm:text-base">
-                  Explore our wide range of medical equipment for clinics, hospitals, and home care.
+                  Explore our wide range of medical equipment for clinics,
+                  hospitals, and home care.
                 </p>
               </div>
               <Link to="/marketplace">
-                <Button variant="doju-outline" className="gap-2 group h-10 sm:h-11 text-sm">
+                <Button
+                  variant="doju-outline"
+                  className="gap-2 group h-10 sm:h-11 text-sm"
+                >
                   View All Categories
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
             </motion.div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {categoriesLoading && categories.length === 0 ? (
                 <p className="text-center text-muted-foreground w-full">
@@ -397,7 +448,11 @@ const Index = () => {
                 </p>
               ) : (
                 categories.map((category, index) => (
-                  <CategoryCard key={category.id} category={category} index={index} />
+                  <CategoryCard
+                    key={category.id}
+                    category={category}
+                    index={index}
+                  />
                 ))
               )}
             </div>
@@ -407,7 +462,7 @@ const Index = () => {
         {/* Why Choose DOJU */}
         <section className="py-12 sm:py-20 bg-card">
           <div className="container px-4 sm:px-6">
-            <motion.div 
+            <motion.div
               className="text-center mb-10 sm:mb-16"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -420,7 +475,8 @@ const Index = () => {
                 Why Choose DOJU?
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
-                We're your trusted partner in healthcare procurement — quality products, reliable service, one source.
+                We're your trusted partner in healthcare procurement — quality
+                products, reliable service, one source.
               </p>
             </motion.div>
 
@@ -435,7 +491,9 @@ const Index = () => {
                   className="relative group"
                 >
                   <div className="rounded-xl sm:rounded-2xl border border-border bg-background p-5 sm:p-8 h-full transition-all duration-300 group-hover:shadow-xl group-hover:border-doju-lime/30 active:scale-[0.98]">
-                    <div className={`h-11 w-11 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl ${item.color} flex items-center justify-center mb-4 sm:mb-6`}>
+                    <div
+                      className={`h-11 w-11 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl ${item.color} flex items-center justify-center mb-4 sm:mb-6`}
+                    >
                       <item.icon className="h-5 w-5 sm:h-7 sm:w-7" />
                     </div>
                     <h3 className="text-base sm:text-xl font-bold text-foreground mb-2 sm:mb-3 group-hover:text-doju-lime transition-colors">
@@ -457,7 +515,7 @@ const Index = () => {
         {/* Trust Section */}
         <section className="py-12 sm:py-20 bg-card">
           <div className="container px-4 sm:px-6">
-            <motion.div 
+            <motion.div
               className="text-center mb-8 sm:mb-12"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -484,8 +542,12 @@ const Index = () => {
                   <div className="inline-flex h-10 w-10 sm:h-14 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl bg-doju-lime-pale text-doju-lime mb-3 sm:mb-4">
                     <badge.icon className="h-5 w-5 sm:h-7 sm:w-7" />
                   </div>
-                  <h3 className="font-bold text-foreground mb-0.5 sm:mb-1 text-sm sm:text-base">{badge.label}</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">{badge.description}</p>
+                  <h3 className="font-bold text-foreground mb-0.5 sm:mb-1 text-sm sm:text-base">
+                    {badge.label}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    {badge.description}
+                  </p>
                 </motion.div>
               ))}
             </div>
@@ -494,21 +556,22 @@ const Index = () => {
 
         {/* CTA Section */}
         <section className="py-16 sm:py-24 bg-gradient-to-br from-doju-navy via-doju-navy to-doju-navy-light overflow-hidden relative">
-          <motion.div 
+          <motion.div
             className="absolute inset-0 opacity-10 sm:opacity-20"
             style={{
-              backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-              backgroundSize: '30px 30px',
+              backgroundImage:
+                "radial-gradient(circle, white 1px, transparent 1px)",
+              backgroundSize: "30px 30px",
             }}
           />
-          
+
           {/* Floating shapes - smaller on mobile */}
-          <motion.div 
+          <motion.div
             className="absolute top-5 right-5 sm:top-10 sm:right-20 w-20 h-20 sm:w-40 sm:h-40 bg-doju-lime/20 rounded-full blur-xl sm:blur-2xl"
             animate={{ y: [0, -20, 0], scale: [1, 1.1, 1] }}
             transition={{ duration: 5, repeat: Infinity }}
           />
-          <motion.div 
+          <motion.div
             className="absolute bottom-5 left-5 sm:bottom-10 sm:left-20 w-32 h-32 sm:w-60 sm:h-60 bg-doju-lime/10 rounded-full blur-2xl sm:blur-3xl"
             animate={{ y: [0, 20, 0], scale: [1.1, 1, 1.1] }}
             transition={{ duration: 7, repeat: Infinity }}
@@ -521,7 +584,7 @@ const Index = () => {
               viewport={{ once: true }}
               className="max-w-3xl mx-auto"
             >
-              <motion.h2 
+              <motion.h2
                 className="text-2xl sm:text-4xl md:text-5xl font-bold text-primary-foreground mb-4 sm:mb-6 leading-tight"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -529,16 +592,17 @@ const Index = () => {
               >
                 Ready to Transform Your Healthcare Procurement?
               </motion.h2>
-              <motion.p 
+              <motion.p
                 className="text-base sm:text-xl text-primary-foreground/80 mb-6 sm:mb-10"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
               >
-                Join thousands of healthcare professionals who trust DOJU for quality medical equipment.
+                Join thousands of healthcare professionals who trust DOJU for
+                quality medical equipment.
               </motion.p>
-              <motion.div 
+              <motion.div
                 className="flex flex-wrap gap-3 sm:gap-4 justify-center"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -546,20 +610,20 @@ const Index = () => {
                 transition={{ delay: 0.2 }}
               >
                 <Link to="/marketplace">
-                  <Button size="lg" className="bg-doju-lime text-doju-navy hover:bg-doju-lime-light font-bold gap-2 h-12 sm:h-14 text-sm sm:text-base">
+                  <Button
+                    size="lg"
+                    className="bg-doju-lime text-doju-navy hover:bg-doju-lime-light font-bold gap-2 h-12 sm:h-14 text-sm sm:text-base"
+                  >
                     Buy from Us Now!
                     <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </Link>
               </motion.div>
-
-              
             </motion.div>
           </div>
         </section>
       </main>
 
-      <CartCheckoutBar />
       <Footer />
     </div>
   );

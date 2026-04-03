@@ -248,6 +248,8 @@ export interface IUsers {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  ninUrl: string | null;
+  cacUrl: string | null;
 }
 
 export type FilterProps = {
