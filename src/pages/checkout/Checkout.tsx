@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -117,6 +117,12 @@ const Checkout = () => {
   const [orderResult, setOrderResult] = useState<BulkOrderResponse | null>(
     null,
   );
+
+  useEffect(() => {
+    if (items.length === 0 && !isComplete) {
+      navigate("/cart");
+    }
+  }, [items.length, isComplete, navigate]);
 
   const shipping = totalAmount > 50000 ? 0 : 2500;
   // tax has been removed per requirement
@@ -397,12 +403,6 @@ const Checkout = () => {
         </main>
       </div>
     );
-  }
-
-  // Empty cart redirect
-  if (items.length === 0 && !isComplete) {
-    navigate("/cart");
-    return null;
   }
 
   // Order review screen

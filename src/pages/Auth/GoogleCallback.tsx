@@ -18,6 +18,15 @@ export default function GoogleCallback() {
       searchParams.get("accessToken") ?? searchParams.get("token");
 
     if (!accessToken) {
+      // If opened as popup, notify opener of failure
+      if (window.opener) {
+        window.opener.postMessage(
+          { type: "GOOGLE_AUTH_FAILURE" },
+          window.location.origin,
+        );
+        window.close();
+        return;
+      }
       toast.error("Google sign-in failed. Please try again.");
       navigate("/auth", { replace: true });
       return;
@@ -42,6 +51,16 @@ export default function GoogleCallback() {
         createdAt: new Date().toISOString(),
       }),
     );
+
+    // If opened as popup, notify opener and close
+    if (window.opener) {
+      window.opener.postMessage(
+        { type: "GOOGLE_AUTH_SUCCESS", role },
+        window.location.origin,
+      );
+      window.close();
+      return;
+    }
 
     toast.success("Google sign-in successful!");
 

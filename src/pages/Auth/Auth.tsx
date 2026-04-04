@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,6 +18,7 @@ import { z } from "zod";
 import { useRegister } from "./api/use-register";
 import { useVerifyEmail } from "./api/use-verify-email";
 import { useLogin } from "./api/use-login";
+import { toast } from "sonner";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z
@@ -109,6 +110,41 @@ const Auth = () => {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
+
+  const handleGoogleSignIn = useCallback(() => {
+    const redirectUri = encodeURIComponent(
+      window.location.origin + "/auth/google/callback",
+    );
+    const url = `${baseUrl}/auth/google/?redirect_uri=${redirectUri}`;
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    window.open(
+      url,
+      "google-auth",
+      `width=${width},height=${height},left=${left},top=${top},popup=yes`,
+    );
+  }, []);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data?.type === "GOOGLE_AUTH_SUCCESS") {
+        toast.success("Google sign-in successful!");
+        const redirectUrl = searchParams.get("redirect");
+        const defaultRoute =
+          event.data.role === "seller" ? "/seller/overview" : "/";
+        navigate(redirectUrl || defaultRoute);
+      } else if (event.data?.type === "GOOGLE_AUTH_FAILURE") {
+        toast.error("Google sign-in failed. Please try again.");
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [navigate, searchParams]);
 
   const steps = isLogin ? signInSteps : signUpSteps;
   const currentStepData = steps[currentStep];
@@ -505,9 +541,7 @@ const Auth = () => {
                 type="button"
                 variant="outline"
                 size="lg"
-                onClick={() =>
-                  (window.location.href = `${baseUrl}/auth/google/?redirect_uri=${encodeURIComponent(window.location.origin + "/auth/google/callback")}`)
-                }
+                onClick={handleGoogleSignIn}
                 className="mt-4 w-full gap-3"
               >
                 <svg
