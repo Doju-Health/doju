@@ -93,6 +93,11 @@ export const adminSidebarNav: NavGroup[] = [
         href: "/admin/sellers",
       },
       {
+        title: "Products",
+        icon: Package,
+        href: "/admin/products",
+      },
+      {
         title: "Transactions",
         icon: History,
         href: "/admin/transactions",

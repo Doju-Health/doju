@@ -118,18 +118,7 @@ const Footer = () => {
                   Track Order
                 </Link>
               )}
-              <Link
-                to="/careers"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Careers
-              </Link>
-              <Link
-                to="/press"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Press
-              </Link>
+              
             </div>
           </div>
         </div>

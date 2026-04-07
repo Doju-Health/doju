@@ -1,3 +1,5 @@
+import { AdminProductTable } from "../../components/products-table";
+
 export default function AdminProductsPage() {
   return (
     <div className="space-y-6">
@@ -7,6 +9,7 @@ export default function AdminProductsPage() {
           Manage all products in the system.
         </p>
       </div>
+      <AdminProductTable />
     </div>
   );
 }

@@ -4,11 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import ProductCard from "@/components/products/ProductCard";
 import CategoryCard from "@/components/products/CategoryCard";
 import AnimatedStat from "@/components/home/AnimatedStat";
 import TopSellingCarousel from "@/components/home/TopSellingCarousel";
-import DispatchAgentSection from "@/components/home/DispatchAgentSection";
 import {
   featuredProducts,
   categories as mockCategories,
@@ -509,8 +507,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Dispatch Agent Section */}
-        <DispatchAgentSection />
+       
 
         {/* Trust Section */}
         <section className="py-12 sm:py-20 bg-card">

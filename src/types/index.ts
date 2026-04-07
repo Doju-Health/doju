@@ -173,6 +173,7 @@ export interface ApiProduct {
   };
   category: ApiCategory;
   isActive: boolean;
+  isApproved: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Shield, Heart, Users, Award } from "lucide-react";
-
+import TeamPhoto from '@/assets/about-us.jpeg'
 const About = () => {
   const values = [
     {
@@ -29,7 +29,7 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col w-full">
       <Header />
 
       <main className="flex-1">
@@ -99,7 +99,7 @@ const About = () => {
                 </p>
               </div>
               <div className="rounded-2xl bg-muted aspect-video flex items-center justify-center">
-                <span className="text-muted-foreground">Team Photo</span>
+                <img src={TeamPhoto} alt="Team Photo" className="w-full h-full object-cover rounded-2xl" />
               </div>
             </motion.div>
           </div>

@@ -12,6 +12,7 @@ import { Product, ApiProduct, ApiCategory } from "@/types";
 import { Search, ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import { useGetProducts } from "./api/use-get-products";
 import { useGetCategories } from "../seller/api/use-get-categories";
+import heroMedical from "@/assets/hero-medical.jpg";
 
 /** Map an API product to the internal Product shape used by ProductCard & cart */
 const mapApiProduct = (p: ApiProduct): Product => ({
@@ -161,11 +162,24 @@ const Marketplace = () => {
       <main className="flex-1">
         {/* Page Header */}
         <motion.div
-          className="border-b border-border bg-gradient-to-r from-doju-navy to-doju-navy-light"
+          className="border-b border-border bg-gradient-to-r from-doju-navy-light to-doju-navy-light relative overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          <div className="container py-6 sm:py-10 px-4 sm:px-6">
+          {/* Decorative product image fading in from the right */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-y-0 right-0 w-1/2 hidden sm:block pointer-events-none select-none"
+          >
+            <img
+              src={heroMedical}
+              alt=""
+              className="h-full w-full object-cover object-left opacity-20"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-doju-navy-light from-0% via-doju-navy-light/0 via-30% to-transparent" />
+          </div>
+
+          <div className="container py-6 sm:py-10 px-4 sm:px-6 relative z-10">
             <motion.nav
               className="flex items-center gap-2 text-xs sm:text-sm mb-3 sm:mb-4"
               initial={{ opacity: 0, y: -10 }}

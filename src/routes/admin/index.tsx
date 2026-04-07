@@ -27,6 +27,10 @@ const adminAppRoutesConfig = [
     component: () => import("@/pages/admin/pages/products"),
   },
   {
+    path: "products/:id",
+    component: () => import("@/pages/admin/pages/products/product-details"),
+  },
+  {
     path: "transactions",
     component: () => import("@/pages/admin/pages/transactions"),
   },
