@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   build: {
-    target: ["es2020", "safari14", "chrome87", "firefox78", "edge88"],
+    target: ["chrome87", "firefox78", "safari13", "edge88"],
     rollupOptions: {
       output: {
         manualChunks: {
@@ -23,9 +23,11 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-  plugins: [react(), 
+  plugins: [
+    react(),
     mode === "development" && componentTagger(),
-  visualizer({ open: true, filename: "bundle-stats.html" })].filter(Boolean),
+    visualizer({ open: true, filename: "bundle-stats.html" }),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
