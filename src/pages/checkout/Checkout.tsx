@@ -9,7 +9,7 @@ import { useCart, useAppSelector } from "@/redux/hooks";
 import { useCreateOrder } from "@/pages/checkout/api/use-create-orders";
 import { useInitializePayment } from "@/pages/checkout/api/use-initialize-payment";
 import { toast } from "sonner";
-import { City, State } from "country-state-city";
+import { nigeriaStates, nigeriaCities } from "@/data/nigeria-geo";
 import {
   ArrowLeft,
   ArrowRight,
@@ -234,22 +234,14 @@ const Checkout = () => {
 
   const currentValue = formData[steps[currentStep]?.id] || "";
   const currentStepData = steps[currentStep];
-  const nigeriaStates = useMemo(
-    () =>
-      State.getStatesOfCountry("NG").sort((a, b) =>
-        a.name.localeCompare(b.name),
-      ),
-    [],
-  );
   const selectedState = nigeriaStates.find(
     (state) => state.isoCode === formData.stateCode,
   );
   const selectedStateName = selectedState?.name || "";
-  const cityOptions = formData.stateCode
-    ? City.getCitiesOfState("NG", formData.stateCode).sort((a, b) =>
-        a.name.localeCompare(b.name),
-      )
-    : [];
+  const cityOptions = useMemo(
+    () => (formData.stateCode ? (nigeriaCities[formData.stateCode] ?? []) : []),
+    [formData.stateCode],
+  );
   const isValid = currentStepData?.required ? currentValue.length > 0 : true;
   const canSelectCurrentStep =
     currentStepData?.id !== "city" || Boolean(formData.stateCode);
@@ -655,8 +647,8 @@ const Checkout = () => {
                         value: state.isoCode,
                       }))
                     : cityOptions.map((city) => ({
-                        label: city.name,
-                        value: city.name,
+                        label: city,
+                        value: city,
                       }))
                   ).map((option) => (
                     <option key={option.value} value={option.value}>
