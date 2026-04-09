@@ -7,7 +7,7 @@ export const useGetProducts = (filters?: { page?: number; limit?: number }) => {
   const getProducts = async (): Promise<PaginatedResponse<ApiProduct>> => {
     const queryString = buildQueryString({ ...filters });
     const response = await API.get(
-      `/products${queryString ? `?${queryString}` : ""}`,
+      `/products/approved${queryString ? `?${queryString}` : ""}`,
     );
     return response.data;
   };
