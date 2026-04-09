@@ -24,8 +24,7 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Your trusted source for clinical-grade medical equipment and
-              supplies.
+              Your centralized health marketplace
             </p>
             <div className="flex gap-4">
               <a
@@ -54,8 +53,8 @@ const Footer = () => {
             </h4>
             <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
               <p className="break-all">dojuhealthltd@gmail.com</p>
-              <p>+234 13 456 689</p>
-              <p>Mon–Fri, 9am–6pm</p>
+              <p>+234 813 927 3018</p>
+              <p>Mon–Sun, 24hours</p>
             </div>
           </div>
 
@@ -118,7 +117,6 @@ const Footer = () => {
                   Track Order
                 </Link>
               )}
-              
             </div>
           </div>
         </div>
