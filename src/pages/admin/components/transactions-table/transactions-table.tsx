@@ -43,7 +43,7 @@ export const TransactionsTable = () => {
             data={memoizedTransactions ?? []}
             columns={columns}
             rowClick={(row) =>
-              navigate(`/admin/transactions/${row.original.orderId}`)
+              navigate(`/admin/transactions/${row.original.id}`)
             }
           />
         </DataTableWrapper>

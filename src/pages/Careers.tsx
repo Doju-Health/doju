@@ -1,21 +1,47 @@
-import { motion } from 'framer-motion';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import { Button } from '@/components/ui/button';
-import { Briefcase, MapPin, Clock } from 'lucide-react';
+import { motion } from "framer-motion";
+import SEO from "@/components/SEO";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import { Button } from "@/components/ui/button";
+import { Briefcase, MapPin, Clock } from "lucide-react";
 
 const Careers = () => {
   const openings = [
-    { title: 'Senior Frontend Engineer', location: 'Remote', type: 'Full-time', department: 'Engineering' },
-    { title: 'Product Designer', location: 'Lagos, Nigeria', type: 'Full-time', department: 'Design' },
-    { title: 'Customer Success Manager', location: 'Remote', type: 'Full-time', department: 'Support' },
-    { title: 'Medical Equipment Specialist', location: 'Remote', type: 'Contract', department: 'Operations' },
+    {
+      title: "Senior Frontend Engineer",
+      location: "Remote",
+      type: "Full-time",
+      department: "Engineering",
+    },
+    {
+      title: "Product Designer",
+      location: "Lagos, Nigeria",
+      type: "Full-time",
+      department: "Design",
+    },
+    {
+      title: "Customer Success Manager",
+      location: "Remote",
+      type: "Full-time",
+      department: "Support",
+    },
+    {
+      title: "Medical Equipment Specialist",
+      location: "Remote",
+      type: "Contract",
+      department: "Operations",
+    },
   ];
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO
+        title="Careers at Doju Health"
+        description="Join Doju Health's mission to make medical equipment accessible across Africa. Explore open roles in engineering, design, operations and more."
+        canonical="/careers"
+      />
       <Header />
-      
+
       <main className="flex-1">
         <section className="py-20 bg-doju-navy">
           <div className="container">
@@ -29,7 +55,8 @@ const Careers = () => {
                 Join Our Team
               </h1>
               <p className="text-xl text-primary-foreground/80">
-                Help us revolutionize how healthcare professionals access medical equipment.
+                Help us revolutionize how healthcare professionals access
+                medical equipment.
               </p>
             </motion.div>
           </div>
@@ -56,7 +83,9 @@ const Careers = () => {
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                      <span className="text-xs text-doju-lime font-medium">{job.department}</span>
+                      <span className="text-xs text-doju-lime font-medium">
+                        {job.department}
+                      </span>
                       <h3 className="text-lg font-semibold text-foreground group-hover:text-doju-lime transition-colors">
                         {job.title}
                       </h3>
@@ -83,8 +112,12 @@ const Careers = () => {
               transition={{ delay: 0.8 }}
               className="mt-12 text-center p-8 rounded-xl bg-muted/50"
             >
-              <h3 className="font-semibold text-foreground mb-2">Don't see a role for you?</h3>
-              <p className="text-muted-foreground mb-4">We're always looking for talented people. Send us your resume!</p>
+              <h3 className="font-semibold text-foreground mb-2">
+                Don't see a role for you?
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                We're always looking for talented people. Send us your resume!
+              </p>
               <Button variant="doju-outline">Send Resume</Button>
             </motion.div>
           </div>

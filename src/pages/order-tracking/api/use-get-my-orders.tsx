@@ -62,7 +62,7 @@ export const useGetMyOrders = () => {
     queryKey: ["my-orders"],
     queryFn: async () => {
       const response = await API.get("/orders/my-orders");
-      return response.data;
+      return response.data.data;
     },
   });
 };

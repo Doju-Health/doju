@@ -117,6 +117,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "react-router-dom";
 // import ScrollToTop from "@/components/ScrollToTop";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { HelmetProvider } from "react-helmet-async";
 
 // import SupportChatWidget from "@/components/chat/SupportChatWidget";
 
@@ -126,21 +127,23 @@ import { SidebarProvider } from "./components/ui/sidebar";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <Providers>
-    <QueryClientProvider client={queryClient}>
-      <SidebarProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            {/* <ScrollToTop /> */}
-            <RouterProvider router={router} />
-            {/* <SupportChatWidget /> */}
-          </TooltipProvider>
-        </AuthProvider>
-      </SidebarProvider>
-    </QueryClientProvider>
-  </Providers>
+  <HelmetProvider>
+    <Providers>
+      <QueryClientProvider client={queryClient}>
+        <SidebarProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              {/* <ScrollToTop /> */}
+              <RouterProvider router={router} />
+              {/* <SupportChatWidget /> */}
+            </TooltipProvider>
+          </AuthProvider>
+        </SidebarProvider>
+      </QueryClientProvider>
+    </Providers>
+  </HelmetProvider>
 );
 
 export default App;

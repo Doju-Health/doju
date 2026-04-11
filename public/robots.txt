@@ -12,3 +12,12 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /seller/
+Disallow: /dispatch/dashboard
+Disallow: /checkout
+Disallow: /cart
+Disallow: /track-order
+Disallow: /auth/
+
+Sitemap: https://dojuhealth.com/sitemap.xml

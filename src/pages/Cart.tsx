@@ -25,7 +25,7 @@ const Cart = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col w-full">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -51,7 +51,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col w-full">
       <Header />
 
       <main className="flex-1">

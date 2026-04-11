@@ -62,8 +62,7 @@ export default function TransactionDetailsPage() {
     useRefundTransaction();
 
   const transaction = getTransaction.data;
-  const paystack =
-    (transaction?.paystackResponse as Record<string, unknown> | null) ?? null;
+  const flutterwave = transaction?.flutterwaveResponse ?? null;
 
   const canRefund =
     transaction?.order?.orderStatus?.toUpperCase() === "CANCELLED" &&
@@ -125,7 +124,6 @@ export default function TransactionDetailsPage() {
                   <AlertDialogAction
                     onClick={handleReleaseFunds}
                     disabled={isReleasePending}
-                    
                   >
                     {isReleasePending ? "Releasing..." : "Confirm release"}
                   </AlertDialogAction>
@@ -512,7 +510,7 @@ export default function TransactionDetailsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Paystack receipt</CardTitle>
+                <CardTitle>Flutterwave receipt</CardTitle>
                 <CardDescription>
                   Important gateway fields in receipt format.
                 </CardDescription>
@@ -525,88 +523,137 @@ export default function TransactionDetailsPage() {
                         Receipt number
                       </p>
                       <p className="font-semibold">
-                        {formatNullable((paystack as { id?: number })?.id)}
+                        {formatNullable(flutterwave?.id)}
                       </p>
                     </div>
                     <p
                       className={cn(
                         "px-2 py-1 text-xs w-fit rounded-full border capitalize",
                         getStatusBadgeClass(
-                          formatNullable(
-                            (paystack as { status?: string })?.status,
-                          ),
+                          formatNullable(flutterwave?.status),
                         ),
                       )}
                     >
-                      {formatNullable(
-                        (paystack as { status?: string })?.status,
-                      )}
+                      {formatNullable(flutterwave?.status)}
                     </p>
                   </div>
                   <Separator className="my-4" />
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <p className="text-xs text-muted-foreground">Reference</p>
+                      <p className="text-xs text-muted-foreground">TX ref</p>
                       <p className="font-medium break-all">
-                        {formatNullable(
-                          (paystack as { reference?: string })?.reference,
-                        )}
+                        {formatNullable(flutterwave?.tx_ref)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">FLW ref</p>
+                      <p className="font-medium break-all">
+                        {formatNullable(flutterwave?.flw_ref)}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">
-                        Gateway response
+                        Payment type
                       </p>
                       <p className="font-medium">
-                        {formatNullable(
-                          (paystack as { gateway_response?: string })
-                            ?.gateway_response,
-                        )}
+                        {formatNullable(flutterwave?.payment_type)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Paid at</p>
-                      <p className="font-medium">
-                        {formatDateTime(
-                          (paystack as { paid_at?: string; paidAt?: string })
-                            ?.paid_at ??
-                            (paystack as { paid_at?: string; paidAt?: string })
-                              ?.paidAt,
-                        )}
+                      <p className="text-xs text-muted-foreground">
+                        Auth model
                       </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Channel</p>
                       <p className="font-medium">
-                        {formatNullable(
-                          (paystack as { channel?: string })?.channel,
-                        )}
+                        {formatNullable(flutterwave?.auth_model)}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Currency</p>
                       <p className="font-medium">
-                        {formatNullable(
-                          (paystack as { currency?: string })?.currency,
-                        )}
+                        {formatNullable(flutterwave?.currency)}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Amount</p>
                       <p className="font-medium">
+                        ₦{Number(flutterwave?.amount ?? 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Charged amount
+                      </p>
+                      <p className="font-medium">
                         ₦
                         {Number(
-                          (paystack as { amount?: number })?.amount ?? 0,
+                          flutterwave?.charged_amount ?? 0,
                         ).toLocaleString()}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Fees</p>
+                      <p className="text-xs text-muted-foreground">
+                        Amount settled
+                      </p>
                       <p className="font-medium">
                         ₦
                         {Number(
-                          (paystack as { fees?: number })?.fees ?? 0,
+                          flutterwave?.amount_settled ?? 0,
                         ).toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">App fee</p>
+                      <p className="font-medium">
+                        ₦{Number(flutterwave?.app_fee ?? 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Merchant fee
+                      </p>
+                      <p className="font-medium">
+                        ₦
+                        {Number(
+                          flutterwave?.merchant_fee ?? 0,
+                        ).toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Processor response
+                      </p>
+                      <p className="font-medium">
+                        {formatNullable(flutterwave?.processor_response)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Narration</p>
+                      <p className="font-medium">
+                        {formatNullable(flutterwave?.narration)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Created at
+                      </p>
+                      <p className="font-medium">
+                        {formatDateTime(flutterwave?.created_at)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        IP address
+                      </p>
+                      <p className="font-medium break-all">
+                        {formatNullable(flutterwave?.ip)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Customer name
+                      </p>
+                      <p className="font-medium">
+                        {formatNullable(flutterwave?.customer?.name)}
                       </p>
                     </div>
                     <div>
@@ -614,53 +661,15 @@ export default function TransactionDetailsPage() {
                         Customer email
                       </p>
                       <p className="font-medium break-all">
-                        {formatNullable(
-                          (
-                            paystack as {
-                              customer?: { email?: string };
-                            }
-                          )?.customer?.email,
-                        )}
+                        {formatNullable(flutterwave?.customer?.email)}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">
-                        Card brand
+                        Customer phone
                       </p>
                       <p className="font-medium">
-                        {formatNullable(
-                          (
-                            paystack as {
-                              authorization?: { brand?: string };
-                            }
-                          )?.authorization?.brand,
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Card last4
-                      </p>
-                      <p className="font-medium">
-                        {formatNullable(
-                          (
-                            paystack as {
-                              authorization?: { last4?: string };
-                            }
-                          )?.authorization?.last4,
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Bank</p>
-                      <p className="font-medium">
-                        {formatNullable(
-                          (
-                            paystack as {
-                              authorization?: { bank?: string };
-                            }
-                          )?.authorization?.bank,
-                        )}
+                        {formatNullable(flutterwave?.customer?.phone_number)}
                       </p>
                     </div>
                   </div>

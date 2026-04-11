@@ -30,6 +30,7 @@ import heroImage from "@/assets/hero-medical.jpg";
 import dojuLogo from "@/assets/doju-logo.jpg";
 import heroHospitalBg from "@/assets/hero-hospital-bg.jpg";
 import { useRef, useEffect, useState, useMemo } from "react";
+import SEO from "@/components/SEO";
 
 // Top 4 products for homepage
 const topProducts = featuredProducts.slice(0, 4);
@@ -149,6 +150,21 @@ const Index = () => {
       ref={containerRef}
       className="min-h-screen flex flex-col overflow-x-hidden w-full"
     >
+      <SEO
+        title="Medical Equipment Marketplace Nigeria"
+        description="Doju Health is Nigeria's #1 marketplace for clinical-grade medical equipment. Buy verified, FDA-compliant devices from certified sellers with fast delivery across Africa."
+        keywords="medical equipment Nigeria, buy medical devices online, hospital equipment, clinical supplies, doju health marketplace"
+        canonical="/home"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "MedicalBusiness",
+          name: "Doju Health",
+          url: "https://dojuhealth.com",
+          description:
+            "Nigeria's trusted marketplace for clinical-grade medical equipment and health supplies.",
+          areaServed: "NG",
+        }}
+      />
       <Header />
 
       <main className="flex-1">
@@ -506,8 +522,6 @@ const Index = () => {
             </div>
           </div>
         </section>
-
-       
 
         {/* Trust Section */}
         <section className="py-12 sm:py-20 bg-card">

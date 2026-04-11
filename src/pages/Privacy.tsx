@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
+import SEO from "@/components/SEO";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 const Privacy = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col w-full">
+      <SEO title="Privacy Policy" canonical="/privacy" noIndex={false} />
       <Header />
 
       <main className="flex-1 py-16">

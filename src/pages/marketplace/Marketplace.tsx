@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import SEO from "@/components/SEO";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/layout/Header";
@@ -157,6 +158,12 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen flex flex-col w-full">
+      <SEO
+        title="Browse Medical Equipment & Supplies"
+        description="Shop thousands of clinical-grade medical devices, hospital equipment and health supplies from verified sellers across Nigeria. Filter by category and price."
+        keywords="buy medical equipment online Nigeria, medical devices marketplace, hospital supplies, clinical equipment shop"
+        canonical="/marketplace"
+      />
       <Header />
 
       <main className="flex-1">

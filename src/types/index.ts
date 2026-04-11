@@ -421,6 +421,34 @@ export type ITransactions = {
   provider: string;
   channel: string | null;
   paystackResponse: Record<string, any> | null;
+  flutterwaveResponse: {
+    id: number;
+    ip: string;
+    meta: Record<string, unknown>;
+    amount: number;
+    status: string;
+    tx_ref: string;
+    app_fee: number;
+    flw_ref: string;
+    currency: string;
+    customer: {
+      id: number;
+      name: string;
+      email: string;
+      created_at: string;
+      phone_number: string;
+    };
+    narration: string;
+    account_id: number;
+    auth_model: string;
+    created_at: string;
+    merchant_fee: number;
+    payment_type: string;
+    amount_settled: number;
+    charged_amount: number;
+    device_fingerprint: string;
+    processor_response: string;
+  } | null;
   paidAt: string | null;
   escrowHeldAt: string | null;
   escrowReleasedAt: string | null;

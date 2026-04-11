@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
+import SEO from "@/components/SEO";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Shield, Heart, Users, Award } from "lucide-react";
-import TeamPhoto from '@/assets/about-us.jpeg'
+import TeamPhoto from "@/assets/about-us.jpeg";
 const About = () => {
   const values = [
     {
@@ -30,6 +31,12 @@ const About = () => {
 
   return (
     <div className="min-h-screen flex flex-col w-full">
+      <SEO
+        title="About Us"
+        description="Learn about Doju Health's mission to make clinical-grade medical equipment accessible to every African. Verified sellers, FDA-compliant products."
+        keywords="about doju health, medical equipment company Nigeria, healthcare marketplace Africa"
+        canonical="/about"
+      />
       <Header />
 
       <main className="flex-1">
@@ -91,7 +98,7 @@ const About = () => {
                   care-related products, empowers vendors to reach wider
                   audiences and grow, and simplifies the entire buying
                   experience.
-                </p> 
+                </p>
                 <p className="text-muted-foreground">
                   We are just getting started, but we remain committed to
                   building something reliable, accessible, and truly impactful.
@@ -99,7 +106,11 @@ const About = () => {
                 </p>
               </div>
               <div className="rounded-2xl bg-muted aspect-video flex items-center justify-center">
-                <img src={TeamPhoto} alt="Team Photo" className="w-full h-full object-cover rounded-2xl" />
+                <img
+                  src={TeamPhoto}
+                  alt="Team Photo"
+                  className="w-full h-full object-cover rounded-2xl"
+                />
               </div>
             </motion.div>
           </div>

@@ -9,7 +9,6 @@ export const useInitializePayment = () => {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Payment Initialized Successfully.");
     },
     onError: (error: {
       response?: { data?: { message?: string } };

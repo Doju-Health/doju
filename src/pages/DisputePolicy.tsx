@@ -4,7 +4,7 @@ import Footer from "@/components/layout/Footer";
 
 const DisputePolicy = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col w-full">
       <Header />
       <main className="flex-1 py-16">
         <div className="container max-w-3xl">

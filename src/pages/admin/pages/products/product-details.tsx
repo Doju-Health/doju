@@ -354,41 +354,7 @@ const AdminProductDetails = () => {
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {product?.isApproved === false && (
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start gap-2"
-                    onClick={() => setShowApproveDialog(true)}
-                    disabled={isApproving}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                    Approve Product
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-2"
-                >
-                  <Package className="h-4 w-4" />
-                  Update Stock
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-2 text-destructive hover:text-destructive"
-                  onClick={() => setShowDeleteDialog(true)}
-                  disabled={isDeleting}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete Product
-                </Button>
-              </CardContent>
-            </Card>
+           
           </div>
         </div>
         <AlertDialog

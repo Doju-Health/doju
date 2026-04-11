@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import SEO from "@/components/SEO";
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -93,7 +94,35 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col w-full">
+      {product && (
+        <SEO
+          title={`${product.name} - Buy Online`}
+          description={`Buy ${product.name} from Doju Health. ${product.description?.slice(0, 120) ?? "Clinical-grade medical equipment from verified sellers in Nigeria."}`.trim()}
+          keywords={`${product.name}, ${product.category}, medical equipment Nigeria, buy ${product.name} online`}
+          canonical={`/product/${product.id}`}
+          ogType="product"
+          ogImage={product.images[0] ?? undefined}
+          structuredData={{
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: product.name,
+            description: product.description,
+            image: product.images,
+            brand: { "@type": "Brand", name: product.brand },
+            offers: {
+              "@type": "Offer",
+              priceCurrency: "NGN",
+              price: product.price,
+              availability:
+                product.stock > 0
+                  ? "https://schema.org/InStock"
+                  : "https://schema.org/OutOfStock",
+              seller: { "@type": "Organization", name: "Doju Health" },
+            },
+          }}
+        />
+      )}
       <Header />
 
       <main className="flex-1">

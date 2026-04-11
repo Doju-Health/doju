@@ -1,20 +1,38 @@
-import { motion } from 'framer-motion';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import { Button } from '@/components/ui/button';
-import { FileText, Download, Mail } from 'lucide-react';
+import { motion } from "framer-motion";
+import SEO from "@/components/SEO";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import { Button } from "@/components/ui/button";
+import { FileText, Download, Mail } from "lucide-react";
 
 const Press = () => {
   const articles = [
-    { title: 'Doju Raises Series A to Expand Medical Equipment Marketplace', source: 'TechCrunch', date: 'Jan 2026' },
-    { title: 'How Doju is Transforming Healthcare Supply Chains', source: 'Forbes Africa', date: 'Dec 2025' },
-    { title: 'The Future of Medical Equipment Distribution', source: 'Healthcare Weekly', date: 'Nov 2025' },
+    {
+      title: "Doju Raises Series A to Expand Medical Equipment Marketplace",
+      source: "TechCrunch",
+      date: "Jan 2026",
+    },
+    {
+      title: "How Doju is Transforming Healthcare Supply Chains",
+      source: "Forbes Africa",
+      date: "Dec 2025",
+    },
+    {
+      title: "The Future of Medical Equipment Distribution",
+      source: "Healthcare Weekly",
+      date: "Nov 2025",
+    },
   ];
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO
+        title="Press & Media"
+        description="Read the latest news and press coverage about Doju Health, Nigeria's leading medical equipment marketplace."
+        canonical="/press"
+      />
       <Header />
-      
+
       <main className="flex-1">
         <section className="py-20 bg-doju-navy">
           <div className="container">
@@ -44,8 +62,12 @@ const Press = () => {
                 className="rounded-xl border border-border bg-card p-6"
               >
                 <FileText className="h-8 w-8 text-doju-lime mb-4" />
-                <h3 className="font-semibold text-foreground mb-2">Press Kit</h3>
-                <p className="text-sm text-muted-foreground mb-4">Download logos, brand guidelines, and company information.</p>
+                <h3 className="font-semibold text-foreground mb-2">
+                  Press Kit
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Download logos, brand guidelines, and company information.
+                </p>
                 <Button variant="doju-outline" className="gap-2">
                   <Download className="h-4 w-4" />
                   Download Kit
@@ -59,8 +81,12 @@ const Press = () => {
                 className="rounded-xl border border-border bg-card p-6"
               >
                 <Mail className="h-8 w-8 text-doju-lime mb-4" />
-                <h3 className="font-semibold text-foreground mb-2">Media Inquiries</h3>
-                <p className="text-sm text-muted-foreground mb-4">For press inquiries, interviews, or media requests.</p>
+                <h3 className="font-semibold text-foreground mb-2">
+                  Media Inquiries
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  For press inquiries, interviews, or media requests.
+                </p>
                 <Button variant="doju-primary" className="gap-2">
                   <Mail className="h-4 w-4" />
                   Contact PR Team
@@ -85,11 +111,15 @@ const Press = () => {
                   transition={{ delay: 0.5 + index * 0.1 }}
                   className="rounded-xl border border-border bg-card p-6 hover:shadow-lg transition-all cursor-pointer group"
                 >
-                  <span className="text-xs text-muted-foreground">{article.date}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {article.date}
+                  </span>
                   <h3 className="font-semibold text-foreground group-hover:text-doju-lime transition-colors">
                     {article.title}
                   </h3>
-                  <span className="text-sm text-doju-lime">{article.source}</span>
+                  <span className="text-sm text-doju-lime">
+                    {article.source}
+                  </span>
                 </motion.div>
               ))}
             </div>
