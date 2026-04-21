@@ -124,9 +124,8 @@ const Checkout = () => {
     }
   }, [items.length, isComplete, navigate]);
 
-  const shipping = totalAmount > 50000 ? 0 : 2500;
-  // tax has been removed per requirement
-  const total = totalAmount + shipping; // no tax added
+  // tax and shipping have been removed per requirement
+  const total = totalAmount;
 
   const progress = showReview
     ? 100
@@ -514,13 +513,6 @@ const Checkout = () => {
                       {formatPrice(totalAmount)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span className="text-foreground">
-                      {shipping === 0 ? "Free" : formatPrice(shipping)}
-                    </span>
-                  </div>
-                  {/* tax removed */}
                   <div className="border-t border-border my-2" />
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total</span>

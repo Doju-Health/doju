@@ -19,9 +19,7 @@ const Cart = () => {
     }).format(price);
   };
 
-  const shipping = totalAmount > 150 ? 0 : 10;
-  // tax removed
-  const total = totalAmount + shipping; // no tax added
+  const total = totalAmount;
 
   if (items.length === 0) {
     return (
@@ -172,12 +170,6 @@ const Cart = () => {
                       {formatPrice(totalAmount)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span className="text-foreground">
-                      {shipping === 0 ? "Free" : formatPrice(shipping)}
-                    </span>
-                  </div>
                 </div>
 
                 <div className="border-t border-border my-3 sm:my-4" />
@@ -212,11 +204,6 @@ const Cart = () => {
                   </Button>
                 </Link>
 
-                {shipping > 0 && (
-                  <p className="text-xs text-muted-foreground text-center mt-3 sm:mt-4">
-                    Add {formatPrice(150 - totalAmount)} more for free shipping
-                  </p>
-                )}
               </div>
             </div>
           </div>
