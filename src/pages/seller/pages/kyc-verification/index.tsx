@@ -67,68 +67,62 @@ export default function KYCVerificationPage() {
     };
   }, [cacDocument]);
 
-  const { values, errors, touched, handleChange, handleSubmit, resetForm } =
-    useFormHandler({
-      initialValues: {
-        businessName: "",
-        businessRcNumber: "",
-      },
-      validationSchema: yup.object({
-        businessName: yup.string().required("Business name is required"),
-        businessRcNumber: yup
-          .string()
-          .required("Business RC Number is required"),
-      }),
-      onSubmit: async () => {
-        const nextFileErrors: FileErrors = {};
-        if (!ninImage) {
-          nextFileErrors.ninImage = "NIN image is required";
-        }
-        if (!cacDocument) {
-          nextFileErrors.cacDocument = "Business CAC upload is required";
-        }
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleSubmit,
+    submitForm,
+    resetForm,
+  } = useFormHandler({
+    initialValues: {
+      businessName: "",
+      businessRcNumber: "",
+    },
+    validationSchema: yup.object({
+      businessName: yup.string().required("Business name is required"),
+      businessRcNumber: yup.string().required("Business RC Number is required"),
+    }),
+    onSubmit: async () => {
+      setIsSubmitting(true);
+      setUploadProgress(0);
+      try {
+        const [ninUrl] = await uploadImage({
+          files: [ninImage as File],
+          onUploadProgress: (progress) => {
+            setUploadProgress(Math.round(progress * 0.5));
+          },
+        });
 
-        setFileErrors(nextFileErrors);
-        if (Object.keys(nextFileErrors).length > 0) return;
+        const [cacUrl] = await uploadImage({
+          files: [cacDocument as File],
+          onUploadProgress: (progress) => {
+            setUploadProgress(50 + Math.round(progress * 0.5));
+          },
+        });
 
-        setIsSubmitting(true);
-        setUploadProgress(0);
-        try {
-          const [ninUrl] = await uploadImage({
-            files: [ninImage as File],
-            onUploadProgress: (progress) => {
-              setUploadProgress(Math.round(progress * 0.5));
-            },
-          });
+        setUploadProgress(100);
 
-          const [cacUrl] = await uploadImage({
-            files: [cacDocument as File],
-            onUploadProgress: (progress) => {
-              setUploadProgress(50 + Math.round(progress * 0.5));
-            },
-          });
+        await updateProfile({
+          companyName: values.businessName.trim(),
+          licenseNumber: values.businessRcNumber.trim(),
+          ninUrl,
+          cacUrl,
+        });
 
-          setUploadProgress(100);
-
-          await updateProfile({
-            companyName: values.businessName.trim(),
-            licenseNumber: values.businessRcNumber.trim(),
-            ninUrl,
-            cacUrl,
-          });
-
-          toast.success("KYC submitted for verification.");
-          resetForm();
-          setNinImage(null);
-          setCacDocument(null);
-          setFileErrors({});
-        } catch {
-          // Errors are handled by the upload and profile hooks.
-        } finally {
-          setIsSubmitting(false);
-        }
-      },
-    });
+        toast.success("KYC submitted for verification.");
+        resetForm();
+        setNinImage(null);
+        setCacDocument(null);
+        setFileErrors({});
+      } catch {
+        // Errors are handled by the upload and profile hooks.
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+  });
 
   const handleFileChange = (
     type: "ninImage" | "cacDocument",
@@ -186,7 +180,21 @@ export default function KYCVerificationPage() {
 
       <Card>
         <CardContent className="pt-6">
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form
+            className="space-y-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const nextFileErrors: FileErrors = {};
+              if (!ninImage) {
+                nextFileErrors.ninImage = "NIN image is required";
+              }
+              if (!cacDocument) {
+                nextFileErrors.cacDocument = "Business CAC upload is required";
+              }
+              setFileErrors(nextFileErrors);
+              submitForm();
+            }}
+          >
             <div className="space-y-4">
               <h2 className="text-2xl font-semibold">Personal Details</h2>
               <div className="h-px w-full bg-border" />

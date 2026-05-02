@@ -1,9 +1,11 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useGetAProduct } from "@/pages/marketplace/api/use-get-a-product";
+import { useDeleteProduct } from "@/pages/seller/api/use-delete-product";
 import { formatPriceAmount } from "@/lib/utils";
 import {
   ChevronLeft,
@@ -20,10 +22,21 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
   const { data: product, isLoading, error } = useGetAProduct(id!);
 
   if (isLoading) {
@@ -84,7 +97,12 @@ const ProductDetails = () => {
             <Edit className="h-4 w-4" />
             Edit Product
           </Button>
-          <Button variant="destructive" size="sm" className="gap-2">
+          <Button
+            variant="destructive"
+            size="sm"
+            className="gap-2"
+            onClick={() => setShowDeleteDialog(true)}
+          >
             <Trash2 className="h-4 w-4" />
             Delete
           </Button>
@@ -342,6 +360,7 @@ const ProductDetails = () => {
               <Button
                 variant="outline"
                 className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+                onClick={() => setShowDeleteDialog(true)}
               >
                 <Trash2 className="h-4 w-4" />
                 Delete Product
@@ -350,6 +369,39 @@ const ProductDetails = () => {
           </Card>
         </div>
       </div>
+
+      <AlertDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => setShowDeleteDialog(open)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Product</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{product?.name}</strong>?
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={() => {
+                if (!id) return;
+                deleteProduct(id, {
+                  onSuccess: () => {
+                    setShowDeleteDialog(false);
+                    navigate("/seller/products");
+                  },
+                });
+              }}
+            >
+              {isDeleting ? "Deleting…" : "Delete"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

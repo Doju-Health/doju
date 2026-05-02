@@ -2,26 +2,17 @@ import { API } from "@/lib/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export const useUpdateProfile = () => {
+export const useDeleteProduct = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (data: {
-      fullName?: string;
-      phoneNumber?: string;
-      address?: string;
-      companyName?: string;
-      licenseNumber?: string;
-      profileImageUrl?: string;
-      cacUrl?: string;
-      ninUrl?: string;
-    }) => {
-      const response = await API.patch("users/profile", data);
+    mutationFn: async (id: string) => {
+      const response = await API.delete(`/products/${id}`);
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Profile Updated Successfully.");
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["sellersProducts"] });
+      toast.success("Product deleted successfully.");
     },
     onError: (error: {
       response?: { data?: { message?: string } };

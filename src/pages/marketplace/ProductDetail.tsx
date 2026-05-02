@@ -276,9 +276,7 @@ const ProductDetail = () => {
                     </div>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                    Free shipping over $100 • Delivery ETA: 3-5 days
-                  </p>
+                  
 
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-3 sm:mb-4">
                     <Button

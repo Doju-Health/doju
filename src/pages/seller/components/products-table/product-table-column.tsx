@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle, Clock, EllipsisVertical } from "lucide-react";
+import { EllipsisVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,38 +7,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Badge } from "@/components/ui/badge";
 import { IProductData } from "@/types";
 import { clipSentence, cn, formatPriceAmount } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case "approved":
-      return (
-        <Badge className="bg-green-100 text-green-700 gap-1">
-          <CheckCircle className="h-3 w-3" />
-          Approved
-        </Badge>
-      );
-    case "pending":
-      return (
-        <Badge className="bg-yellow-100 text-yellow-700 gap-1">
-          <Clock className="h-3 w-3" />
-          Pending
-        </Badge>
-      );
-    default:
-      return <Badge>{status}</Badge>;
-  }
-};
-
 const ActionCell = ({
   product,
   onEdit,
+  onDelete,
 }: {
   product: IProductData;
   onEdit?: (product: IProductData) => void;
+  onDelete?: (product: IProductData) => void;
 }) => {
   const navigate = useNavigate();
 
@@ -60,7 +40,12 @@ const ActionCell = ({
         >
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem className="justify-cente">Delete</DropdownMenuItem>
+        <DropdownMenuItem
+          className="text-destructive justify-cente"
+          onClick={() => onDelete?.(product)}
+        >
+          Delete
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -68,6 +53,7 @@ const ActionCell = ({
 
 export const getProductsColumns = (
   onEdit?: (product: IProductData) => void,
+  onDelete?: (product: IProductData) => void,
 ): // onViewDetails,
 ColumnDef<IProductData>[] => [
   {
@@ -145,7 +131,9 @@ ColumnDef<IProductData>[] => [
     accessorKey: "id",
     cell: ({ row }) => {
       const product = row.original;
-      return <ActionCell product={product} onEdit={onEdit} />;
+      return (
+        <ActionCell product={product} onEdit={onEdit} onDelete={onDelete} />
+      );
     },
   },
 ];

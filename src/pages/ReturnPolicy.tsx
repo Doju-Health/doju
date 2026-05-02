@@ -7,7 +7,7 @@ const ReturnPolicy = () => {
   const policies = [
     {
       icon: Clock,
-      title: "30-Day Returns",
+      title: "3-Day Returns",
       description:
         "Return most items within 30 days of delivery for a full refund.",
     },
@@ -118,8 +118,7 @@ const ReturnPolicy = () => {
                   Contact
                 </h2>
                 <p className="text-muted-foreground">
-                  For return questions, contact returns@doju.example or call +1
-                  (555) 010-2400
+                  For return questions, contact supports@dojuhealth.com or call +2348139273018
                 </p>
               </section>
             </div>

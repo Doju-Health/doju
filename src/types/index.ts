@@ -118,6 +118,7 @@ export type IProductData = {
   price: number;
   stock: number;
   status: string;
+  weight: number;
   category: {
     id: string;
     name: string;

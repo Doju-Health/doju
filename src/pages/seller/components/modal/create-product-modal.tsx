@@ -67,6 +67,7 @@ export const CreateProductModal = ({
       name: "",
       description: "",
       price: 0,
+      weight: 0,
       stock: 0,
       categoryId: "",
     },
@@ -77,6 +78,10 @@ export const CreateProductModal = ({
         .number()
         .required("Price is required")
         .positive("Price must be positive"),
+      weight: yup
+        .number()
+        .required("Weight is required")
+        .positive("Weight must be positive"),
       stock: yup
         .number()
         .required("Stock is required")
@@ -162,6 +167,7 @@ export const CreateProductModal = ({
         description: initialProduct.description,
         price: initialProduct.price,
         stock: initialProduct.stock,
+        weight: initialProduct.weight,
         categoryId: initialProduct.category.id,
       });
       setExistingImageUrls(initialProduct.imageUrl || []);
@@ -176,6 +182,7 @@ export const CreateProductModal = ({
       description: "",
       price: 0,
       stock: 0,
+      weight: 0,
       categoryId: "",
     });
     setExistingImageUrls([]);
@@ -273,20 +280,32 @@ export const CreateProductModal = ({
             error={touched.stock && errors.stock}
           />
         </div>
-        <CustomSelect
-          name="categoryId"
-          label="Category"
-          triggerClassName="w-full"
-          placeholder="Select Category"
-          value={values.categoryId}
-          onValueChange={(value) => setValues({ ...values, categoryId: value })}
-          options={categories?.map((category) => ({
-            label: category.name,
-            value: category.id,
-          }))}
-          error={touched.categoryId && errors.categoryId}
-          disabled={isCategoriesLoading}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <CustomSelect
+            name="categoryId"
+            label="Category"
+            triggerClassName="w-full"
+            placeholder="Select Category"
+            value={values.categoryId}
+            onValueChange={(value) =>
+              setValues({ ...values, categoryId: value })
+            }
+            options={categories?.map((category) => ({
+              label: category.name,
+              value: category.id,
+            }))}
+            error={touched.categoryId && errors.categoryId}
+            disabled={isCategoriesLoading}
+          />
+          <CustomInput
+            name="weight"
+            label="Weight(kg)"
+            type="number"
+            value={values.weight}
+            onChange={handleChange}
+            error={touched.weight && errors.weight}
+          />
+        </div>
 
         {/* Multi-file Image Upload */}
         <div className="w-full font-reddit">

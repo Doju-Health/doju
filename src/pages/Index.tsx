@@ -252,7 +252,7 @@ const Index = () => {
                 >
                   <Badge className="bg-doju-lime/20 text-doju-lime border-doju-lime/30 mb-3 sm:mb-4 py-1.5 sm:py-2 px-3 sm:px-4 text-xs sm:text-sm">
                     <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 fill-doju-lime" />
-                    Nigeria's Trusted Medical Supply Store
+                    Nigeria's Trusted Medical Health Marketplace
                   </Badge>
                 </motion.div>
 
@@ -262,8 +262,8 @@ const Index = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.6 }}
                 >
-                  Your complete medical supply store,{" "}
-                  <span className="text-doju-lime">in one app.</span>
+                  Your complete health and wellness store,{" "}
+                  <span className="text-doju-lime">in one place.</span>
                 </motion.h1>
 
                 <motion.div
@@ -273,7 +273,7 @@ const Index = () => {
                   transition={{ delay: 0.5, duration: 0.6 }}
                 >
                   <p className="text-base sm:text-xl md:text-2xl text-foreground/90 font-medium leading-relaxed">
-                    Durable medical equipment. Fast delivery. Secure payments.
+                    Durable medical and wellness equipment. Fast delivery. Secure payments.
                     Expert support.
                   </p>
                   <p className="text-base sm:text-lg text-doju-lime font-semibold">

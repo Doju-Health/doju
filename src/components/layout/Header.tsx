@@ -18,6 +18,13 @@ import { queryClient } from "@/lib/react-query";
 import dojuLogo from "@/assets/doju-logo.jpg";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { logout } from "@/redux/slice/auth/auth-slice";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import BuyerProfile from "@/pages/buyer/BuyerProfile";
 
 const Header = () => {
   const { totalItems } = useCart();
@@ -28,6 +35,7 @@ const Header = () => {
   );
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const navLinks = [
     { label: "Home", href: "/home" },
@@ -125,6 +133,12 @@ const Header = () => {
                     >
                       <Store className="h-4 w-4 mr-2" />
                       Seller Dashboard
+                    </DropdownMenuItem>
+                  )}
+                  {authUser?.role === "buyer" && (
+                    <DropdownMenuItem onClick={() => setProfileOpen(true)}>
+                      <User className="h-4 w-4 mr-2" />
+                      My Profile
                     </DropdownMenuItem>
                   )}
 
@@ -233,6 +247,16 @@ const Header = () => {
           </div>
         </div>
       </header>
+
+      {/* Profile Modal */}
+      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>My Profile</DialogTitle>
+          </DialogHeader>
+          <BuyerProfile />
+        </DialogContent>
+      </Dialog>
 
       {/* Search Dialog */}
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />

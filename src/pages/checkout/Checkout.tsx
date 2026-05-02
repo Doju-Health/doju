@@ -25,6 +25,7 @@ import {
   Package,
 } from "lucide-react";
 import dojuLogo from "@/assets/doju-logo.jpg";
+import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
 
 interface CheckoutStep {
   id: string;
@@ -34,50 +35,6 @@ interface CheckoutStep {
   icon: React.ReactNode;
   required: boolean;
 }
-
-const steps: CheckoutStep[] = [
-  {
-    id: "phone",
-    question: "What's the best number to reach you?",
-    placeholder: "+234 800 000 0000",
-    type: "tel",
-    icon: <Phone className="h-6 w-6" />,
-    required: true,
-  },
-  {
-    id: "stateCode",
-    question: "Select your state",
-    placeholder: "Choose your state",
-    type: "select",
-    icon: <MapPin className="h-6 w-6" />,
-    required: true,
-  },
-  {
-    id: "city",
-    question: "Select your city",
-    placeholder: "Choose your city",
-    type: "select",
-    icon: <MapPin className="h-6 w-6" />,
-    required: true,
-  },
-  {
-    id: "address",
-    question: "What's your street address?",
-    placeholder: "House number, street, area",
-    type: "text",
-    icon: <MapPin className="h-6 w-6" />,
-    required: true,
-  },
-  {
-    id: "notes",
-    question: "Anything else you want us to know?",
-    placeholder:
-      "Special delivery instructions, gate codes, landmarks... (optional)",
-    type: "textarea",
-    icon: <MessageSquare className="h-6 w-6" />,
-    required: false,
-  },
-];
 
 interface CreatedOrder {
   id: string;
@@ -105,6 +62,7 @@ interface BulkOrderResponse {
 const Checkout = () => {
   const { items, totalAmount, clearCart } = useCart();
   const user = useAppSelector((state) => state.authData.user);
+  const { data: profileData, isLoading: profileLoading } = useGetUserProfile();
   const createOrderMutation = useCreateOrder();
   const initializePaymentMutation = useInitializePayment();
   const navigate = useNavigate();
@@ -117,6 +75,7 @@ const Checkout = () => {
   const [orderResult, setOrderResult] = useState<BulkOrderResponse | null>(
     null,
   );
+  const [useSavedAddress, setUseSavedAddress] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (items.length === 0 && !isComplete) {
@@ -124,8 +83,96 @@ const Checkout = () => {
     }
   }, [items.length, isComplete, navigate]);
 
+  const savedAddress = profileData?.user?.address;
+  const hasSavedAddress = Boolean(savedAddress);
+
   // tax and shipping have been removed per requirement
   const total = totalAmount;
+
+  const steps: CheckoutStep[] = useMemo(() => {
+    const baseSteps: CheckoutStep[] = [
+      {
+        id: "phone",
+        question: "What's the best number to reach you?",
+        placeholder: "+234 800 000 0000",
+        type: "tel",
+        icon: <Phone className="h-6 w-6" />,
+        required: true,
+      },
+      {
+        id: "stateCode",
+        question: "Select your state",
+        placeholder: "Choose your state",
+        type: "select",
+        icon: <MapPin className="h-6 w-6" />,
+        required: true,
+      },
+      {
+        id: "city",
+        question: "Select your city",
+        placeholder: "Choose your city",
+        type: "select",
+        icon: <MapPin className="h-6 w-6" />,
+        required: true,
+      },
+      {
+        id: "address",
+        question: "What's your street address?",
+        placeholder: "House number, street, area",
+        type: "text",
+        icon: <MapPin className="h-6 w-6" />,
+        required: true,
+      },
+      {
+        id: "notes",
+        question: "Anything else you want us to know?",
+        placeholder:
+          "Special delivery instructions, gate codes, landmarks... (optional)",
+        type: "textarea",
+        icon: <MessageSquare className="h-6 w-6" />,
+        required: false,
+      },
+    ];
+
+    if (!profileLoading && hasSavedAddress && useSavedAddress === null) {
+      // Add address choice step
+      return [
+        {
+          id: "addressChoice",
+          question: "How would you like to deliver your order?",
+          placeholder: "",
+          type: "text", // We'll handle this specially
+          icon: <MapPin className="h-6 w-6" />,
+          required: true,
+        },
+        ...baseSteps,
+      ];
+    } else if (useSavedAddress === true) {
+      // Skip address, state, city steps
+      return [
+        {
+          id: "phone",
+          question: "What's the best number to reach you?",
+          placeholder: "+234 800 000 0000",
+          type: "tel",
+          icon: <Phone className="h-6 w-6" />,
+          required: true,
+        },
+        {
+          id: "notes",
+          question: "Anything else you want us to know?",
+          placeholder:
+            "Special delivery instructions, gate codes, landmarks... (optional)",
+          type: "textarea",
+          icon: <MessageSquare className="h-6 w-6" />,
+          required: false,
+        },
+      ];
+    } else {
+      // Use new address, include all steps
+      return baseSteps;
+    }
+  }, [hasSavedAddress, useSavedAddress, profileLoading]);
 
   const progress = showReview
     ? 100
@@ -186,13 +233,11 @@ const Checkout = () => {
     setPlacingOrder(true);
 
     try {
-      const combinedDeliveryAddress = [
-        formData.address,
-        formData.city,
-        selectedStateName,
-      ]
-        .filter(Boolean)
-        .join(", ");
+      const combinedDeliveryAddress = useSavedAddress
+        ? savedAddress
+        : [formData.address, formData.city, selectedStateName]
+            .filter(Boolean)
+            .join(", ");
 
       // Step 1: Create bulk order via API
       const result: BulkOrderResponse = await createOrderMutation.mutateAsync({
@@ -241,16 +286,19 @@ const Checkout = () => {
     () => (formData.stateCode ? (nigeriaCities[formData.stateCode] ?? []) : []),
     [formData.stateCode],
   );
-  const isValid = currentStepData?.required ? currentValue.length > 0 : true;
+  const isValid =
+    currentStepData?.id === "addressChoice"
+      ? true
+      : currentStepData?.required
+        ? currentValue.length > 0
+        : true;
   const canSelectCurrentStep =
     currentStepData?.id !== "city" || Boolean(formData.stateCode);
-  const reviewDeliveryAddress = [
-    formData.address,
-    formData.city,
-    selectedStateName,
-  ]
-    .filter(Boolean)
-    .join(", ");
+  const reviewDeliveryAddress = useSavedAddress
+    ? savedAddress
+    : [formData.address, formData.city, selectedStateName]
+        .filter(Boolean)
+        .join(", ");
 
   const pageVariants = {
     initial: { opacity: 0, x: 20 },
@@ -503,7 +551,7 @@ const Checkout = () => {
                 <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-muted/50">
                   <CreditCard className="h-4 w-4 text-doju-lime" />
                   <span className="text-sm text-foreground">
-                    Pay via Paystack
+                    Pay via Flutterwave
                   </span>
                 </div>
                 <div className="space-y-2 text-sm">
@@ -576,138 +624,182 @@ const Checkout = () => {
 
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <motion.div
-            className="mb-8"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Progress value={progress} className="h-2" />
-            <p className="text-sm text-muted-foreground mt-2 text-center">
-              Step {currentStep + 1} of {steps.length}
-            </p>
-          </motion.div>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.3 }}
-            >
-              {/* Step Icon */}
+          {profileLoading ? (
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-doju-lime mx-auto mb-4"></div>
+              <p className="text-sm text-muted-foreground">
+                Loading your information...
+              </p>
+            </div>
+          ) : (
+            <>
               <motion.div
-                className="flex justify-center mb-6"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.1 }}
-              >
-                <div className="h-16 w-16 rounded-full bg-doju-lime/20 flex items-center justify-center text-doju-lime">
-                  {currentStepData.icon}
-                </div>
-              </motion.div>
-
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-6 text-center">
-                {currentStepData.question}
-              </h1>
-
-              {currentStepData.type === "textarea" ? (
-                <Textarea
-                  placeholder={currentStepData.placeholder}
-                  value={currentValue}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  className="text-lg min-h-[120px] mb-6"
-                  autoFocus
-                />
-              ) : currentStepData.type === "select" ? (
-                <select
-                  value={currentValue}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-3 text-base md:text-lg h-14 mb-6"
-                  autoFocus
-                  disabled={!canSelectCurrentStep}
-                >
-                  <option value="" disabled>
-                    {canSelectCurrentStep
-                      ? currentStepData.placeholder
-                      : "Please select state first"}
-                  </option>
-                  {(currentStepData.id === "stateCode"
-                    ? nigeriaStates.map((state) => ({
-                        label: state.name,
-                        value: state.isoCode,
-                      }))
-                    : cityOptions.map((city) => ({
-                        label: city,
-                        value: city,
-                      }))
-                  ).map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <Input
-                  type={currentStepData.type}
-                  placeholder={currentStepData.placeholder}
-                  value={currentValue}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  className="text-lg h-14 mb-6"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && isValid) {
-                      handleNext();
-                    }
-                  }}
-                />
-              )}
-
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                className="mb-8"
+                initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
               >
-                <Button
-                  variant="doju-primary"
-                  size="lg"
-                  className="w-full"
-                  disabled={!isValid}
-                  onClick={handleNext}
-                >
-                  {currentStep === steps.length - 1
-                    ? "Review Order"
-                    : "Continue"}
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-
-                {!currentStepData.required && (
-                  <Button
-                    variant="ghost"
-                    className="w-full mt-2"
-                    onClick={handleNext}
-                  >
-                    Skip this step
-                  </Button>
-                )}
+                <Progress value={progress} className="h-2" />
+                <p className="text-sm text-muted-foreground mt-2 text-center">
+                  Step {currentStep + 1} of {steps.length}
+                </p>
               </motion.div>
 
-              {/* Step indicators */}
-              <div className="flex justify-center gap-2 mt-8">
-                {steps.map((_, index) => (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  variants={pageVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  transition={{ duration: 0.3 }}
+                >
+                  {/* Step Icon */}
                   <motion.div
-                    key={index}
-                    className={`h-2 w-2 rounded-full transition-colors ${
-                      index <= currentStep ? "bg-doju-lime" : "bg-muted"
-                    }`}
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: index === currentStep ? 1.2 : 1 }}
-                  />
-                ))}
-              </div>
-            </motion.div>
-          </AnimatePresence>
+                    className="flex justify-center mb-6"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <div className="h-16 w-16 rounded-full bg-doju-lime/20 flex items-center justify-center text-doju-lime">
+                      {currentStepData.icon}
+                    </div>
+                  </motion.div>
+
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-6 text-center">
+                    {currentStepData.question}
+                  </h1>
+
+                  {currentStepData.id === "addressChoice" ? (
+                    <div className="space-y-4 mb-6">
+                      <div className="p-4 border rounded-lg bg-muted/50">
+                        <h3 className="font-semibold mb-2">
+                          Use saved address
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {savedAddress}
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <Button
+                          variant="doju-primary"
+                          className="flex-1"
+                          onClick={() => {
+                            setUseSavedAddress(true);
+                            handleNext();
+                          }}
+                        >
+                          Use saved address
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => {
+                            setUseSavedAddress(false);
+                            handleNext();
+                          }}
+                        >
+                          Enter new address
+                        </Button>
+                      </div>
+                    </div>
+                  ) : currentStepData.type === "textarea" ? (
+                    <Textarea
+                      placeholder={currentStepData.placeholder}
+                      value={currentValue}
+                      onChange={(e) => handleInputChange(e.target.value)}
+                      className="text-lg min-h-[120px] mb-6"
+                      autoFocus
+                    />
+                  ) : currentStepData.type === "select" ? (
+                    <select
+                      value={currentValue}
+                      onChange={(e) => handleInputChange(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background px-3 py-3 text-base md:text-lg h-14 mb-6"
+                      autoFocus
+                      disabled={!canSelectCurrentStep}
+                    >
+                      <option value="" disabled>
+                        {canSelectCurrentStep
+                          ? currentStepData.placeholder
+                          : "Please select state first"}
+                      </option>
+                      {(currentStepData.id === "stateCode"
+                        ? nigeriaStates.map((state) => ({
+                            label: state.name,
+                            value: state.isoCode,
+                          }))
+                        : cityOptions.map((city) => ({
+                            label: city,
+                            value: city,
+                          }))
+                      ).map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Input
+                      type={currentStepData.type}
+                      placeholder={currentStepData.placeholder}
+                      value={currentValue}
+                      onChange={(e) => handleInputChange(e.target.value)}
+                      className="text-lg h-14 mb-6"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && isValid) {
+                          handleNext();
+                        }
+                      }}
+                    />
+                  )}
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <Button
+                      variant="doju-primary"
+                      size="lg"
+                      className="w-full"
+                      disabled={!isValid}
+                      onClick={handleNext}
+                    >
+                      {currentStep === steps.length - 1
+                        ? "Review Order"
+                        : "Continue"}
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+
+                    {!currentStepData.required && (
+                      <Button
+                        variant="ghost"
+                        className="w-full mt-2"
+                        onClick={handleNext}
+                      >
+                        Skip this step
+                      </Button>
+                    )}
+                  </motion.div>
+
+                  {/* Step indicators */}
+                  <div className="flex justify-center gap-2 mt-8">
+                    {steps.map((_, index) => (
+                      <motion.div
+                        key={index}
+                        className={`h-2 w-2 rounded-full transition-colors ${
+                          index <= currentStep ? "bg-doju-lime" : "bg-muted"
+                        }`}
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: index === currentStep ? 1.2 : 1 }}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </>
+          )}
         </div>
       </main>
     </div>

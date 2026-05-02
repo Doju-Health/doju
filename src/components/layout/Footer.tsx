@@ -28,15 +28,33 @@ const Footer = () => {
             </p>
             <div className="flex gap-4">
               <a
-                href="https://twitter.com"
+                href="https://www.instagram.com/dojuhealth?igsh=MWdoZHV5Y2Rsczl4ZQ=="
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                Twitter
+                Instagram
+              </a>
+            
+              <a
+                href="https://www.tiktok.com/@doju.health.ltd?_r=1&_t=ZS-95tOI8G2OY9"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                TikTok
               </a>
               <a
-                href="https://linkedin.com"
+                href="⁠⁠https://www.facebook.com/share/1CixRwtcXE/?mibextid=wwXIfr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Facebook
+              </a>
+          
+              <a
+                href="⁠https://www.linkedin.com/company/doju-health-ltd/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"

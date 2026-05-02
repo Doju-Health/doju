@@ -17,6 +17,7 @@ import { sidebarNav } from "@/config/sidebar-nav";
 import DojuLogo from "@/assets/doju-logo.png";
 import { LogOutModal } from "../components/modal/logout-modal";
 import { LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
 // TODO: Replace with real user data from auth context
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
@@ -27,7 +28,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader className="border-b py-5">
         <SidebarMenu>
           <SidebarMenuItem>
-            <img src={DojuLogo} alt="Doju Logo" className="w-28 h-10 mx-auto object-cover" />
+            <Link to='/'>
+              <img
+                src={DojuLogo}
+                alt="Doju Logo"
+                className="w-28 h-10 mx-auto object-cover"
+              />
+            </Link>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

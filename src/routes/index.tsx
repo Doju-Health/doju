@@ -1,6 +1,7 @@
 import About from "@/pages/About";
 import Careers from "@/pages/Careers";
 import Cart from "@/pages/Cart";
+import Checkout from "@/pages/checkout/Checkout";
 import DispatchDashboard from "@/pages/dispatch/DispatchDashboard";
 import DispatchRegistration from "@/pages/dispatch/DispatchRegistration";
 import Index from "@/pages/Index";
@@ -27,8 +28,6 @@ import { adminAppRoutes } from "./admin";
 import AdminProtectedRoute from "@/components/auth/AdminProtectedRoute";
 import AdminLoginGuestRoute from "@/components/auth/AdminLoginGuestRoute";
 import GoogleCallback from "@/pages/Auth/GoogleCallback";
-
-const Checkout = lazy(() => import("@/pages/checkout/Checkout"));
 
 export const allRoutes = [
   {
@@ -104,23 +103,7 @@ export const allRoutes = [
     path: "checkout",
     element: (
       <ProtectedRoute>
-        <Suspense
-          fallback={
-            <div
-              style={{
-                minHeight: "100vh",
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              Loading...
-            </div>
-          }
-        >
-          <Checkout />
-        </Suspense>
+        <Checkout />
       </ProtectedRoute>
     ),
   },
