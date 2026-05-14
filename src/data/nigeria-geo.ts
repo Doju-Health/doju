@@ -8,165 +8,158 @@ export interface NigeriaState {
 
 export const nigeriaStates: NigeriaState[] = [
   {
-    "name": "Abia",
-    "isoCode": "AB"
+    name: "Abia",
+    isoCode: "AB",
   },
   {
-    "name": "Abuja Federal Capital Territory",
-    "isoCode": "FC"
+    name: "Abuja Federal Capital Territory",
+    isoCode: "FC",
   },
   {
-    "name": "Adamawa",
-    "isoCode": "AD"
+    name: "Adamawa",
+    isoCode: "AD",
   },
   {
-    "name": "Akwa Ibom",
-    "isoCode": "AK"
+    name: "Akwa Ibom",
+    isoCode: "AK",
   },
   {
-    "name": "Anambra",
-    "isoCode": "AN"
+    name: "Anambra",
+    isoCode: "AN",
   },
   {
-    "name": "Bauchi",
-    "isoCode": "BA"
+    name: "Bauchi",
+    isoCode: "BA",
   },
   {
-    "name": "Bayelsa",
-    "isoCode": "BY"
+    name: "Bayelsa",
+    isoCode: "BY",
   },
   {
-    "name": "Benue",
-    "isoCode": "BE"
+    name: "Benue",
+    isoCode: "BE",
   },
   {
-    "name": "Borno",
-    "isoCode": "BO"
+    name: "Borno",
+    isoCode: "BO",
   },
   {
-    "name": "Cross River",
-    "isoCode": "CR"
+    name: "Cross River",
+    isoCode: "CR",
   },
   {
-    "name": "Delta",
-    "isoCode": "DE"
+    name: "Delta",
+    isoCode: "DE",
   },
   {
-    "name": "Ebonyi",
-    "isoCode": "EB"
+    name: "Ebonyi",
+    isoCode: "EB",
   },
   {
-    "name": "Edo",
-    "isoCode": "ED"
+    name: "Edo",
+    isoCode: "ED",
   },
   {
-    "name": "Ekiti",
-    "isoCode": "EK"
+    name: "Ekiti",
+    isoCode: "EK",
   },
   {
-    "name": "Enugu",
-    "isoCode": "EN"
+    name: "Enugu",
+    isoCode: "EN",
   },
   {
-    "name": "Gombe",
-    "isoCode": "GO"
+    name: "Gombe",
+    isoCode: "GO",
   },
   {
-    "name": "Imo",
-    "isoCode": "IM"
+    name: "Imo",
+    isoCode: "IM",
   },
   {
-    "name": "Jigawa",
-    "isoCode": "JI"
+    name: "Jigawa",
+    isoCode: "JI",
   },
   {
-    "name": "Kaduna",
-    "isoCode": "KD"
+    name: "Kaduna",
+    isoCode: "KD",
   },
   {
-    "name": "Kano",
-    "isoCode": "KN"
+    name: "Kano",
+    isoCode: "KN",
   },
   {
-    "name": "Katsina",
-    "isoCode": "KT"
+    name: "Katsina",
+    isoCode: "KT",
   },
   {
-    "name": "Kebbi",
-    "isoCode": "KE"
+    name: "Kebbi",
+    isoCode: "KE",
   },
   {
-    "name": "Kogi",
-    "isoCode": "KO"
+    name: "Kogi",
+    isoCode: "KO",
   },
   {
-    "name": "Kwara",
-    "isoCode": "KW"
+    name: "Kwara",
+    isoCode: "KW",
   },
   {
-    "name": "Lagos",
-    "isoCode": "LA"
+    name: "Lagos",
+    isoCode: "LA",
   },
   {
-    "name": "Nasarawa",
-    "isoCode": "NA"
+    name: "Nasarawa",
+    isoCode: "NA",
   },
   {
-    "name": "Niger",
-    "isoCode": "NI"
+    name: "Niger",
+    isoCode: "NI",
   },
   {
-    "name": "Ogun",
-    "isoCode": "OG"
+    name: "Ogun",
+    isoCode: "OG",
   },
   {
-    "name": "Ondo",
-    "isoCode": "ON"
+    name: "Ondo",
+    isoCode: "ON",
   },
   {
-    "name": "Osun",
-    "isoCode": "OS"
+    name: "Osun",
+    isoCode: "OS",
   },
   {
-    "name": "Oyo",
-    "isoCode": "OY"
+    name: "Oyo",
+    isoCode: "OY",
   },
   {
-    "name": "Plateau",
-    "isoCode": "PL"
+    name: "Plateau",
+    isoCode: "PL",
   },
   {
-    "name": "Rivers",
-    "isoCode": "RI"
+    name: "Rivers",
+    isoCode: "RI",
   },
   {
-    "name": "Sokoto",
-    "isoCode": "SO"
+    name: "Sokoto",
+    isoCode: "SO",
   },
   {
-    "name": "Taraba",
-    "isoCode": "TA"
+    name: "Taraba",
+    isoCode: "TA",
   },
   {
-    "name": "Yobe",
-    "isoCode": "YO"
+    name: "Yobe",
+    isoCode: "YO",
   },
   {
-    "name": "Zamfara",
-    "isoCode": "ZA"
-  }
+    name: "Zamfara",
+    isoCode: "ZA",
+  },
 ];
 
 export const nigeriaCities: Record<string, string[]> = {
-  "AB": [
-    "Aba",
-    "Amaigbo",
-    "Arochukwu",
-    "Bende",
-    "Ohafia-Ifigh",
-    "Umuahia"
-  ],
-  "AD": [
+  AB: ["Aba", "Amaigbo", "Arochukwu", "Bende", "Ohafia-Ifigh", "Umuahia"],
+  AD: [
     "Ganye",
     "Gombi",
     "Holma",
@@ -177,16 +170,10 @@ export const nigeriaCities: Record<string, string[]> = {
     "Ngurore",
     "Numan",
     "Toungo",
-    "Yola"
+    "Yola",
   ],
-  "AK": [
-    "Eket",
-    "Esuk Oron",
-    "Ikot Ekpene",
-    "Itu",
-    "Uyo"
-  ],
-  "AN": [
+  AK: ["Eket", "Esuk Oron", "Ikot Ekpene", "Itu", "Uyo"],
+  AN: [
     "Agulu",
     "Atani",
     "Awka",
@@ -198,9 +185,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Onitsha",
     "Ozubulu",
     "Uga",
-    "Uruobo-Okija"
+    "Uruobo-Okija",
   ],
-  "BA": [
+  BA: [
     "Azare",
     "Bauchi",
     "Boi",
@@ -221,9 +208,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Yanda Bayo",
     "Yuli",
     "Zadawa",
-    "Zalanga"
+    "Zalanga",
   ],
-  "BE": [
+  BE: [
     "Aliade",
     "Boju",
     "Gboko",
@@ -234,9 +221,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Takum",
     "Ugbokpo",
     "Yandev",
-    "Zaki Biam"
+    "Zaki Biam",
   ],
-  "BO": [
+  BO: [
     "Bama",
     "Benisheikh",
     "Biu",
@@ -258,21 +245,11 @@ export const nigeriaCities: Record<string, string[]> = {
     "Tokombere",
     "Uba",
     "Wuyo",
-    "Yajiwa"
+    "Yajiwa",
   ],
-  "BY": [
-    "Amassoma",
-    "Twon-Brass",
-    "Yenagoa"
-  ],
-  "CR": [
-    "Akankpa",
-    "Calabar",
-    "Gakem",
-    "Ikang",
-    "Ugep"
-  ],
-  "DE": [
+  BY: ["Amassoma", "Twon-Brass", "Yenagoa"],
+  CR: ["Akankpa", "Calabar", "Gakem", "Ikang", "Ugep"],
+  DE: [
     "Abraka",
     "Agbor",
     "Asaba",
@@ -286,16 +263,10 @@ export const nigeriaCities: Record<string, string[]> = {
     "Sapele",
     "Ughelli",
     "Umunede",
-    "Warri"
+    "Warri",
   ],
-  "EB": [
-    "Abakaliki",
-    "Afikpo",
-    "Effium",
-    "Ezza-Ohu",
-    "Isieke"
-  ],
-  "ED": [
+  EB: ["Abakaliki", "Afikpo", "Effium", "Ezza-Ohu", "Isieke"],
+  ED: [
     "Agenebode",
     "Auchi",
     "Benin City",
@@ -304,9 +275,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Illushi",
     "Siluko",
     "Ubiaja",
-    "Uromi"
+    "Uromi",
   ],
-  "EK": [
+  EK: [
     "Ado-Ekiti",
     "Aramoko-Ekiti",
     "Efon-Alaaye",
@@ -319,9 +290,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Ipoti",
     "Ise-Ekiti",
     "Oke Ila",
-    "Omuo-Ekiti"
+    "Omuo-Ekiti",
   ],
-  "EN": [
+  EN: [
     "Adani",
     "Ake-Eze",
     "Aku",
@@ -336,15 +307,10 @@ export const nigeriaCities: Record<string, string[]> = {
     "Nsukka",
     "Obolo-Eke (1)",
     "Opi",
-    "Udi"
+    "Udi",
   ],
-  "FC": [
-    "Abuja",
-    "Kuje",
-    "Kwali",
-    "Madala"
-  ],
-  "GO": [
+  FC: ["Abuja", "Kuje", "Kwali", "Madala"],
+  GO: [
     "Akko",
     "Bara",
     "Billiri",
@@ -358,17 +324,10 @@ export const nigeriaCities: Record<string, string[]> = {
     "Kaltungo",
     "Kumo",
     "Nafada",
-    "Pindiga"
+    "Pindiga",
   ],
-  "IM": [
-    "Iho",
-    "Oguta",
-    "Okigwe",
-    "Orlu",
-    "Orodo",
-    "Owerri"
-  ],
-  "JI": [
+  IM: ["Iho", "Oguta", "Okigwe", "Orlu", "Orodo", "Owerri"],
+  JI: [
     "Babura",
     "Birnin Kudu",
     "Birniwa",
@@ -382,9 +341,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Kiyawa",
     "Mallammaduri",
     "Ringim",
-    "Samamiya"
+    "Samamiya",
   ],
-  "KD": [
+  KD: [
     "Anchau",
     "Burumburum",
     "Dutsen Wai",
@@ -400,9 +359,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Saminaka",
     "Soba",
     "Sofo-Birnin-Gwari",
-    "Zaria"
+    "Zaria",
   ],
-  "KE": [
+  KE: [
     "Argungu",
     "Bagudo",
     "Bena",
@@ -420,14 +379,10 @@ export const nigeriaCities: Record<string, string[]> = {
     "Maiyama",
     "Shanga",
     "Wasagu",
-    "Zuru"
+    "Zuru",
   ],
-  "KN": [
-    "Dan Gora",
-    "Gaya",
-    "Kano"
-  ],
-  "KO": [
+  KN: ["Dan Gora", "Gaya", "Kano"],
+  KO: [
     "Abocho",
     "Adoru",
     "Ankpa",
@@ -442,9 +397,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Lokoja",
     "Ogaminana",
     "Ogurugu",
-    "Okene"
+    "Okene",
   ],
-  "KT": [
+  KT: [
     "Danja",
     "Dankama",
     "Daura",
@@ -458,9 +413,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Mashi",
     "Ruma",
     "Runka",
-    "Wagini"
+    "Wagini",
   ],
-  "KW": [
+  KW: [
     "Ajasse Ipo",
     "Bode Saadu",
     "Gwasero",
@@ -473,9 +428,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Omu-Aran",
     "Patigi",
     "Suya",
-    "Yashikera"
+    "Yashikera",
   ],
-  "LA": [
+  LA: [
     "Apapa",
     "Badagry",
     "Ebute Ikorodu",
@@ -483,17 +438,10 @@ export const nigeriaCities: Record<string, string[]> = {
     "Epe",
     "Ikeja",
     "Lagos",
-    "Makoko"
+    "Makoko",
   ],
-  "NA": [
-    "Buga",
-    "Doma",
-    "Keffi",
-    "Lafia",
-    "Nasarawa",
-    "Wamba"
-  ],
-  "NI": [
+  NA: ["Buga", "Doma", "Keffi", "Lafia", "Nasarawa", "Wamba"],
+  NI: [
     "Auna",
     "Babana",
     "Badeggi",
@@ -512,9 +460,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Tegina",
     "Ukata",
     "Wawa",
-    "Zungeru"
+    "Zungeru",
   ],
-  "OG": [
+  OG: [
     "Abeokuta",
     "Ado Odo",
     "Idi Iroko",
@@ -526,9 +474,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Imeko",
     "Iperu",
     "Isara",
-    "Owode"
+    "Owode",
   ],
-  "ON": [
+  ON: [
     "Agbabu",
     "Akure",
     "Idanre",
@@ -537,9 +485,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Ode",
     "Ondo",
     "Ore",
-    "Owo"
+    "Owo",
   ],
-  "OS": [
+  OS: [
     "Apomu",
     "Ejigbo",
     "Gbongan",
@@ -557,9 +505,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Olupona",
     "Osogbo",
     "Otan Ayegbaju",
-    "Oyan"
+    "Oyan",
   ],
-  "OY": [
+  OY: [
     "Ago Are",
     "Alapa",
     "Fiditi",
@@ -573,9 +521,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Okeho",
     "Orita Eruwa",
     "Oyo",
-    "Saki"
+    "Saki",
   ],
-  "PL": [
+  PL: [
     "Amper",
     "Bukuru",
     "Dengi",
@@ -585,9 +533,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Pankshin",
     "Panyam",
     "Vom",
-    "Yelwa"
+    "Yelwa",
   ],
-  "RI": [
+  RI: [
     "Abalama",
     "Abonnema",
     "Ahoada",
@@ -600,9 +548,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Onne",
     "Opobo",
     "Port Harcourt",
-    "Rumuokoro"
+    "Rumuokoro",
   ],
-  "SO": [
+  SO: [
     "Binji",
     "Dange",
     "Gandi",
@@ -612,9 +560,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Rabah",
     "Sokoto",
     "Tambuwal",
-    "Wurno"
+    "Wurno",
   ],
-  "TA": [
+  TA: [
     "Baissa",
     "Beli",
     "Gassol",
@@ -624,9 +572,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Lau",
     "Mutum Biyu",
     "Riti",
-    "Wukari"
+    "Wukari",
   ],
-  "YO": [
+  YO: [
     "Damaturu",
     "Dankalwa",
     "Dapchi",
@@ -642,9 +590,9 @@ export const nigeriaCities: Record<string, string[]> = {
     "Lajere",
     "Machina",
     "Nguru",
-    "Potiskum"
+    "Potiskum",
   ],
-  "ZA": [
+  ZA: [
     "Anka",
     "Dan Sadau",
     "Gummi",
@@ -654,6 +602,143 @@ export const nigeriaCities: Record<string, string[]> = {
     "Maru",
     "Moriki",
     "Sauri",
-    "Tsafe"
-  ]
+    "Tsafe",
+  ],
 };
+
+export const jumiaZone = {
+  ZONE1: ["Lagos"],
+  ZONE2: [
+    "Agbara",
+    "Mowe Ibafo",
+    "Ajah",
+    "Akute",
+    "Awoyaya",
+    "Badagry",
+    "Epe",
+    "Ibeju-Lekki",
+    "Ijanikin",
+    "Ikorodu",
+    "Ojo",
+    "Ojokoro",
+    "Okokomaiko",
+    "Sagamu",
+  ],
+  ZONE3: [
+    "Abeokuta",
+    "Abuja",
+    "Port Harcourt",
+    "Akure",
+    "Awka",
+    "Ibadan",
+    "Asaba",
+    "Benin",
+    "Eleme",
+    "Gwagwalada",
+    "Idu",
+    "Nnewi",
+    "Obantoko",
+    "Onitsha",
+    "Osogbo",
+    "Owerri",
+    "Oyigbo",
+  ],
+  ZONE4: [
+    "Ado Ekiti",
+    "Agbor",
+    "Akoko",
+    "Ede",
+    "Ikire",
+    "Ikirun",
+    "Ile Ife",
+    "Ilesha",
+    "Iwo",
+    "Masaka",
+    "Nsukka",
+    "Offa",
+    "Ogbomosho",
+    "Ondo Town",
+    "Ore",
+    "Owo",
+    "Oyo Town",
+    "Umuahia",
+    "Ilorin",
+  ],
+  ZONE5: [
+    "Aba",
+    "Ago Iwoye",
+    "Calabar",
+    "Enugu",
+    "Ijebu Igbo",
+    "Ijebu Ode",
+    "Ikot Ekpene",
+    "Ilaro",
+    "Ilishan Remo",
+    "Iperu",
+    "Jos",
+    "Kaduna",
+    "Maiduguri",
+    "Minna",
+    "Sango Otta",
+    "Redeemed Camp",
+    "Uyo",
+    "Warri",
+    "Yenagoa",
+  ],
+  ZONE6: [
+    "Abakaliki",
+    "Bauchi",
+    "Kano",
+    "Eket",
+    "Gombe",
+    "Lokoja",
+    "Okene",
+    "Suleja",
+    "Udu",
+    "Yola",
+    "Zaria",
+  ],
+  ZONE7: [
+    "Abraka",
+    "Agbarho",
+    "Bonny Island",
+    "Egor",
+    "Ekpoma",
+    "Etsako",
+    "Fupre",
+    "Keffi",
+    "Lafia",
+    "Markurdi",
+    "Obiaruku",
+    "Oghara",
+    "Ozoro",
+    "Sapele",
+    "Ughelli",
+    "Uromi",
+  ],
+};
+
+// Create city to state mapping
+export const cityToState: Record<string, string> = {};
+nigeriaStates.forEach((state) => {
+  const cities = nigeriaCities[state.isoCode] || [];
+  cities.forEach((city) => {
+    cityToState[city] = state.isoCode;
+  });
+});
+
+// Create state to zones mapping
+export const stateToZones: Record<string, string[]> = {};
+Object.entries(jumiaZone).forEach(([zone, cities]) => {
+  cities.forEach((city) => {
+    const state = cityToState[city];
+    if (state) {
+      if (!stateToZones[state]) {
+        stateToZones[state] = [];
+      }
+      if (!stateToZones[state].includes(zone)) {
+        stateToZones[state].push(zone);
+      }
+    }
+  });
+});

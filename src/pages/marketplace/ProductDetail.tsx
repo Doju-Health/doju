@@ -206,14 +206,7 @@ const ProductDetail = () => {
                       {product.category}
                     </p>
                   </div>
-                  <div className="rounded-lg border border-border p-2.5 sm:p-3">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      Seller
-                    </p>
-                    <p className="text-xs sm:text-sm font-medium">
-                      {product.brand}
-                    </p>
-                  </div>
+                  
                   <div className="rounded-lg border border-border p-2.5 sm:p-3">
                     <p className="text-[10px] sm:text-xs text-muted-foreground">
                       Warranty

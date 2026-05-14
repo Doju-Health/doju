@@ -14,6 +14,8 @@ export const useUpdateProfile = () => {
       profileImageUrl?: string;
       cacUrl?: string;
       ninUrl?: string;
+      city?: string;
+      state?: string;
     }) => {
       const response = await API.patch("users/profile", data);
       return response.data;

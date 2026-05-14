@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input/input";
 import { Textarea } from "@/components/ui/textarea/textarea";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useCart, useAppSelector } from "@/redux/hooks";
 import { useCreateOrder } from "@/pages/checkout/api/use-create-orders";
 import { useInitializePayment } from "@/pages/checkout/api/use-initialize-payment";
 import { toast } from "sonner";
-import { nigeriaStates, nigeriaCities } from "@/data/nigeria-geo";
+import { nigeriaStates, nigeriaCities, stateToZones } from "@/data/nigeria-geo";
 import {
   ArrowLeft,
   ArrowRight,
@@ -26,6 +27,7 @@ import {
 } from "lucide-react";
 import dojuLogo from "@/assets/doju-logo.jpg";
 import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
+import { useUpdateProfile } from "@/pages/seller/api/use-update-profile";
 
 interface CheckoutStep {
   id: string;
@@ -63,6 +65,7 @@ const Checkout = () => {
   const { items, totalAmount, clearCart } = useCart();
   const user = useAppSelector((state) => state.authData.user);
   const { data: profileData, isLoading: profileLoading } = useGetUserProfile();
+  const updateProfileMutation = useUpdateProfile();
   const createOrderMutation = useCreateOrder();
   const initializePaymentMutation = useInitializePayment();
   const navigate = useNavigate();
@@ -76,6 +79,8 @@ const Checkout = () => {
     null,
   );
   const [useSavedAddress, setUseSavedAddress] = useState<boolean | null>(null);
+  const [useSavedPhone, setUseSavedPhone] = useState<boolean | null>(null);
+  const [saveNewAddress, setSaveNewAddress] = useState(false);
 
   useEffect(() => {
     if (items.length === 0 && !isComplete) {
@@ -84,21 +89,24 @@ const Checkout = () => {
   }, [items.length, isComplete, navigate]);
 
   const savedAddress = profileData?.user?.address;
+  const savedPhone = profileData?.user?.phoneNumber;
   const hasSavedAddress = Boolean(savedAddress);
+  const hasSavedPhone = Boolean(savedPhone);
 
   // tax and shipping have been removed per requirement
   const total = totalAmount;
 
   const steps: CheckoutStep[] = useMemo(() => {
-    const baseSteps: CheckoutStep[] = [
-      {
-        id: "phone",
-        question: "What's the best number to reach you?",
-        placeholder: "+234 800 000 0000",
-        type: "tel",
-        icon: <Phone className="h-6 w-6" />,
-        required: true,
-      },
+    const phoneStep: CheckoutStep = {
+      id: "phone",
+      question: "What's the best number to reach you?",
+      placeholder: "+234 800 000 0000",
+      type: "tel",
+      icon: <Phone className="h-6 w-6" />,
+      required: true,
+    };
+
+    const addressSteps: CheckoutStep[] = [
       {
         id: "stateCode",
         question: "Select your state",
@@ -108,9 +116,9 @@ const Checkout = () => {
         required: true,
       },
       {
-        id: "city",
-        question: "Select your city",
-        placeholder: "Choose your city",
+        id: "zone",
+        question: "Select your zone",
+        placeholder: "Choose your zone",
         type: "select",
         icon: <MapPin className="h-6 w-6" />,
         required: true,
@@ -123,56 +131,61 @@ const Checkout = () => {
         icon: <MapPin className="h-6 w-6" />,
         required: true,
       },
-      {
-        id: "notes",
-        question: "Anything else you want us to know?",
-        placeholder:
-          "Special delivery instructions, gate codes, landmarks... (optional)",
-        type: "textarea",
-        icon: <MessageSquare className="h-6 w-6" />,
-        required: false,
-      },
     ];
 
-    if (!profileLoading && hasSavedAddress && useSavedAddress === null) {
-      // Add address choice step
-      return [
-        {
-          id: "addressChoice",
-          question: "How would you like to deliver your order?",
-          placeholder: "",
-          type: "text", // We'll handle this specially
-          icon: <MapPin className="h-6 w-6" />,
-          required: true,
-        },
-        ...baseSteps,
-      ];
-    } else if (useSavedAddress === true) {
-      // Skip address, state, city steps
-      return [
-        {
-          id: "phone",
-          question: "What's the best number to reach you?",
-          placeholder: "+234 800 000 0000",
-          type: "tel",
-          icon: <Phone className="h-6 w-6" />,
-          required: true,
-        },
-        {
-          id: "notes",
-          question: "Anything else you want us to know?",
-          placeholder:
-            "Special delivery instructions, gate codes, landmarks... (optional)",
-          type: "textarea",
-          icon: <MessageSquare className="h-6 w-6" />,
-          required: false,
-        },
-      ];
-    } else {
-      // Use new address, include all steps
-      return baseSteps;
+    const noteStep: CheckoutStep = {
+      id: "notes",
+      question: "Anything else you want us to know?",
+      placeholder:
+        "Special delivery instructions, gate codes, landmarks... (optional)",
+      type: "textarea",
+      icon: <MessageSquare className="h-6 w-6" />,
+      required: false,
+    };
+
+    const steps: CheckoutStep[] = [];
+
+    if (!profileLoading && hasSavedPhone && useSavedPhone === null) {
+      steps.push({
+        id: "phoneChoice",
+        question:
+          "Would you like to use your saved phone number or enter a new one?",
+        placeholder: "",
+        type: "text",
+        icon: <Phone className="h-6 w-6" />,
+        required: true,
+      });
     }
-  }, [hasSavedAddress, useSavedAddress, profileLoading]);
+
+    if (!profileLoading && hasSavedAddress && useSavedAddress === null) {
+      steps.push({
+        id: "addressChoice",
+        question: "How would you like to deliver your order?",
+        placeholder: "",
+        type: "text",
+        icon: <MapPin className="h-6 w-6" />,
+        required: true,
+      });
+    }
+
+    if (useSavedPhone !== true) {
+      steps.push(phoneStep);
+    }
+
+    if (useSavedAddress !== true) {
+      steps.push(...addressSteps);
+    }
+
+    steps.push(noteStep);
+
+    return steps;
+  }, [
+    hasSavedAddress,
+    hasSavedPhone,
+    profileLoading,
+    useSavedAddress,
+    useSavedPhone,
+  ]);
 
   const progress = showReview
     ? 100
@@ -189,7 +202,13 @@ const Checkout = () => {
 
   const handleNext = () => {
     const step = steps[currentStep];
-    if (step.required && !formData[step.id]) return;
+    if (
+      step.required &&
+      !formData[step.id] &&
+      step.id !== "addressChoice" &&
+      step.id !== "phoneChoice"
+    )
+      return;
 
     if (currentStep < steps.length - 1) {
       setCurrentStep((prev) => prev + 1);
@@ -213,7 +232,7 @@ const Checkout = () => {
       setFormData((prev) => ({
         ...prev,
         stateCode: value,
-        city: "",
+        zone: "",
       }));
       return;
     }
@@ -235,9 +254,22 @@ const Checkout = () => {
     try {
       const combinedDeliveryAddress = useSavedAddress
         ? savedAddress
-        : [formData.address, formData.city, selectedStateName]
+        : [formData.address, formData.zone, selectedStateName]
             .filter(Boolean)
             .join(", ");
+
+      // Save new address if user chose to
+      if (!useSavedAddress && saveNewAddress && combinedDeliveryAddress) {
+        await updateProfileMutation.mutateAsync({
+          address: combinedDeliveryAddress,
+        });
+      }
+
+      // Update profile with zone and state
+      await updateProfileMutation.mutateAsync({
+        city: formData.zone,
+        state: selectedStateName,
+      });
 
       // Step 1: Create bulk order via API
       const result: BulkOrderResponse = await createOrderMutation.mutateAsync({
@@ -245,6 +277,8 @@ const Checkout = () => {
         quantities: items.map((item) => item.quantity),
         deliveryAddress: combinedDeliveryAddress,
         note: formData.notes || undefined,
+        deliveryCity: formData.zone,
+        deliveryState: selectedStateName,
       });
 
       if (result && result.orders && result.orders.length > 0) {
@@ -282,21 +316,22 @@ const Checkout = () => {
     (state) => state.isoCode === formData.stateCode,
   );
   const selectedStateName = selectedState?.name || "";
-  const cityOptions = useMemo(
-    () => (formData.stateCode ? (nigeriaCities[formData.stateCode] ?? []) : []),
+  const zoneOptions = useMemo(
+    () => (formData.stateCode ? (stateToZones[formData.stateCode] ?? []) : []),
     [formData.stateCode],
   );
   const isValid =
-    currentStepData?.id === "addressChoice"
+    currentStepData?.id === "addressChoice" ||
+    currentStepData?.id === "phoneChoice"
       ? true
       : currentStepData?.required
         ? currentValue.length > 0
         : true;
   const canSelectCurrentStep =
-    currentStepData?.id !== "city" || Boolean(formData.stateCode);
+    currentStepData?.id !== "zone" || Boolean(formData.stateCode);
   const reviewDeliveryAddress = useSavedAddress
     ? savedAddress
-    : [formData.address, formData.city, selectedStateName]
+    : [formData.address, formData.zone, selectedStateName]
         .filter(Boolean)
         .join(", ");
 
@@ -669,7 +704,42 @@ const Checkout = () => {
                     {currentStepData.question}
                   </h1>
 
-                  {currentStepData.id === "addressChoice" ? (
+                  {currentStepData.id === "phoneChoice" ? (
+                    <div className="space-y-4 mb-6">
+                      <div className="p-4 border rounded-lg bg-muted/50">
+                        <h3 className="font-semibold mb-2">Use saved phone</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {savedPhone}
+                        </p>
+                      </div>
+                      <div className="flex gap-3 flex-col sm:flex-row">
+                        <Button
+                          variant="doju-primary"
+                          className="flex-1"
+                          onClick={() => {
+                            setUseSavedPhone(true);
+                            setFormData((prev) => ({
+                              ...prev,
+                              phone: savedPhone ?? "",
+                            }));
+                            handleNext();
+                          }}
+                        >
+                          Use saved phone
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => {
+                            setUseSavedPhone(false);
+                            handleNext();
+                          }}
+                        >
+                          Enter new phone
+                        </Button>
+                      </div>
+                    </div>
+                  ) : currentStepData.id === "addressChoice" ? (
                     <div className="space-y-4 mb-6">
                       <div className="p-4 border rounded-lg bg-muted/50">
                         <h3 className="font-semibold mb-2">
@@ -679,12 +749,13 @@ const Checkout = () => {
                           {savedAddress}
                         </p>
                       </div>
-                      <div className="flex gap-3">
+                      <div className="flex gap-3 flex-col sm:flex-row">
                         <Button
                           variant="doju-primary"
                           className="flex-1"
                           onClick={() => {
                             setUseSavedAddress(true);
+                            setSaveNewAddress(false);
                             handleNext();
                           }}
                         >
@@ -695,6 +766,7 @@ const Checkout = () => {
                           className="flex-1"
                           onClick={() => {
                             setUseSavedAddress(false);
+                            setSaveNewAddress(false);
                             handleNext();
                           }}
                         >
@@ -724,13 +796,13 @@ const Checkout = () => {
                           : "Please select state first"}
                       </option>
                       {(currentStepData.id === "stateCode"
-                        ? nigeriaStates.map((state) => ({
+                        ? nigeriaStates.filter(state => stateToZones[state.isoCode]).map((state) => ({
                             label: state.name,
                             value: state.isoCode,
                           }))
-                        : cityOptions.map((city) => ({
-                            label: city,
-                            value: city,
+                        : zoneOptions.map((zone) => ({
+                            label: zone.replace('ZONE', 'Zone '),
+                            value: zone,
                           }))
                       ).map((option) => (
                         <option key={option.value} value={option.value}>
@@ -739,19 +811,38 @@ const Checkout = () => {
                       ))}
                     </select>
                   ) : (
-                    <Input
-                      type={currentStepData.type}
-                      placeholder={currentStepData.placeholder}
-                      value={currentValue}
-                      onChange={(e) => handleInputChange(e.target.value)}
-                      className="text-lg h-14 mb-6"
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && isValid) {
-                          handleNext();
-                        }
-                      }}
-                    />
+                    <div className="mb-6">
+                      <Input
+                        type={currentStepData.type}
+                        placeholder={currentStepData.placeholder}
+                        value={currentValue}
+                        onChange={(e) => handleInputChange(e.target.value)}
+                        className="text-lg h-14 mb-4"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && isValid) {
+                            handleNext();
+                          }
+                        }}
+                      />
+                      {currentStepData.id === "address" && !useSavedAddress && (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="saveAddress"
+                            checked={saveNewAddress}
+                            onCheckedChange={(checked) =>
+                              setSaveNewAddress(checked as boolean)
+                            }
+                          />
+                          <label
+                            htmlFor="saveAddress"
+                            className="text-sm text-muted-foreground cursor-pointer"
+                          >
+                            Save this address for future orders
+                          </label>
+                        </div>
+                      )}
+                    </div>
                   )}
 
                   <motion.div
