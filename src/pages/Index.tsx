@@ -252,7 +252,7 @@ const Index = () => {
                 >
                   <Badge className="bg-doju-lime/20 text-doju-lime border-doju-lime/30 mb-3 sm:mb-4 py-1.5 sm:py-2 px-3 sm:px-4 text-xs sm:text-sm">
                     <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 fill-doju-lime" />
-                    Nigeria's Trusted Medical Health Marketplace
+                    Nigeria's Trusted Health Marketplace
                   </Badge>
                 </motion.div>
 
@@ -610,8 +610,7 @@ const Index = () => {
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
               >
-                Join thousands of healthcare professionals who trust DOJU for
-                quality medical equipment.
+                Join thousands of individual who trust Doju for quality health products
               </motion.p>
               <motion.div
                 className="flex flex-wrap gap-3 sm:gap-4 justify-center"

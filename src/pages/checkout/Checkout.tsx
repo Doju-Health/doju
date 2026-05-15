@@ -1,15 +1,26 @@
 import { useState, useMemo, useEffect } from "react";
+import { useQueries } from "@tanstack/react-query";
+import { API } from "@/lib/axios";
+import type { ApiProduct } from "@/types";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input/input";
 import { Textarea } from "@/components/ui/textarea/textarea";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useCart, useAppSelector } from "@/redux/hooks";
 import { useCreateOrder } from "@/pages/checkout/api/use-create-orders";
 import { useInitializePayment } from "@/pages/checkout/api/use-initialize-payment";
 import { toast } from "sonner";
-import { nigeriaStates, nigeriaCities } from "@/data/nigeria-geo";
+import {
+  isValidJumiaCity,
+  getJumiaZoneForCity,
+  getDeliveryFee,
+  jumiaZone,
+} from "@/data/nigeria-geo";
 import {
   ArrowLeft,
   ArrowRight,
@@ -23,9 +34,11 @@ import {
   Copy,
   CheckCircle,
   Package,
+  ChevronsUpDown,
 } from "lucide-react";
 import dojuLogo from "@/assets/doju-logo.jpg";
 import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
+import { useUpdateProfile } from "@/pages/seller/api/use-update-profile";
 
 interface CheckoutStep {
   id: string;
@@ -59,10 +72,141 @@ interface BulkOrderResponse {
   orders: CreatedOrder[];
 }
 
+const zoneColors: Record<number, string> = {
+  1: "bg-emerald-500/15 text-emerald-600",
+  2: "bg-blue-500/15 text-blue-600",
+  3: "bg-violet-500/15 text-violet-600",
+  4: "bg-amber-500/15 text-amber-600",
+  5: "bg-rose-500/15 text-rose-600",
+  6: "bg-cyan-500/15 text-cyan-600",
+  7: "bg-orange-500/15 text-orange-600",
+};
+
+function CitySelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (city: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={`w-full flex items-center justify-between gap-2 rounded-xl border px-4 py-3.5 text-left text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-doju-lime/50 ${
+            value
+              ? "border-doju-lime bg-doju-lime/5 text-foreground"
+              : "border-border bg-background text-muted-foreground"
+          }`}
+        >
+          <span className="flex items-center gap-2 min-w-0">
+            <MapPin className={`h-4 w-4 shrink-0 ${value ? "text-doju-lime" : "text-muted-foreground"}`} />
+            <span className="truncate">{value || "Select your delivery city"}</span>
+          </span>
+          <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-0 shadow-xl"
+        align="start"
+        sideOffset={6}
+      >
+        <Command>
+          <div className="flex items-center border-b px-3">
+            <CommandInput placeholder="Search city…" className="h-11 flex-1 bg-transparent" />
+          </div>
+          <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
+            No city found.
+          </CommandEmpty>
+          <CommandList className="max-h-72 overflow-y-auto">
+            {Object.entries(jumiaZone).map(([zoneName, cities]) => {
+              const zoneNum = parseInt(zoneName.replace("ZONE", ""));
+              return (
+                <CommandGroup
+                  key={zoneName}
+                  heading={
+                    <div className="flex items-center gap-2 py-0.5">
+                      <span
+                        className={`inline-flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold ${zoneColors[zoneNum] ?? "bg-muted text-muted-foreground"}`}
+                      >
+                        {zoneNum}
+                      </span>
+                      <span className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">
+                        Zone {zoneNum}
+                      </span>
+                    </div>
+                  }
+                >
+                  {cities.map((city) => (
+                    <CommandItem
+                      key={city}
+                      value={city}
+                      onSelect={(val) => {
+                        onChange(val === value ? "" : val);
+                        setOpen(false);
+                      }}
+                      className="flex items-center justify-between cursor-pointer"
+                    >
+                      <span>{city}</span>
+                      {value === city && (
+                        <Check className="h-4 w-4 text-doju-lime shrink-0" />
+                      )}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              );
+            })}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 const Checkout = () => {
   const { items, totalAmount, clearCart } = useCart();
+
+  // Enrich cart items that are missing sellerCity by fetching individual product details
+  const missingCityIds = useMemo(
+    () => items.filter((i) => !i.product.sellerCity).map((i) => i.product.id),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items.map((i) => i.product.id).join(",")],
+  );
+  const productQueries = useQueries({
+    queries: missingCityIds.map((id) => ({
+      queryKey: ["product", id],
+      queryFn: async (): Promise<ApiProduct> => {
+        const res = await API.get(`/products/${id}`);
+        return res.data;
+      },
+      staleTime: 5 * 60 * 1000,
+    })),
+  });
+  const enrichedItems = useMemo(() => {
+    const cityMap: Record<string, string> = {};
+    missingCityIds.forEach((id, idx) => {
+      const city = productQueries[idx]?.data?.seller?.businessCity;
+      if (city) cityMap[id] = city;
+    });
+    return items.map((item) =>
+      item.product.sellerCity
+        ? item
+        : {
+            ...item,
+            product: {
+              ...item.product,
+              sellerCity: cityMap[item.product.id] ?? undefined,
+            },
+          },
+    );
+  }, [items, missingCityIds, productQueries]);
+
   const user = useAppSelector((state) => state.authData.user);
   const { data: profileData, isLoading: profileLoading } = useGetUserProfile();
+  const updateProfileMutation = useUpdateProfile();
   const createOrderMutation = useCreateOrder();
   const initializePaymentMutation = useInitializePayment();
   const navigate = useNavigate();
@@ -75,7 +219,9 @@ const Checkout = () => {
   const [orderResult, setOrderResult] = useState<BulkOrderResponse | null>(
     null,
   );
-  const [useSavedAddress, setUseSavedAddress] = useState<boolean | null>(null);
+  const [useSavedCity, setUseSavedCity] = useState<boolean | null>(null);
+  const [useSavedPhone, setUseSavedPhone] = useState<boolean | null>(null);
+  const [saveNewAddress, setSaveNewAddress] = useState(false);
 
   useEffect(() => {
     if (items.length === 0 && !isComplete) {
@@ -83,96 +229,89 @@ const Checkout = () => {
     }
   }, [items.length, isComplete, navigate]);
 
-  const savedAddress = profileData?.user?.address;
-  const hasSavedAddress = Boolean(savedAddress);
+  const savedCity = profileData?.user?.city ?? null;
+  const savedPhone = profileData?.user?.phoneNumber;
+  const hasSavedCity = isValidJumiaCity(savedCity);
+  const hasSavedPhone = Boolean(savedPhone);
 
   // tax and shipping have been removed per requirement
   const total = totalAmount;
 
   const steps: CheckoutStep[] = useMemo(() => {
-    const baseSteps: CheckoutStep[] = [
-      {
-        id: "phone",
-        question: "What's the best number to reach you?",
-        placeholder: "+234 800 000 0000",
-        type: "tel",
+    const phoneStep: CheckoutStep = {
+      id: "phone",
+      question: "What's the best number to reach you?",
+      placeholder: "+234 800 000 0000",
+      type: "tel",
+      icon: <Phone className="h-6 w-6" />,
+      required: true,
+    };
+
+    const cityStep: CheckoutStep = {
+      id: "city",
+      question: "Which city will you be delivering to?",
+      placeholder: "Select your city",
+      type: "select",
+      icon: <MapPin className="h-6 w-6" />,
+      required: true,
+    };
+
+    const addressStep: CheckoutStep = {
+      id: "address",
+      question: "What's your street address?",
+      placeholder: "House number, street, area",
+      type: "text",
+      icon: <MapPin className="h-6 w-6" />,
+      required: true,
+    };
+
+    const noteStep: CheckoutStep = {
+      id: "notes",
+      question: "Anything else you want us to know?",
+      placeholder:
+        "Special delivery instructions, gate codes, landmarks... (optional)",
+      type: "textarea",
+      icon: <MessageSquare className="h-6 w-6" />,
+      required: false,
+    };
+
+    const result: CheckoutStep[] = [];
+
+    if (!profileLoading && hasSavedPhone && useSavedPhone === null) {
+      result.push({
+        id: "phoneChoice",
+        question: "Would you like to use your saved phone number or enter a new one?",
+        placeholder: "",
+        type: "text",
         icon: <Phone className="h-6 w-6" />,
         required: true,
-      },
-      {
-        id: "stateCode",
-        question: "Select your state",
-        placeholder: "Choose your state",
-        type: "select",
-        icon: <MapPin className="h-6 w-6" />,
-        required: true,
-      },
-      {
-        id: "city",
-        question: "Select your city",
-        placeholder: "Choose your city",
-        type: "select",
-        icon: <MapPin className="h-6 w-6" />,
-        required: true,
-      },
-      {
-        id: "address",
-        question: "What's your street address?",
-        placeholder: "House number, street, area",
+      });
+    }
+
+    if (!profileLoading && hasSavedCity && useSavedCity === null) {
+      result.push({
+        id: "cityChoice",
+        question: "Would you like to deliver to your saved city?",
+        placeholder: "",
         type: "text",
         icon: <MapPin className="h-6 w-6" />,
         required: true,
-      },
-      {
-        id: "notes",
-        question: "Anything else you want us to know?",
-        placeholder:
-          "Special delivery instructions, gate codes, landmarks... (optional)",
-        type: "textarea",
-        icon: <MessageSquare className="h-6 w-6" />,
-        required: false,
-      },
-    ];
-
-    if (!profileLoading && hasSavedAddress && useSavedAddress === null) {
-      // Add address choice step
-      return [
-        {
-          id: "addressChoice",
-          question: "How would you like to deliver your order?",
-          placeholder: "",
-          type: "text", // We'll handle this specially
-          icon: <MapPin className="h-6 w-6" />,
-          required: true,
-        },
-        ...baseSteps,
-      ];
-    } else if (useSavedAddress === true) {
-      // Skip address, state, city steps
-      return [
-        {
-          id: "phone",
-          question: "What's the best number to reach you?",
-          placeholder: "+234 800 000 0000",
-          type: "tel",
-          icon: <Phone className="h-6 w-6" />,
-          required: true,
-        },
-        {
-          id: "notes",
-          question: "Anything else you want us to know?",
-          placeholder:
-            "Special delivery instructions, gate codes, landmarks... (optional)",
-          type: "textarea",
-          icon: <MessageSquare className="h-6 w-6" />,
-          required: false,
-        },
-      ];
-    } else {
-      // Use new address, include all steps
-      return baseSteps;
+      });
     }
-  }, [hasSavedAddress, useSavedAddress, profileLoading]);
+
+    if (useSavedPhone !== true) {
+      result.push(phoneStep);
+    }
+
+    if (useSavedCity !== true) {
+      result.push(cityStep);
+    }
+
+    result.push(addressStep);
+    result.push(noteStep);
+
+    return result;
+  }, [hasSavedCity, hasSavedPhone, profileLoading, useSavedCity, useSavedPhone]);
 
   const progress = showReview
     ? 100
@@ -189,7 +328,13 @@ const Checkout = () => {
 
   const handleNext = () => {
     const step = steps[currentStep];
-    if (step.required && !formData[step.id]) return;
+    if (
+      step.required &&
+      !formData[step.id] &&
+      step.id !== "cityChoice" &&
+      step.id !== "phoneChoice"
+    )
+      return;
 
     if (currentStep < steps.length - 1) {
       setCurrentStep((prev) => prev + 1);
@@ -209,15 +354,6 @@ const Checkout = () => {
   };
 
   const handleInputChange = (value: string) => {
-    if (steps[currentStep].id === "stateCode") {
-      setFormData((prev) => ({
-        ...prev,
-        stateCode: value,
-        city: "",
-      }));
-      return;
-    }
-
     setFormData((prev) => ({
       ...prev,
       [steps[currentStep].id]: value,
@@ -233,11 +369,19 @@ const Checkout = () => {
     setPlacingOrder(true);
 
     try {
-      const combinedDeliveryAddress = useSavedAddress
-        ? savedAddress
-        : [formData.address, formData.city, selectedStateName]
-            .filter(Boolean)
-            .join(", ");
+      const selectedCity = useSavedCity ? (savedCity ?? "") : (formData.city ?? "");
+      const combinedDeliveryAddress = [formData.address, selectedCity]
+        .filter(Boolean)
+        .join(", ");
+
+      // Save city to profile (and optionally the full street address)
+      const profileUpdates: { city?: string; address?: string } = {
+        city: selectedCity,
+      };
+      if (saveNewAddress && formData.address) {
+        profileUpdates.address = combinedDeliveryAddress;
+      }
+      await updateProfileMutation.mutateAsync(profileUpdates);
 
       // Step 1: Create bulk order via API
       const result: BulkOrderResponse = await createOrderMutation.mutateAsync({
@@ -245,6 +389,7 @@ const Checkout = () => {
         quantities: items.map((item) => item.quantity),
         deliveryAddress: combinedDeliveryAddress,
         note: formData.notes || undefined,
+        deliveryCity: selectedCity,
       });
 
       if (result && result.orders && result.orders.length > 0) {
@@ -278,27 +423,16 @@ const Checkout = () => {
 
   const currentValue = formData[steps[currentStep]?.id] || "";
   const currentStepData = steps[currentStep];
-  const selectedState = nigeriaStates.find(
-    (state) => state.isoCode === formData.stateCode,
-  );
-  const selectedStateName = selectedState?.name || "";
-  const cityOptions = useMemo(
-    () => (formData.stateCode ? (nigeriaCities[formData.stateCode] ?? []) : []),
-    [formData.stateCode],
-  );
+  const selectedCity = useSavedCity ? (savedCity ?? "") : (formData.city ?? "");
+  const buyerZone = getJumiaZoneForCity(selectedCity);
+
   const isValid =
-    currentStepData?.id === "addressChoice"
+    currentStepData?.id === "cityChoice" ||
+    currentStepData?.id === "phoneChoice"
       ? true
       : currentStepData?.required
         ? currentValue.length > 0
         : true;
-  const canSelectCurrentStep =
-    currentStepData?.id !== "city" || Boolean(formData.stateCode);
-  const reviewDeliveryAddress = useSavedAddress
-    ? savedAddress
-    : [formData.address, formData.city, selectedStateName]
-        .filter(Boolean)
-        .join(", ");
 
   const pageVariants = {
     initial: { opacity: 0, x: 20 },
@@ -497,29 +631,54 @@ const Checkout = () => {
                   <ShoppingBag className="h-5 w-5 text-doju-lime" />
                   <h2 className="font-semibold text-foreground">Your items</h2>
                 </div>
-                <div className="space-y-3">
-                  {items.map((item) => (
-                    <div key={item.product.id} className="flex gap-3">
-                      <div className="h-14 w-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-                        <img
-                          src={item.product.images[0] || "/placeholder.svg"}
-                          alt={item.product.name}
-                          className="h-full w-full object-cover"
-                        />
+                <div className="space-y-4">
+                  {enrichedItems.map((item) => {
+                    const fee = item.product.sellerCity
+                      ? getDeliveryFee(item.product.sellerCity, selectedCity)
+                      : null;
+                    return (
+                      <div key={item.product.id}>
+                        <div className="flex gap-3">
+                          <div className="h-14 w-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                            <img
+                              src={item.product.images[0] || "/placeholder.svg"}
+                              alt={item.product.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground line-clamp-1">
+                              {item.product.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                          </div>
+                          <p className="text-sm font-semibold text-foreground shrink-0">
+                            {formatPrice(item.product.price * item.quantity)}
+                          </p>
+                        </div>
+                        {/* Delivery route for this item */}
+                        <div className="mt-2 ml-[68px] rounded-lg bg-muted/50 px-3 py-2 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+                            <MapPin className="h-3 w-3 shrink-0 text-doju-lime" />
+                            <span className="truncate">
+                              {item.product.sellerCity ?? "Seller location TBC"}
+                            </span>
+                            <span className="shrink-0">→</span>
+                            <span className="font-medium text-foreground truncate">
+                              {selectedCity || "—"}
+                            </span>
+                          </div>
+                          {fee ? (
+                            <span className="text-xs font-semibold text-doju-lime shrink-0">
+                              {formatPrice(fee.fee)}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground shrink-0">TBC</span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground line-clamp-1">
-                          {item.product.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Qty: {item.quantity}
-                        </p>
-                      </div>
-                      <p className="text-sm font-semibold text-foreground">
-                        {formatPrice(item.product.price * item.quantity)}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -529,63 +688,109 @@ const Checkout = () => {
                   <MapPin className="h-5 w-5 text-doju-lime" />
                   <h2 className="font-semibold text-foreground">Delivery</h2>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {reviewDeliveryAddress}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {formData.phone}
-                </p>
-                {formData.notes && (
-                  <p className="text-sm text-muted-foreground mt-2 italic">
-                    "{formData.notes}"
-                  </p>
-                )}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground w-16 shrink-0">City</span>
+                    <span className="text-sm font-medium text-foreground">
+                      {selectedCity}
+                      {buyerZone && (
+                        <span className="ml-1.5 text-xs font-normal text-doju-lime">Zone {buyerZone}</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs text-muted-foreground w-16 shrink-0">Address</span>
+                    <span className="text-sm text-foreground">{formData.address || "—"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground w-16 shrink-0">Phone</span>
+                    <span className="text-sm text-foreground">{formData.phone || "—"}</span>
+                  </div>
+                  {formData.notes && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-xs text-muted-foreground w-16 shrink-0">Note</span>
+                      <span className="text-sm text-muted-foreground italic">"{formData.notes}"</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Payment Summary */}
-              <div className="rounded-xl border border-border bg-card p-4 mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <CreditCard className="h-5 w-5 text-doju-lime" />
-                  <h2 className="font-semibold text-foreground">Payment</h2>
-                </div>
-                <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-muted/50">
-                  <CreditCard className="h-4 w-4 text-doju-lime" />
-                  <span className="text-sm text-foreground">
-                    Pay via Flutterwave
-                  </span>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span className="text-foreground">
-                      {formatPrice(totalAmount)}
-                    </span>
+              {(() => {
+                const knownDeliveryTotal = enrichedItems.reduce((sum, item) => {
+                  const fee = item.product.sellerCity
+                    ? getDeliveryFee(item.product.sellerCity, selectedCity)
+                    : null;
+                  return sum + (fee?.fee ?? 0);
+                }, 0);
+                const hasUnknownFees = enrichedItems.some((item) => !item.product.sellerCity);
+                const grandTotal = total + knownDeliveryTotal;
+                return (
+                  <div className="rounded-xl border border-border bg-card p-4 mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CreditCard className="h-5 w-5 text-doju-lime" />
+                      <h2 className="font-semibold text-foreground">Payment</h2>
+                    </div>
+                    <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-muted/50">
+                      <CreditCard className="h-4 w-4 text-doju-lime" />
+                      <span className="text-sm text-foreground">Pay via Flutterwave</span>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Subtotal</span>
+                        <span>{formatPrice(totalAmount)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Delivery</span>
+                        <span>
+                          {knownDeliveryTotal > 0
+                            ? formatPrice(knownDeliveryTotal) + (hasUnknownFees ? " + more" : "")
+                            : hasUnknownFees
+                              ? "Calculated on dispatch"
+                              : formatPrice(0)}
+                        </span>
+                      </div>
+                      <div className="border-t border-border pt-2 flex justify-between text-base font-bold">
+                        <span>Total</span>
+                        <span className="text-doju-lime">
+                          {formatPrice(grandTotal)}
+                          {hasUnknownFees && knownDeliveryTotal === 0 && (
+                            <span className="text-xs font-normal text-muted-foreground ml-1">+ delivery</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="border-t border-border my-2" />
-                  <div className="flex justify-between text-lg font-semibold">
-                    <span>Total</span>
-                    <span className="text-doju-lime">{formatPrice(total)}</span>
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* Confirm Button */}
-              <Button
-                variant="doju-primary"
-                size="lg"
-                className="w-full"
-                onClick={handlePlaceOrder}
-                disabled={placingOrder}
-              >
-                {placingOrder ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-doju-navy"></div>
-                    Processing...
-                  </div>
-                ) : (
-                  `Confirm & Pay ${formatPrice(total)}`
-                )}
-              </Button>
+              {(() => {
+                const knownDeliveryTotal = enrichedItems.reduce((sum, item) => {
+                  const fee = item.product.sellerCity
+                    ? getDeliveryFee(item.product.sellerCity, selectedCity)
+                    : null;
+                  return sum + (fee?.fee ?? 0);
+                }, 0);
+                return (
+                  <Button
+                    variant="doju-primary"
+                    size="lg"
+                    className="w-full"
+                    onClick={handlePlaceOrder}
+                    disabled={placingOrder}
+                  >
+                    {placingOrder ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-doju-navy" />
+                        Processing...
+                      </div>
+                    ) : (
+                      `Confirm & Pay ${formatPrice(total + knownDeliveryTotal)}`
+                    )}
+                  </Button>
+                );
+              })()}
 
               <div className="flex items-center justify-center gap-2 mt-4 text-muted-foreground">
                 <Shield className="h-4 w-4" />
@@ -669,36 +874,67 @@ const Checkout = () => {
                     {currentStepData.question}
                   </h1>
 
-                  {currentStepData.id === "addressChoice" ? (
+                  {currentStepData.id === "phoneChoice" ? (
                     <div className="space-y-4 mb-6">
                       <div className="p-4 border rounded-lg bg-muted/50">
-                        <h3 className="font-semibold mb-2">
-                          Use saved address
-                        </h3>
+                        <h3 className="font-semibold mb-2">Use saved phone</h3>
                         <p className="text-sm text-muted-foreground">
-                          {savedAddress}
+                          {savedPhone}
                         </p>
                       </div>
-                      <div className="flex gap-3">
+                      <div className="flex gap-3 flex-col sm:flex-row">
                         <Button
                           variant="doju-primary"
                           className="flex-1"
                           onClick={() => {
-                            setUseSavedAddress(true);
-                            handleNext();
+                            setUseSavedPhone(true);
+                            setFormData((prev) => ({
+                              ...prev,
+                              phone: savedPhone ?? "",
+                            }));
                           }}
                         >
-                          Use saved address
+                          Use saved phone
                         </Button>
                         <Button
                           variant="outline"
                           className="flex-1"
+                          onClick={() => setUseSavedPhone(false)}
+                        >
+                          Enter new phone
+                        </Button>
+                      </div>
+                    </div>
+                  ) : currentStepData.id === "cityChoice" ? (
+                    <div className="space-y-4 mb-6">
+                      <div className="p-4 border rounded-lg bg-muted/50">
+                        <h3 className="font-semibold mb-1">Saved city</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {savedCity}
+                          {getJumiaZoneForCity(savedCity ?? "") && (
+                            <span className="ml-2 text-doju-lime font-medium">
+                              Zone {getJumiaZoneForCity(savedCity ?? "")}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex gap-3 flex-col sm:flex-row">
+                        <Button
+                          variant="doju-primary"
+                          className="flex-1"
                           onClick={() => {
-                            setUseSavedAddress(false);
-                            handleNext();
+                            setUseSavedCity(true);
+                            setFormData((prev) => ({ ...prev, city: savedCity ?? "" }));
                           }}
                         >
-                          Enter new address
+                          Use saved city
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => setUseSavedCity(false)}
+                        >
+                          Choose different city
                         </Button>
                       </div>
                     </div>
@@ -711,47 +947,45 @@ const Checkout = () => {
                       autoFocus
                     />
                   ) : currentStepData.type === "select" ? (
-                    <select
-                      value={currentValue}
-                      onChange={(e) => handleInputChange(e.target.value)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-3 text-base md:text-lg h-14 mb-6"
-                      autoFocus
-                      disabled={!canSelectCurrentStep}
-                    >
-                      <option value="" disabled>
-                        {canSelectCurrentStep
-                          ? currentStepData.placeholder
-                          : "Please select state first"}
-                      </option>
-                      {(currentStepData.id === "stateCode"
-                        ? nigeriaStates.map((state) => ({
-                            label: state.name,
-                            value: state.isoCode,
-                          }))
-                        : cityOptions.map((city) => ({
-                            label: city,
-                            value: city,
-                          }))
-                      ).map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="mb-6">
+                      <CitySelect
+                        value={currentValue}
+                        onChange={(city) => handleInputChange(city)}
+                      />
+                    </div>
                   ) : (
-                    <Input
-                      type={currentStepData.type}
-                      placeholder={currentStepData.placeholder}
-                      value={currentValue}
-                      onChange={(e) => handleInputChange(e.target.value)}
-                      className="text-lg h-14 mb-6"
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && isValid) {
-                          handleNext();
-                        }
-                      }}
-                    />
+                    <div className="mb-6">
+                      <Input
+                        type={currentStepData.type}
+                        placeholder={currentStepData.placeholder}
+                        value={currentValue}
+                        onChange={(e) => handleInputChange(e.target.value)}
+                        className="text-lg h-14 mb-4"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && isValid) {
+                            handleNext();
+                          }
+                        }}
+                      />
+                      {currentStepData.id === "address" && (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="saveAddress"
+                            checked={saveNewAddress}
+                            onCheckedChange={(checked) =>
+                              setSaveNewAddress(checked as boolean)
+                            }
+                          />
+                          <label
+                            htmlFor="saveAddress"
+                            className="text-sm text-muted-foreground cursor-pointer"
+                          >
+                            Save this address for future orders
+                          </label>
+                        </div>
+                      )}
+                    </div>
                   )}
 
                   <motion.div

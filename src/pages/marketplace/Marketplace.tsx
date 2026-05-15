@@ -27,6 +27,7 @@ const mapApiProduct = (p: ApiProduct): Product => ({
   sku: `DB-${p.id.slice(0, 8)}`,
   stock: p.stock,
   sellerId: p.seller?.id ?? "",
+  sellerCity: p.seller?.businessCity ?? undefined,
   approvalStatus: "approved",
   createdAt: new Date(p.createdAt),
 });

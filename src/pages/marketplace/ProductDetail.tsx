@@ -1,16 +1,28 @@
 import { useEffect, useState } from "react";
 import SEO from "@/components/SEO";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/redux/hooks";
 import { Product, ApiProduct } from "@/types";
 import ProductCard from "@/components/products/ProductCard";
-import { Shield, Truck, RotateCcw, Heart, ChevronRight } from "lucide-react";
+import {
+  Shield,
+  Truck,
+  RotateCcw,
+  Heart,
+  ChevronRight,
+  Star,
+  Sparkles,
+  ShoppingCart,
+  CheckCircle2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useGetAProduct } from "./api/use-get-a-product";
 import { useGetProducts } from "./api/use-get-products";
+import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
+import { getDeliveryFee, jumiaZone } from "@/data/nigeria-geo";
 
 /** Map an API product to the internal Product shape used by ProductCard & cart */
 const mapApiProduct = (p: ApiProduct): Product => ({
@@ -24,17 +36,38 @@ const mapApiProduct = (p: ApiProduct): Product => ({
   sku: `DB-${p.id.slice(0, 8)}`,
   stock: p.stock,
   sellerId: p.seller?.id ?? "",
+  sellerCity: p.seller?.businessCity ?? undefined,
   approvalStatus: "approved",
   createdAt: new Date(p.createdAt),
 });
 
+const StarRating = ({ rating = 4.7 }: { rating?: number }) => (
+  <div className="flex items-center gap-0.5">
+    {[1, 2, 3, 4, 5].map((i) => (
+      <Star
+        key={i}
+        className={`h-3.5 w-3.5 ${
+          i <= Math.round(rating)
+            ? "fill-amber-400 text-amber-400"
+            : "fill-muted text-muted"
+        }`}
+      />
+    ))}
+  </div>
+);
+
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { data: apiProduct, isLoading } = useGetAProduct(id!);
   const { data: productsResponse } = useGetProducts({ page: 1, limit: 5 });
+  const { data: profileData } = useGetUserProfile();
   const { addToCart } = useCart();
+
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [deliveryCity, setDeliveryCity] = useState<string>("");
+  const [wishlisted, setWishlisted] = useState(false);
 
   const product = apiProduct ? mapApiProduct(apiProduct) : null;
 
@@ -42,25 +75,38 @@ const ProductDetail = () => {
     setSelectedImageIndex(0);
   }, [product?.id]);
 
+  // Pre-fill delivery city from saved profile (only once when profile loads)
+  useEffect(() => {
+    if (profileData?.user?.city) {
+      setDeliveryCity((prev) => prev || profileData.user.city || "");
+    }
+  }, [profileData?.user?.city]);
+
   const selectedImage =
     product?.images?.[selectedImageIndex] || "/placeholder.svg";
-  const nonSelectedImages = (product?.images || [])
+  const thumbnails = (product?.images || [])
     .map((image, index) => ({ image, index }))
-    .filter(({ index }) => index !== selectedImageIndex)
-    .slice(0, 4);
+    .slice(0, 5);
 
-  // Related products: other products from the same response, excluding current
   const relatedProducts = (productsResponse?.data ?? [])
     .filter((p: ApiProduct) => p.id !== id && p.isActive)
     .slice(0, 4)
     .map(mapApiProduct);
+
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doju-lime"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doju-lime" />
         </main>
         <Footer />
       </div>
@@ -84,242 +130,316 @@ const ProductDetail = () => {
     );
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
+  const sellerCity = apiProduct?.seller?.businessCity ?? null;
+  const feeResult =
+    deliveryCity && sellerCity
+      ? getDeliveryFee(sellerCity, deliveryCity)
+      : null;
+  const deliveryFee = feeResult?.fee ?? 0;
+  const totalToday = product.price * quantity + deliveryFee;
+
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+    toast.success("Added to cart");
+  };
+
+  const handleBuyNow = () => {
+    addToCart(product, quantity);
+    navigate("/checkout");
   };
 
   return (
     <div className="min-h-screen flex flex-col w-full">
-      {product && (
-        <SEO
-          title={`${product.name} - Buy Online`}
-          description={`Buy ${product.name} from Doju Health. ${product.description?.slice(0, 120) ?? "Clinical-grade medical equipment from verified sellers in Nigeria."}`.trim()}
-          keywords={`${product.name}, ${product.category}, medical equipment Nigeria, buy ${product.name} online`}
-          canonical={`/product/${product.id}`}
-          ogType="product"
-          ogImage={product.images[0] ?? undefined}
-          structuredData={{
-            "@context": "https://schema.org",
-            "@type": "Product",
-            name: product.name,
-            description: product.description,
-            image: product.images,
-            brand: { "@type": "Brand", name: product.brand },
-            offers: {
-              "@type": "Offer",
-              priceCurrency: "NGN",
-              price: product.price,
-              availability:
-                product.stock > 0
-                  ? "https://schema.org/InStock"
-                  : "https://schema.org/OutOfStock",
-              seller: { "@type": "Organization", name: "Doju Health" },
-            },
-          }}
-        />
-      )}
+      <SEO
+        title={`${product.name} - Buy Online`}
+        description={`Buy ${product.name} from Doju Health. ${product.description?.slice(0, 120) ?? "Clinical-grade medical equipment from verified sellers in Nigeria."}`.trim()}
+        keywords={`${product.name}, ${product.category}, medical equipment Nigeria, buy ${product.name} online`}
+        canonical={`/product/${product.id}`}
+        ogType="product"
+        ogImage={product.images[0] ?? undefined}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: product.name,
+          description: product.description,
+          image: product.images,
+          brand: { "@type": "Brand", name: product.brand },
+          offers: {
+            "@type": "Offer",
+            priceCurrency: "NGN",
+            price: product.price,
+            availability:
+              product.stock > 0
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
+            seller: { "@type": "Organization", name: "Doju Health" },
+          },
+        }}
+      />
       <Header />
 
       <main className="flex-1">
         {/* Breadcrumb */}
         <div className="border-b border-border bg-card">
-          <div className="container px-4 sm:px-6 py-3 sm:py-4">
-            <nav className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm overflow-x-auto">
-              <Link
-                to="/"
-                className="text-muted-foreground hover:text-foreground whitespace-nowrap"
-              >
+          <div className="container px-4 sm:px-6 py-3">
+            <nav className="flex items-center gap-1.5 text-xs overflow-x-auto">
+              <Link to="/" className="text-muted-foreground hover:text-foreground whitespace-nowrap">
                 Home
               </Link>
-              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-              <Link
-                to="/marketplace"
-                className="text-muted-foreground hover:text-foreground whitespace-nowrap"
-              >
+              <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+              <Link to="/marketplace" className="text-muted-foreground hover:text-foreground whitespace-nowrap">
                 {product.category}
               </Link>
-              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+              <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
               <span className="text-foreground truncate">{product.name}</span>
             </nav>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground mt-2">
-              Product details
-            </h1>
           </div>
         </div>
 
-        {/* Product Info */}
-        <section className="py-6 sm:py-8">
+        {/* 3-column product section */}
+        <section className="py-6 sm:py-10">
           <div className="container px-4 sm:px-6">
-            <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
-              {/* Images */}
-              <div className="space-y-3 sm:space-y-4">
-                <div className="aspect-square rounded-xl border border-border bg-muted overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_300px] gap-6 xl:gap-10 items-start">
+
+              {/* ── Column 1: Images ── */}
+              <div className="space-y-3">
+                <div className="aspect-square rounded-2xl border border-border bg-white overflow-hidden">
                   <img
-                    src={selectedImage || "/placeholder.svg"}
+                    src={selectedImage}
                     alt={product.name}
-                    className="h-full w-full object-contain"
+                    className="h-full w-full object-contain p-4"
                   />
                 </div>
-                <div className="grid grid-cols-4 gap-2">
-                  {nonSelectedImages.map(({ image, index }) => (
-                    <div
-                      key={`${image}-${index}`}
-                      className="aspect-square rounded-lg border border-border bg-muted overflow-hidden cursor-pointer hover:border-doju-lime transition-colors"
-                      onClick={() => setSelectedImageIndex(index)}
-                    >
-                      <img
-                        src={image || "/placeholder.svg"}
-                        alt={`${product.name} view ${index + 1}`}
-                        className="h-full w-full object-contain"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Info */}
-              <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Sold by {product.brand} • {product.category}
-                  </p>
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mt-1">
-                    {product.name}
-                  </h2>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    (248 reviews)
-                  </p>
-                </div>
-
-                {/* Specs */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                  <div className="rounded-lg border border-border p-2.5 sm:p-3">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      Category
-                    </p>
-                    <p className="text-xs sm:text-sm font-medium">
-                      {product.category}
-                    </p>
-                  </div>
-                  <div className="rounded-lg border border-border p-2.5 sm:p-3">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      Seller
-                    </p>
-                    <p className="text-xs sm:text-sm font-medium">
-                      {product.brand}
-                    </p>
-                  </div>
-                  <div className="rounded-lg border border-border p-2.5 sm:p-3">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      Warranty
-                    </p>
-                    <p className="text-xs sm:text-sm font-medium">2 years</p>
-                  </div>
-                  <div className="rounded-lg border border-border p-2.5 sm:p-3">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      Stock
-                    </p>
-                    <p className="text-xs sm:text-sm font-medium">
-                      {product.stock} units
-                    </p>
-                  </div>
-                </div>
-
-                {/* Stock status */}
-                {product.stock > 0 && (
-                  <div className="bg-doju-lime text-doju-navy rounded-lg py-2 px-4 text-center text-sm sm:text-base font-medium">
-                    In stock • Ships in 24h
+                {thumbnails.length > 1 && (
+                  <div className="flex gap-2">
+                    {thumbnails.map(({ image, index }) => (
+                      <button
+                        key={`${image}-${index}`}
+                        onClick={() => setSelectedImageIndex(index)}
+                        className={`h-16 w-16 rounded-lg border-2 bg-white overflow-hidden flex-shrink-0 transition-colors ${
+                          index === selectedImageIndex
+                            ? "border-doju-lime"
+                            : "border-border hover:border-doju-lime/50"
+                        }`}
+                      >
+                        <img
+                          src={image}
+                          alt={`${product.name} ${index + 1}`}
+                          className="h-full w-full object-contain p-1"
+                        />
+                      </button>
+                    ))}
                   </div>
                 )}
+              </div>
+
+              {/* ── Column 2: Product info ── */}
+              <div className="space-y-5">
+                {/* Sold by badge */}
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-doju-lime/40 bg-doju-lime/10 px-3 py-1">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-doju-lime" />
+                  <span className="text-xs font-medium text-doju-lime">
+                    Sold by {product.brand} · Verified Seller
+                  </span>
+                </div>
+
+                {/* Name */}
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
+                  {product.name}
+                </h1>
+
+                {/* Rating + stock */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <StarRating />
+                  <span className="text-sm font-medium text-foreground">4.7</span>
+                  <span className="text-sm text-muted-foreground">(248 reviews)</span>
+                  {product.stock > 0 ? (
+                    <span className="text-sm font-medium text-doju-lime">In stock</span>
+                  ) : (
+                    <span className="text-sm font-medium text-destructive">Out of stock</span>
+                  )}
+                </div>
+
+                {/* Price */}
+                <div className="flex items-baseline gap-3">
+                  <span className="text-3xl sm:text-4xl font-bold text-foreground">
+                    {formatPrice(product.price)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">VAT incl.</span>
+                </div>
 
                 {/* Description */}
-                <p className="text-sm sm:text-base text-muted-foreground">
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   {product.description}
                 </p>
 
-                {/* Price Card */}
-                <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-                  <div className="flex flex-wrap items-baseline gap-2 mb-3 sm:mb-4">
-                    <span className="text-2xl sm:text-3xl font-bold text-foreground">
-                      {formatPrice(product.price)}
-                    </span>
-                    <span className="text-xs sm:text-sm text-muted-foreground">
-                      VAT included where applicable
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                    <label className="text-xs sm:text-sm text-muted-foreground">
-                      Quantity
-                    </label>
-                    <div className="flex items-center border border-border rounded-lg">
+                {/* Quantity + action buttons */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-muted-foreground">Quantity</span>
+                    <div className="flex items-center border border-border rounded-full overflow-hidden">
                       <button
-                        className="px-2.5 sm:px-3 py-1.5 sm:py-2 hover:bg-muted transition-colors text-sm"
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="px-4 py-2 text-lg font-medium hover:bg-muted transition-colors"
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       >
-                        -
+                        −
                       </button>
-                      <span className="px-3 sm:px-4 py-1.5 sm:py-2 border-x border-border text-sm">
+                      <span className="px-4 py-2 text-sm font-semibold border-x border-border min-w-[3rem] text-center">
                         {quantity}
                       </span>
                       <button
-                        className="px-2.5 sm:px-3 py-1.5 sm:py-2 hover:bg-muted transition-colors text-sm"
-                        onClick={() => setQuantity(quantity + 1)}
+                        className="px-4 py-2 text-lg font-medium hover:bg-muted transition-colors"
+                        onClick={() => setQuantity((q) => q + 1)}
                       >
                         +
                       </button>
                     </div>
                   </div>
 
-                  
-
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <Button
-                      variant="doju-outline"
-                      className="flex-1 h-10 sm:h-11 text-sm"
-                    >
-                      <Heart className="h-4 w-4 mr-2" />
-                      Add to wishlist
-                    </Button>
+                  <div className="flex gap-2 sm:gap-3">
                     <Button
                       variant="doju-primary"
-                      className="flex-1 h-10 sm:h-11 text-sm"
-                      onClick={() => {
-                        addToCart(product, quantity);
-                        toast.success("Added to cart");
-                      }}
+                      className="flex-1 h-11 gap-2"
+                      onClick={handleAddToCart}
+                      disabled={product.stock === 0}
                     >
+                      <ShoppingCart className="h-4 w-4" />
                       Add to cart
                     </Button>
+                    <Button
+                      variant="doju-outline"
+                      className="flex-1 h-11"
+                      onClick={handleBuyNow}
+                      disabled={product.stock === 0}
+                    >
+                      Buy now
+                    </Button>
+                    <button
+                      onClick={() => setWishlisted((w) => !w)}
+                      className="h-11 w-11 flex items-center justify-center rounded-lg border border-border hover:border-doju-lime/50 transition-colors flex-shrink-0"
+                    >
+                      <Heart
+                        className={`h-4 w-4 transition-colors ${
+                          wishlisted
+                            ? "fill-red-500 text-red-500"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                    </button>
                   </div>
+                </div>
 
-                  <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-                    <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/50">
-                      <Shield className="h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-0.5 sm:mb-1 text-doju-lime" />
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        Verified vendor
-                      </p>
-                    </div>
-                    <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/50">
-                      <Truck className="h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-0.5 sm:mb-1 text-doju-lime" />
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        Secure payments
-                      </p>
-                    </div>
-                    <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/50">
-                      <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-0.5 sm:mb-1 text-doju-lime" />
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        3-day returns
-                      </p>
-                    </div>
+                {/* Feature badges */}
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border p-3 text-center">
+                    <Truck className="h-5 w-5 text-doju-lime" />
+                    <span className="text-[11px] text-muted-foreground leading-tight">
+                      Nationwide delivery
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border p-3 text-center">
+                    <RotateCcw className="h-5 w-5 text-doju-lime" />
+                    <span className="text-[11px] text-muted-foreground leading-tight">
+                      7-day returns
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border p-3 text-center">
+                    <Shield className="h-5 w-5 text-doju-lime" />
+                    <span className="text-[11px] text-muted-foreground leading-tight">
+                      Buyer protection
+                    </span>
                   </div>
                 </div>
               </div>
+
+              {/* ── Column 3: Delivery estimate card ── */}
+              <div className="lg:sticky lg:top-24">
+                <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+                  {/* Card header */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <Sparkles className="h-4 w-4 text-doju-lime" />
+                      <h3 className="font-semibold text-foreground text-sm">
+                        Delivery Estimate
+                      </h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground pl-6">
+                      Based on Jumia zones{sellerCity ? ` · from ${sellerCity}` : ""}.
+                    </p>
+                  </div>
+
+                  {/* City selector */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Deliver to
+                    </label>
+                    <select
+                      value={deliveryCity}
+                      onChange={(e) => setDeliveryCity(e.target.value)}
+                      className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="" disabled>Select your city</option>
+                      {Object.entries(jumiaZone).map(([zoneName, cities]) => (
+                        <optgroup key={zoneName} label={`Zone ${zoneName.replace("ZONE", "")}`}>
+                          {cities.map((city) => (
+                            <option key={city} value={city}>{city}</option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Fee result */}
+                  {deliveryCity && (
+                    <div className="rounded-xl bg-muted/60 p-3 space-y-1">
+                      {feeResult ? (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">Estimated fee</span>
+                            <span className="text-sm font-semibold text-foreground">
+                              {formatPrice(deliveryFee)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            ETA {feeResult.days} business days
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          {sellerCity
+                            ? "Seller's city is outside standard zones"
+                            : "Delivery fee calculated at checkout"}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Total */}
+                  <div className="border-t border-border pt-3">
+                    <div className="flex items-baseline justify-between mb-3">
+                      <span className="text-sm text-muted-foreground">Total today:</span>
+                      <span className="text-lg font-bold text-foreground">
+                        {formatPrice(totalToday)}
+                        {!feeResult && deliveryCity && (
+                          <span className="text-xs font-normal text-muted-foreground ml-1">
+                            + delivery
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <Button
+                      variant="doju-primary"
+                      className="w-full h-11 gap-2"
+                      onClick={handleBuyNow}
+                      disabled={product.stock === 0}
+                    >
+                      Buy now
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
@@ -327,12 +447,12 @@ const ProductDetail = () => {
         {/* Related Products */}
         <section className="py-8 sm:py-12 bg-muted/30">
           <div className="container px-4 sm:px-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-6">
               You may also like
             </h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {relatedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {relatedProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
           </div>

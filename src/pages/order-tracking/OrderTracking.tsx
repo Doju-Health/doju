@@ -659,12 +659,7 @@ const OrderTracking = () => {
                               <CreditCard className="h-3 w-3" />
                               {order.paymentStatus}
                             </span>
-                            {order.product.seller && (
-                              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                <Store className="h-3 w-3" />
-                                {order.product.seller.fullName}
-                              </span>
-                            )}
+                            
                           </div>
 
                           {order.transactionId && (

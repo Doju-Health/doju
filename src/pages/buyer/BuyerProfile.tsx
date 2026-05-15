@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Phone, MapPin, User, Edit3, Save, X } from "lucide-react";
 import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
 import { useUpdateProfile } from "@/pages/seller/api/use-update-profile";
+import { jumiaZone, getJumiaZoneForCity } from "@/data/nigeria-geo";
 
 function InfoRow({
   icon: Icon,
@@ -37,8 +38,10 @@ export default function BuyerProfile() {
   const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
   const user = data?.user;
 
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [newAddress, setNewAddress] = useState("");
+  const [isEditingCity, setIsEditingCity] = useState(false);
+  const [newCity, setNewCity] = useState("");
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [newPhone, setNewPhone] = useState("");
 
   const initials = user?.fullName
     ? user.fullName
@@ -49,21 +52,35 @@ export default function BuyerProfile() {
         .slice(0, 2)
     : "?";
 
-  const handleUpdateAddress = async () => {
-    if (!newAddress.trim()) return;
+  const handleUpdateCity = async () => {
+    if (!newCity) return;
 
     try {
-      await updateProfile({ address: newAddress.trim() });
-      setIsEditingAddress(false);
-      setNewAddress("");
+      await updateProfile({ city: newCity });
+      setIsEditingCity(false);
+      setNewCity("");
     } catch (error) {
-      console.error("Failed to update address:", error);
+      console.error("Failed to update city:", error);
+    }
+  };
+
+  const handleUpdatePhone = async () => {
+    if (!newPhone.trim()) return;
+
+    try {
+      await updateProfile({ phoneNumber: newPhone.trim() });
+      setIsEditingPhone(false);
+      setNewPhone("");
+    } catch (error) {
+      console.error("Failed to update phone number:", error);
     }
   };
 
   const handleCancelEdit = () => {
-    setIsEditingAddress(false);
-    setNewAddress("");
+    setIsEditingCity(false);
+    setNewCity("");
+    setIsEditingPhone(false);
+    setNewPhone("");
   };
 
   return (
@@ -76,9 +93,9 @@ export default function BuyerProfile() {
         <CardContent>
           {isLoading ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-14 w-14 rounded-full" />
-                <div className="space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <Skeleton className="h-14 w-14 shrink-0 rounded-full" />
+                <div className="space-y-2 flex-1">
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-4 w-16" />
                 </div>
@@ -91,8 +108,8 @@ export default function BuyerProfile() {
           ) : (
             <>
               {/* Avatar + name row */}
-              <div className="flex items-center gap-4 mb-4">
-                <Avatar className="h-14 w-14 border-2 border-background shadow">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                <Avatar className="h-14 w-14 shrink-0 border-2 border-background shadow">
                   {user?.profileImageUrl ? (
                     <img
                       src={user.profileImageUrl}
@@ -105,7 +122,7 @@ export default function BuyerProfile() {
                     </AvatarFallback>
                   )}
                 </Avatar>
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-base leading-tight">
                     {user?.fullName ?? "—"}
                   </p>
@@ -123,36 +140,29 @@ export default function BuyerProfile() {
                   label="Full Name"
                   value={user?.fullName ?? "—"}
                 />
-                <InfoRow
-                  icon={Phone}
-                  label="Phone Number"
-                  value={user?.phoneNumber ?? "—"}
-                />
-
-                {/* Address section with edit functionality */}
                 <div className="py-3">
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <Phone className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-muted-foreground">
-                        Delivery Address
+                        Phone Number
                       </p>
 
-                      {isEditingAddress ? (
+                      {isEditingPhone ? (
                         <div className="mt-2 space-y-3">
                           <Input
-                            placeholder="Enter your delivery address"
-                            value={newAddress}
-                            onChange={(e) => setNewAddress(e.target.value)}
+                            placeholder="Enter your phone number"
+                            value={newPhone}
+                            onChange={(e) => setNewPhone(e.target.value)}
                             className="w-full"
                           />
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap">
                             <Button
                               size="sm"
-                              onClick={handleUpdateAddress}
-                              disabled={isPending || !newAddress.trim()}
+                              onClick={handleUpdatePhone}
+                              disabled={isPending || !newPhone.trim()}
                             >
                               <Save className="h-4 w-4 mr-1" />
                               {isPending ? "Updating..." : "Update"}
@@ -169,15 +179,91 @@ export default function BuyerProfile() {
                           </div>
                         </div>
                       ) : (
-                        <div className="mt-0.5 text-sm font-medium truncate flex items-center gap-2">
-                          <span>{user?.address ?? "—"}</span>
+                        <div className="mt-0.5 text-sm font-medium flex items-center gap-2 flex-wrap">
+                          <span className="break-words">
+                            {user?.phoneNumber ?? "—"}
+                          </span>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 px-2 text-muted-foreground hover:text-foreground"
+                            className="h-6 px-2 text-muted-foreground hover:text-foreground shrink-0"
                             onClick={() => {
-                              setIsEditingAddress(true);
-                              setNewAddress(user?.address || "");
+                              setIsEditingPhone(true);
+                              setNewPhone(user?.phoneNumber || "");
+                            }}
+                          >
+                            <Edit3 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Delivery city with Jumia zone dropdown */}
+                <div className="py-3">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">
+                        Delivery City
+                      </p>
+
+                      {isEditingCity ? (
+                        <div className="mt-2 space-y-3">
+                          <select
+                            value={newCity}
+                            onChange={(e) => setNewCity(e.target.value)}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          >
+                            <option value="" disabled>Select your city</option>
+                            {Object.entries(jumiaZone).map(([zoneName, cities]) => (
+                              <optgroup key={zoneName} label={`Zone ${zoneName.replace("ZONE", "")}`}>
+                                {cities.map((city) => (
+                                  <option key={city} value={city}>{city}</option>
+                                ))}
+                              </optgroup>
+                            ))}
+                          </select>
+                          <div className="flex gap-2 flex-wrap">
+                            <Button
+                              size="sm"
+                              onClick={handleUpdateCity}
+                              disabled={isPending || !newCity}
+                            >
+                              <Save className="h-4 w-4 mr-1" />
+                              {isPending ? "Updating..." : "Update"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleCancelEdit}
+                              disabled={isPending}
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-0.5 text-sm font-medium flex items-center gap-2 flex-wrap">
+                          <span>
+                            {user?.city ?? "—"}
+                            {user?.city && getJumiaZoneForCity(user.city) && (
+                              <span className="ml-1.5 text-xs text-muted-foreground font-normal">
+                                Zone {getJumiaZoneForCity(user.city)}
+                              </span>
+                            )}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-muted-foreground hover:text-foreground shrink-0"
+                            onClick={() => {
+                              setIsEditingCity(true);
+                              setNewCity(user?.city || "");
                             }}
                           >
                             <Edit3 className="h-3 w-3" />

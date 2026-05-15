@@ -126,22 +126,19 @@ const Header = () => {
                     {authUser?.email}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-
-                  {authUser?.role === "seller" && (
+                  {authUser?.role === "seller" ? (
                     <DropdownMenuItem
                       onClick={() => navigate("/seller/overview")}
                     >
                       <Store className="h-4 w-4 mr-2" />
                       Seller Dashboard
                     </DropdownMenuItem>
-                  )}
-                  {authUser?.role === "buyer" && (
+                  ) : (
                     <DropdownMenuItem onClick={() => setProfileOpen(true)}>
                       <User className="h-4 w-4 mr-2" />
                       My Profile
                     </DropdownMenuItem>
                   )}
-
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />
@@ -150,12 +147,8 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/auth">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="hidden sm:flex gap-2"
-                >
+              <Link to="/auth" className="hidden sm:inline">
+                <Button variant="ghost" size="sm" className="gap-2">
                   <User className="h-4 w-4" />
                   Sign in
                 </Button>
@@ -183,6 +176,43 @@ const Header = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-80">
                 <div className="flex flex-col gap-4 mt-8">
+                  {/* Account Section for Mobile */}
+                  {isAuthenticated && (
+                    <div className="border-b pb-4 space-y-2 px-3">
+                      <p className="text-xs text-muted-foreground truncate">
+                        {authUser?.email}
+                      </p>
+                      {authUser?.role === "seller" ? (
+                        <Link to="/seller/overview">
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start"
+                          >
+                            <Store className="h-4 w-4 mr-2" />
+                            Seller Dashboard
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => setProfileOpen(true)}
+                        >
+                          <User className="h-4 w-4 mr-2" />
+                          My Profile
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={handleSignOut}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign out
+                      </Button>
+                    </div>
+                  )}
+
                   <Button
                     variant="outline"
                     className="w-full justify-start gap-2"
@@ -203,30 +233,7 @@ const Header = () => {
                     ))}
                   </nav>
                   <div className="border-t pt-4 space-y-2">
-                    {isAuthenticated ? (
-                      <>
-                        {authUser?.role === "seller" && (
-                          <Link to="/seller/overview">
-                            <Button
-                              variant="doju-outline"
-                              className="w-full gap-2"
-                            >
-                              <Store className="h-4 w-4" />
-                              Seller Dashboard
-                            </Button>
-                          </Link>
-                        )}
-
-                        <Button
-                          variant="ghost"
-                          className="w-full"
-                          onClick={handleSignOut}
-                        >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Sign out
-                        </Button>
-                      </>
-                    ) : (
+                    {!isAuthenticated && (
                       <>
                         <Link to="/auth">
                           <Button variant="doju-outline" className="w-full">
@@ -250,7 +257,7 @@ const Header = () => {
 
       {/* Profile Modal */}
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto w-[calc(100vw-2rem)] sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>My Profile</DialogTitle>
           </DialogHeader>

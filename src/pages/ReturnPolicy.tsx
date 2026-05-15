@@ -9,7 +9,7 @@ const ReturnPolicy = () => {
       icon: Clock,
       title: "3-Day Returns",
       description:
-        "Return most items within 30 days of delivery for a full refund.",
+        "Return most items within 3 days of delivery for a full refund.",
     },
     {
       icon: Package,
