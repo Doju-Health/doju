@@ -67,8 +67,8 @@ export const CreateProductModal = ({
       name: "",
       description: "",
       price: 0,
-      weight: 0,
       stock: 0,
+      size: "",
       categoryId: "",
     },
     validationSchema: yup.object({
@@ -78,10 +78,7 @@ export const CreateProductModal = ({
         .number()
         .required("Price is required")
         .positive("Price must be positive"),
-      weight: yup
-        .number()
-        .required("Weight is required")
-        .positive("Weight must be positive"),
+      size: yup.string().required("Size is required"),
       stock: yup
         .number()
         .required("Stock is required")
@@ -167,7 +164,7 @@ export const CreateProductModal = ({
         description: initialProduct.description,
         price: initialProduct.price,
         stock: initialProduct.stock,
-        weight: initialProduct.weight,
+        size: initialProduct.size,
         categoryId: initialProduct.category.id,
       });
       setExistingImageUrls(initialProduct.imageUrl || []);
@@ -182,7 +179,7 @@ export const CreateProductModal = ({
       description: "",
       price: 0,
       stock: 0,
-      weight: 0,
+      size: "",
       categoryId: "",
     });
     setExistingImageUrls([]);
@@ -297,13 +294,19 @@ export const CreateProductModal = ({
             error={touched.categoryId && errors.categoryId}
             disabled={isCategoriesLoading}
           />
-          <CustomInput
-            name="weight"
-            label="Weight(kg)"
-            type="number"
-            value={values.weight}
-            onChange={handleChange}
-            error={touched.weight && errors.weight}
+          <CustomSelect
+            name="size"
+            label="Size"
+            triggerClassName="w-full"
+            placeholder="Select Size"
+            value={values.size}
+            onValueChange={(value) => setValues({ ...values, size: value })}
+            options={[
+              { label: "Small (1-5kg)", value: "small" },
+              { label: "Medium (6-15kg)", value: "medium" },
+              { label: "Large (16-35kg)", value: "large" },
+            ]}
+            error={touched.size && errors.size}
           />
         </div>
 

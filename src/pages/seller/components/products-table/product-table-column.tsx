@@ -101,6 +101,14 @@ ColumnDef<IProductData>[] => [
     },
   },
   {
+    header: "SIZE",
+    accessorKey: "size",
+    cell: ({ row }) => {
+      const size = row.original.size;
+      return <p className="capitalize">{size}</p>;
+    },
+  },
+  {
     header: "PRICE",
     accessorKey: "price",
     cell: ({ row }) => {

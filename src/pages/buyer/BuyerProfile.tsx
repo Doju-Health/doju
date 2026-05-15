@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Phone, MapPin, User, Edit3, Save, X } from "lucide-react";
 import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
 import { useUpdateProfile } from "@/pages/seller/api/use-update-profile";
+import { jumiaZone, getJumiaZoneForCity } from "@/data/nigeria-geo";
 
 function InfoRow({
   icon: Icon,
@@ -37,8 +38,8 @@ export default function BuyerProfile() {
   const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
   const user = data?.user;
 
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [newAddress, setNewAddress] = useState("");
+  const [isEditingCity, setIsEditingCity] = useState(false);
+  const [newCity, setNewCity] = useState("");
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [newPhone, setNewPhone] = useState("");
 
@@ -51,15 +52,15 @@ export default function BuyerProfile() {
         .slice(0, 2)
     : "?";
 
-  const handleUpdateAddress = async () => {
-    if (!newAddress.trim()) return;
+  const handleUpdateCity = async () => {
+    if (!newCity) return;
 
     try {
-      await updateProfile({ address: newAddress.trim() });
-      setIsEditingAddress(false);
-      setNewAddress("");
+      await updateProfile({ city: newCity });
+      setIsEditingCity(false);
+      setNewCity("");
     } catch (error) {
-      console.error("Failed to update address:", error);
+      console.error("Failed to update city:", error);
     }
   };
 
@@ -76,8 +77,8 @@ export default function BuyerProfile() {
   };
 
   const handleCancelEdit = () => {
-    setIsEditingAddress(false);
-    setNewAddress("");
+    setIsEditingCity(false);
+    setNewCity("");
     setIsEditingPhone(false);
     setNewPhone("");
   };
@@ -199,7 +200,7 @@ export default function BuyerProfile() {
                   </div>
                 </div>
 
-                {/* Address section with edit functionality */}
+                {/* Delivery city with Jumia zone dropdown */}
                 <div className="py-3">
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -207,22 +208,30 @@ export default function BuyerProfile() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-muted-foreground">
-                        Delivery Address
+                        Delivery City
                       </p>
 
-                      {isEditingAddress ? (
+                      {isEditingCity ? (
                         <div className="mt-2 space-y-3">
-                          <Input
-                            placeholder="Enter your delivery address"
-                            value={newAddress}
-                            onChange={(e) => setNewAddress(e.target.value)}
-                            className="w-full"
-                          />
+                          <select
+                            value={newCity}
+                            onChange={(e) => setNewCity(e.target.value)}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          >
+                            <option value="" disabled>Select your city</option>
+                            {Object.entries(jumiaZone).map(([zoneName, cities]) => (
+                              <optgroup key={zoneName} label={`Zone ${zoneName.replace("ZONE", "")}`}>
+                                {cities.map((city) => (
+                                  <option key={city} value={city}>{city}</option>
+                                ))}
+                              </optgroup>
+                            ))}
+                          </select>
                           <div className="flex gap-2 flex-wrap">
                             <Button
                               size="sm"
-                              onClick={handleUpdateAddress}
-                              disabled={isPending || !newAddress.trim()}
+                              onClick={handleUpdateCity}
+                              disabled={isPending || !newCity}
                             >
                               <Save className="h-4 w-4 mr-1" />
                               {isPending ? "Updating..." : "Update"}
@@ -240,16 +249,21 @@ export default function BuyerProfile() {
                         </div>
                       ) : (
                         <div className="mt-0.5 text-sm font-medium flex items-center gap-2 flex-wrap">
-                          <span className="break-words">
-                            {user?.address ?? "—"}
+                          <span>
+                            {user?.city ?? "—"}
+                            {user?.city && getJumiaZoneForCity(user.city) && (
+                              <span className="ml-1.5 text-xs text-muted-foreground font-normal">
+                                Zone {getJumiaZoneForCity(user.city)}
+                              </span>
+                            )}
                           </span>
                           <Button
                             variant="ghost"
                             size="sm"
                             className="h-6 px-2 text-muted-foreground hover:text-foreground shrink-0"
                             onClick={() => {
-                              setIsEditingAddress(true);
-                              setNewAddress(user?.address || "");
+                              setIsEditingCity(true);
+                              setNewCity(user?.city || "");
                             }}
                           >
                             <Edit3 className="h-3 w-3" />

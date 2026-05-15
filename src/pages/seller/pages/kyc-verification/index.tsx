@@ -84,10 +84,14 @@ export default function KYCVerificationPage() {
     initialValues: {
       businessName: "",
       businessRcNumber: "",
+      businessCity: "",
+      businessAddress: "",
     },
     validationSchema: yup.object({
       businessName: yup.string().required("Business name is required"),
       businessRcNumber: yup.string().notRequired(),
+      businessCity: yup.string().required("Business city is required"),
+      businessAddress: yup.string().required("Business address is required"),
     }),
     onSubmit: async () => {
       setIsSubmitting(true);
@@ -290,7 +294,7 @@ export default function KYCVerificationPage() {
                 </h2>
                 <div className="h-px w-full bg-border" />
 
-                <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-4">
                   <CustomInput
                     name="businessName"
                     label="Registered Business Name"
@@ -303,9 +307,6 @@ export default function KYCVerificationPage() {
                     }
                     leftIconCls="placeholder:pl-1"
                   />
-                </div>
-
-                <div className="space-y-2">
                   <CustomInput
                     name="businessRcNumber"
                     label="Business Registration Number (RC Number)"
@@ -318,6 +319,30 @@ export default function KYCVerificationPage() {
                     }
                     leftIconCls="placeholder:pl-1"
                     isRequired={false}
+                  />
+                  <CustomInput
+                    name="businessAddress"
+                    label="Business Address"
+                    placeholder="e.g. 123 Main Street"
+                    value={values.businessAddress}
+                    onChange={handleChange}
+                    error={touched.businessAddress && errors.businessAddress}
+                    leftIcon={
+                      <FileBadge2 className="size-4 text-muted-foreground" />
+                    }
+                    leftIconCls="placeholder:pl-1"
+                  />
+                  <CustomInput
+                    name="businessCity"
+                    label="Business City"
+                    placeholder="e.g. Lagos"
+                    value={values.businessCity}
+                    onChange={handleChange}
+                    error={touched.businessCity && errors.businessCity}
+                    leftIcon={
+                      <FileBadge2 className="size-4 text-muted-foreground" />
+                    }
+                    leftIconCls="placeholder:pl-1"
                   />
                 </div>
 

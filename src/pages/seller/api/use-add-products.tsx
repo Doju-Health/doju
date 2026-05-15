@@ -12,7 +12,7 @@ export const useAddProduct = () => {
       stock: number;
       categoryId: string;
       imageUrl?: string[];
-      weight: number;
+      size: string;
     }) => {
       const response = await API.post("/products", data);
       return response.data;

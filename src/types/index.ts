@@ -53,6 +53,7 @@ export interface Product {
   sku: string;
   stock: number;
   sellerId: string;
+  sellerCity?: string;
   approvalStatus: "pending" | "approved" | "rejected";
   createdAt: Date;
   weeklyPurchases?: number;
@@ -118,7 +119,7 @@ export type IProductData = {
   price: number;
   stock: number;
   status: string;
-  weight: number;
+  size: string;
   category: {
     id: string;
     name: string;
@@ -166,11 +167,15 @@ export interface ApiProduct {
     role?: string;
     companyName?: string | null;
     address?: string | null;
+    city?: string | null;
     licenseNumber?: string | null;
     isActive?: boolean;
     emailVerified?: boolean;
     createdAt?: string;
     updatedAt?: string;
+    businessAddress: string
+    businessCity: string;
+    businessState: string;
   };
   category: ApiCategory;
   isActive: boolean;
@@ -242,6 +247,8 @@ export interface IUsers {
   role: string;
   companyName: string | null;
   address: string | null;
+  city?: string | null;
+  state?: string | null;
   profileImageUrl: string | null;
   licenseNumber: string | null;
   paystackRecipientCode: string | null;

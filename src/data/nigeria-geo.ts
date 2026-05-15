@@ -718,6 +718,95 @@ export const jumiaZone = {
   ],
 };
 
+// Delivery fee matrix keyed by [minZone][maxZone] — symmetric, always use min/max ordering
+export const jumiaDeliveryFees: Record<number, Record<number, { small: number; medium: number; large: number; days: string }>> = {
+  1: {
+    1: { small: 1400, medium: 3600, large: 5800, days: "1-2" },
+    2: { small: 1400, medium: 3800, large: 6000, days: "2-4" },
+    3: { small: 1700, medium: 5000, large: 15000, days: "3-7" },
+    4: { small: 1400, medium: 3500, large: 15000, days: "4-9" },
+    5: { small: 1600, medium: 7000, large: 22000, days: "3-9" },
+    6: { small: 1900, medium: 7100, large: 26000, days: "8-9" },
+    7: { small: 1800, medium: 7800, large: 30000, days: "4-9" },
+  },
+  2: {
+    2: { small: 2200, medium: 3800, large: 6000, days: "5-7" },
+    3: { small: 2600, medium: 5700, large: 18000, days: "7-10" },
+    4: { small: 2100, medium: 3600, large: 18000, days: "8-13" },
+    5: { small: 2500, medium: 7000, large: 25000, days: "7-13" },
+    6: { small: 2800, medium: 7500, large: 26000, days: "8-12" },
+    7: { small: 2900, medium: 8500, large: 30000, days: "8-13" },
+  },
+  3: {
+    3: { small: 3000, medium: 7000, large: 20000, days: "7-10" },
+    4: { small: 2500, medium: 5500, large: 22000, days: "8-12" },
+    5: { small: 3000, medium: 9000, large: 25000, days: "8-14" },
+    6: { small: 3500, medium: 9000, large: 30000, days: "12-14" },
+    7: { small: 3300, medium: 10000, large: 30000, days: "12-14" },
+  },
+  4: {
+    4: { small: 2100, medium: 4000, large: 16000, days: "10-12" },
+    5: { small: 2500, medium: 7500, large: 23000, days: "8-12" },
+    6: { small: 2900, medium: 7500, large: 30000, days: "12-14" },
+    7: { small: 2800, medium: 8000, large: 30000, days: "8-12" },
+  },
+  5: {
+    5: { small: 2900, medium: 10000, large: 26000, days: "12-14" },
+    6: { small: 3500, medium: 11000, large: 30000, days: "8-17" },
+    7: { small: 3500, medium: 11000, large: 30000, days: "16-17" },
+  },
+  6: {
+    6: { small: 3500, medium: 11000, large: 30000, days: "12-14" },
+    7: { small: 3500, medium: 11000, large: 35000, days: "12-17" },
+  },
+  7: {
+    7: { small: 3500, medium: 12000, large: 35000, days: "8-12" },
+  },
+};
+
+// Map each Jumia city (lowercase) → zone number
+export const cityToJumiaZone: Record<string, number> = {};
+Object.entries(jumiaZone).forEach(([zoneName, cities]) => {
+  const zoneNum = parseInt(zoneName.replace("ZONE", ""));
+  cities.forEach((city) => {
+    cityToJumiaZone[city.toLowerCase()] = zoneNum;
+  });
+});
+
+export const isValidJumiaCity = (city: string | null | undefined): boolean => {
+  if (!city) return false;
+  return cityToJumiaZone[city.toLowerCase()] !== undefined;
+};
+
+export const getJumiaZoneForCity = (city: string): number | null => {
+  return cityToJumiaZone[city.toLowerCase()] ?? null;
+};
+
+export const getDeliveryFee = (
+  fromCity: string,
+  toCity: string,
+  size: "small" | "medium" | "large" = "small",
+): { fee: number; days: string } | null => {
+  const fromZone = getJumiaZoneForCity(fromCity);
+  const toZone = getJumiaZoneForCity(toCity);
+  if (!fromZone || !toZone) return null;
+  const lo = Math.min(fromZone, toZone);
+  const hi = Math.max(fromZone, toZone);
+  const entry = jumiaDeliveryFees[lo]?.[hi];
+  if (!entry) return null;
+  return { fee: entry[size], days: entry.days };
+};
+
+// Flat sorted list of all Jumia cities with their zone number
+export const jumiaCities: { city: string; zone: number }[] = Object.entries(
+  jumiaZone,
+)
+  .flatMap(([zoneName, cities]) => {
+    const zone = parseInt(zoneName.replace("ZONE", ""));
+    return cities.map((city) => ({ city, zone }));
+  })
+  .sort((a, b) => a.zone - b.zone || a.city.localeCompare(b.city));
+
 // Create city to state mapping
 export const cityToState: Record<string, string> = {};
 nigeriaStates.forEach((state) => {
