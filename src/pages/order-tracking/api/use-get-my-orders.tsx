@@ -38,6 +38,7 @@ export interface MyOrderBuyer {
 
 export interface MyOrder {
   id: string;
+  bulkOrderId?: string;
   buyer: MyOrderBuyer;
   product: MyOrderProduct;
   quantity: number;

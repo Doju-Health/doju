@@ -13,6 +13,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea/textarea";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import {
@@ -38,6 +46,7 @@ import {
   AlertCircle,
   CreditCard,
   Trash2,
+  Star,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/redux/hooks";
@@ -157,6 +166,10 @@ const OrderTracking = () => {
   const [searchParams] = useSearchParams();
   const [selectedOrder, setSelectedOrder] = useState<MyOrder | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
 
   // Clear cart when redirected back from Paystack after payment
   useEffect(() => {
@@ -175,9 +188,27 @@ const OrderTracking = () => {
     }
   };
 
-  const handleCompleteOrder = async (orderId: string) => {
+  const openFeedbackModal = () => {
+    setFeedbackText("");
+    setFeedbackRating(0);
+    setHoveredRating(0);
+    setShowFeedbackModal(true);
+  };
+
+  const handleConfirmDelivery = async () => {
+    if (feedbackRating === 0) {
+      toast.error("Please select a rating before confirming.");
+      return;
+    }
+    if (!selectedOrder) return;
     try {
-      await completeOrderMutation.mutateAsync(orderId);
+      await completeOrderMutation.mutateAsync({
+        orderId: selectedOrder.id,
+        bulkOrderId: selectedOrder.bulkOrderId || undefined,
+        feedback: feedbackText,
+        rating: feedbackRating,
+      });
+      setShowFeedbackModal(false);
       setSelectedOrder(null);
       refetch();
     } catch {
@@ -449,15 +480,10 @@ const OrderTracking = () => {
                       variant="doju-primary"
                       size="lg"
                       className="gap-2"
-                      onClick={() => handleCompleteOrder(selectedOrder.id)}
-                      disabled={completeOrderMutation.isPending}
+                      onClick={openFeedbackModal}
                     >
-                      {completeOrderMutation.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <CheckCircle className="h-4 w-4" />
-                      )}
-                      Mark as Complete
+                      <CheckCircle className="h-4 w-4" />
+                      Confirm Delivery
                     </Button>
                   )}
 
@@ -514,6 +540,84 @@ const OrderTracking = () => {
           </section>
         </main>
         <Footer />
+
+        {/* Feedback & Rating Modal */}
+        <Dialog open={showFeedbackModal} onOpenChange={setShowFeedbackModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-xl">Confirm Delivery</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-5 py-2">
+              <p className="text-sm text-muted-foreground">
+                How was your experience with this order?
+              </p>
+
+              {/* Star Rating */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Rating</p>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setFeedbackRating(star)}
+                      onMouseEnter={() => setHoveredRating(star)}
+                      onMouseLeave={() => setHoveredRating(0)}
+                      className="p-1 transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`h-8 w-8 transition-colors ${
+                          star <= (hoveredRating || feedbackRating)
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                {feedbackRating > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {["", "Poor", "Fair", "Good", "Very good", "Excellent"][feedbackRating]}
+                  </p>
+                )}
+              </div>
+
+              {/* Feedback Text */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Feedback <span className="text-muted-foreground font-normal">(optional)</span></p>
+                <Textarea
+                  placeholder="Tell us about your experience…"
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowFeedbackModal(false)}
+                disabled={completeOrderMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="doju-primary"
+                onClick={handleConfirmDelivery}
+                disabled={completeOrderMutation.isPending || feedbackRating === 0}
+                className="gap-2"
+              >
+                {completeOrderMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="h-4 w-4" />
+                )}
+                Confirm Delivery
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }

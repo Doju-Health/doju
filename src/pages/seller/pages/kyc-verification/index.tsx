@@ -121,6 +121,8 @@ export default function KYCVerificationPage() {
           companyName: values.businessName.trim(),
           licenseNumber: values.businessRcNumber.trim() || undefined,
           ninUrl,
+          businessAddress: values.businessAddress.trim(),
+          businessCity: values.businessCity.trim(),
           ...(cacUrl ? { cacUrl } : {}),
         });
 

@@ -73,13 +73,10 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
       <div className="p-3 sm:p-5 space-y-2 sm:space-y-3">
         <div className="space-y-0.5 sm:space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-xs font-medium text-doju-lime truncate">
-              {product.brand}
-            </span>
             <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
               <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
               <span className="text-[10px] sm:text-xs text-muted-foreground">
-                4.8
+                {product.averageRating ? `${product.averageRating} (${product.ratingsCount || 0})` : "No ratings"}
               </span>
             </div>
           </div>

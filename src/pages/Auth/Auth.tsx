@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +18,7 @@ import { z } from "zod";
 import { useRegister } from "./api/use-register";
 import { useVerifyEmail } from "./api/use-verify-email";
 import { useLogin } from "./api/use-login";
-import { toast } from "sonner";
+
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z
@@ -91,7 +91,7 @@ const signInSteps: Step[] = [
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { mutate, isPending } = useRegister();
+  const { mutate } = useRegister();
   const { mutate: verifyEmail, isPending: isVerifying } = useVerifyEmail();
   const { mutate: login, isPending: isLoggingIn } = useLogin();
 
@@ -115,36 +115,11 @@ const Auth = () => {
     const redirectUri = encodeURIComponent(
       window.location.origin + "/auth/google/callback",
     );
-    const url = `${baseUrl}/auth/google/?redirect_uri=${redirectUri}`;
-    const width = 500;
-    const height = 600;
-    const left = window.screenX + (window.outerWidth - width) / 2;
-    const top = window.screenY + (window.outerHeight - height) / 2;
-    window.open(
-      url,
-      "google-auth",
-      `width=${width},height=${height},left=${left},top=${top},popup=yes`,
-    );
-  }, []);
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-
-      if (event.data?.type === "GOOGLE_AUTH_SUCCESS") {
-        toast.success("Google sign-in successful!");
-        const redirectUrl = searchParams.get("redirect");
-        const defaultRoute =
-          event.data.role === "seller" ? "/seller/overview" : "/";
-        navigate(redirectUrl || defaultRoute);
-      } else if (event.data?.type === "GOOGLE_AUTH_FAILURE") {
-        toast.error("Google sign-in failed. Please try again.");
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [navigate, searchParams]);
+    const url = `${baseUrl}/auth/google?redirect_uri=${redirectUri}`;
+    const currentRedirect = searchParams.get("redirect") || "";
+    if (currentRedirect) sessionStorage.setItem("auth_redirect", currentRedirect);
+    window.location.href = url;
+  }, [searchParams]);
 
   const steps = isLogin ? signInSteps : signUpSteps;
   const currentStepData = steps[currentStep];
@@ -529,7 +504,7 @@ const Auth = () => {
             </AnimatePresence>
 
             {/* Google Sign-In */}
-            <div className="mt-6">
+            {/* <div className="mt-6">
               <div className="relative flex items-center gap-3 text-center">
                 <span className="flex-1 border-t border-border" />
                 <span className="text-xs text-muted-foreground shrink-0">
@@ -537,17 +512,17 @@ const Auth = () => {
                 </span>
                 <span className="flex-1 border-t border-border" />
               </div>
-              {/* <Button
+              <Button
                 type="button"
                 variant="outline"
                 size="lg"
                 onClick={handleGoogleSignIn}
-                className="mt-4 w-full gap-3"
+                className="mt-4 w-full gap-3 h-12 rounded-xl border-2 hover:border-doju-lime/50 transition-colors"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 48 48"
-                  className="h-5 w-5"
+                  className="h-5 w-5 shrink-0"
                 >
                   <path
                     fill="#4285F4"
@@ -566,9 +541,9 @@ const Auth = () => {
                     d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
                   />
                 </svg>
-                Sign in with Google
-              </Button> */}
-            </div>
+                Continue with Google
+              </Button>
+            </div> */}
 
             {/* Toggle Mode */}
             <div className="mt-8 pt-6 border-t border-border text-center">

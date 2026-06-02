@@ -16,6 +16,9 @@ export const useCreateOrder = () => {
       return response.data as {
         orderId: string;
         totalPrice: number;
+        bulkDeliveryFee: number;
+        bulkEstimatedPlatformFee: number;
+        bulkEstimatedSellerAmount: number;
         orders: any[];
       };
     },
