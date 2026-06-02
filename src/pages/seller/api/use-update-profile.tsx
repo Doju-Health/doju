@@ -2,7 +2,7 @@ import { API } from "@/lib/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export const useUpdateProfile = () => {
+export const useUpdateProfile = (options?: { silent?: boolean }) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: {
@@ -16,12 +16,16 @@ export const useUpdateProfile = () => {
       ninUrl?: string;
       city?: string;
       state?: string;
+      businessAddress?: string;
+      businessCity?: string;
     }) => {
       const response = await API.patch("users/profile", data);
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Profile Updated Successfully.");
+      if (!options?.silent) {
+        toast.success("Profile Updated Successfully.");
+      }
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["userProfile"] });
     },

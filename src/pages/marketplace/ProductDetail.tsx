@@ -183,11 +183,17 @@ const ProductDetail = () => {
         <div className="border-b border-border bg-card">
           <div className="container px-4 sm:px-6 py-3">
             <nav className="flex items-center gap-1.5 text-xs overflow-x-auto">
-              <Link to="/" className="text-muted-foreground hover:text-foreground whitespace-nowrap">
+              <Link
+                to="/"
+                className="text-muted-foreground hover:text-foreground whitespace-nowrap"
+              >
                 Home
               </Link>
               <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-              <Link to="/marketplace" className="text-muted-foreground hover:text-foreground whitespace-nowrap">
+              <Link
+                to="/marketplace"
+                className="text-muted-foreground hover:text-foreground whitespace-nowrap"
+              >
                 {product.category}
               </Link>
               <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
@@ -200,7 +206,6 @@ const ProductDetail = () => {
         <section className="py-6 sm:py-10">
           <div className="container px-4 sm:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_300px] gap-6 xl:gap-10 items-start">
-
               {/* ── Column 1: Images ── */}
               <div className="space-y-3">
                 <div className="aspect-square rounded-2xl border border-border bg-white overflow-hidden">
@@ -235,14 +240,6 @@ const ProductDetail = () => {
 
               {/* ── Column 2: Product info ── */}
               <div className="space-y-5">
-                {/* Sold by badge */}
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-doju-lime/40 bg-doju-lime/10 px-3 py-1">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-doju-lime" />
-                  <span className="text-xs font-medium text-doju-lime">
-                    Sold by {product.brand} · Verified Seller
-                  </span>
-                </div>
-
                 {/* Name */}
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
                   {product.name}
@@ -251,12 +248,19 @@ const ProductDetail = () => {
                 {/* Rating + stock */}
                 <div className="flex items-center gap-3 flex-wrap">
                   <StarRating />
-                  <span className="text-sm font-medium text-foreground">4.7</span>
-                  <span className="text-sm text-muted-foreground">(248 reviews)</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {product.averageRating
+                      ? `${product.averageRating} (${product.ratingsCount || 0})`
+                      : "No ratings"}
+                  </span>
                   {product.stock > 0 ? (
-                    <span className="text-sm font-medium text-doju-lime">In stock</span>
+                    <span className="text-sm font-medium text-doju-lime">
+                      In stock
+                    </span>
                   ) : (
-                    <span className="text-sm font-medium text-destructive">Out of stock</span>
+                    <span className="text-sm font-medium text-destructive">
+                      Out of stock
+                    </span>
                   )}
                 </div>
 
@@ -265,7 +269,9 @@ const ProductDetail = () => {
                   <span className="text-3xl sm:text-4xl font-bold text-foreground">
                     {formatPrice(product.price)}
                   </span>
-                  <span className="text-xs text-muted-foreground">VAT incl.</span>
+                  <span className="text-xs text-muted-foreground">
+                    VAT incl.
+                  </span>
                 </div>
 
                 {/* Description */}
@@ -276,7 +282,9 @@ const ProductDetail = () => {
                 {/* Quantity + action buttons */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-4">
-                    <span className="text-sm text-muted-foreground">Quantity</span>
+                    <span className="text-sm text-muted-foreground">
+                      Quantity
+                    </span>
                     <div className="flex items-center border border-border rounded-full overflow-hidden">
                       <button
                         className="px-4 py-2 text-lg font-medium hover:bg-muted transition-colors"
@@ -340,7 +348,7 @@ const ProductDetail = () => {
                   <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border p-3 text-center">
                     <RotateCcw className="h-5 w-5 text-doju-lime" />
                     <span className="text-[11px] text-muted-foreground leading-tight">
-                      7-day returns
+                      3-day returns
                     </span>
                   </div>
                   <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border p-3 text-center">
@@ -354,78 +362,35 @@ const ProductDetail = () => {
 
               {/* ── Column 3: Delivery estimate card ── */}
               <div className="lg:sticky lg:top-24">
-                <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
-                  {/* Card header */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <Sparkles className="h-4 w-4 text-doju-lime" />
-                      <h3 className="font-semibold text-foreground text-sm">
-                        Delivery Estimate
-                      </h3>
-                    </div>
-                    <p className="text-xs text-muted-foreground pl-6">
-                      Based on Jumia zones{sellerCity ? ` · from ${sellerCity}` : ""}.
-                    </p>
-                  </div>
-
-                  {/* City selector */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">
-                      Deliver to
-                    </label>
-                    <select
-                      value={deliveryCity}
-                      onChange={(e) => setDeliveryCity(e.target.value)}
-                      className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      <option value="" disabled>Select your city</option>
-                      {Object.entries(jumiaZone).map(([zoneName, cities]) => (
-                        <optgroup key={zoneName} label={`Zone ${zoneName.replace("ZONE", "")}`}>
-                          {cities.map((city) => (
-                            <option key={city} value={city}>{city}</option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Fee result */}
-                  {deliveryCity && (
-                    <div className="rounded-xl bg-muted/60 p-3 space-y-1">
-                      {feeResult ? (
-                        <>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">Estimated fee</span>
-                            <span className="text-sm font-semibold text-foreground">
-                              {formatPrice(deliveryFee)}
-                            </span>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            ETA {feeResult.days} business days
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-xs text-muted-foreground">
-                          {sellerCity
-                            ? "Seller's city is outside standard zones"
-                            : "Delivery fee calculated at checkout"}
+                {deliveryCity && sellerCity && !feeResult ? (
+                  /* No delivery route available */
+                  <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+                    <div className="flex flex-col items-center text-center gap-3 py-2">
+                      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                        <Truck className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          Delivery not available
                         </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Total */}
-                  <div className="border-t border-border pt-3">
-                    <div className="flex items-baseline justify-between mb-3">
-                      <span className="text-sm text-muted-foreground">Total today:</span>
-                      <span className="text-lg font-bold text-foreground">
-                        {formatPrice(totalToday)}
-                        {!feeResult && deliveryCity && (
-                          <span className="text-xs font-normal text-muted-foreground ml-1">
-                            + delivery
+                        <p className="text-xs text-muted-foreground mt-1">
+                          We currently don't have a delivery route from{" "}
+                          <span className="font-medium text-foreground">
+                            {sellerCity}
+                          </span>{" "}
+                          to{" "}
+                          <span className="font-medium text-foreground">
+                            {deliveryCity}
                           </span>
-                        )}
-                      </span>
+                          .
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setDeliveryCity("")}
+                        className="text-xs text-doju-lime hover:underline"
+                      >
+                        Try a different city
+                      </button>
                     </div>
                     <Button
                       variant="doju-primary"
@@ -437,9 +402,96 @@ const ProductDetail = () => {
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>
-                </div>
-              </div>
+                ) : (
+                  /* Normal delivery estimate card */
+                  <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+                    {/* Card header */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <Sparkles className="h-4 w-4 text-doju-lime" />
+                        <h3 className="font-semibold text-foreground text-sm">
+                          Delivery Estimate
+                        </h3>
+                      </div>
+                      <p className="text-xs text-muted-foreground pl-6">
+                        Based on Jumia zones
+                        {sellerCity ? ` · from ${sellerCity}` : ""}.
+                      </p>
+                    </div>
 
+                    {/* City selector */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Deliver to
+                      </label>
+                      <select
+                        value={deliveryCity}
+                        onChange={(e) => setDeliveryCity(e.target.value)}
+                        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="" disabled>
+                          Select your city
+                        </option>
+                        {Object.entries(jumiaZone).map(([zoneName, cities]) => (
+                          <optgroup
+                            key={zoneName}
+                            label={`Zone ${zoneName.replace("ZONE", "")}`}
+                          >
+                            {cities.map((city) => (
+                              <option key={city} value={city}>
+                                {city}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Fee result */}
+                    {deliveryCity && feeResult && (
+                      <div className="rounded-xl bg-muted/60 p-3 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            Estimated fee
+                          </span>
+                          <span className="text-sm font-semibold text-foreground">
+                            {formatPrice(deliveryFee)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          ETA {feeResult.days} business days
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Total */}
+                    <div className="border-t border-border pt-3">
+                      <div className="flex items-baseline justify-between mb-3">
+                        <span className="text-sm text-muted-foreground">
+                          Total today:
+                        </span>
+                        <span className="text-lg font-bold text-foreground">
+                          {formatPrice(totalToday)}
+                          {!feeResult && deliveryCity && (
+                            <span className="text-xs font-normal text-muted-foreground ml-1">
+                              + delivery
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      <Button
+                        variant="doju-primary"
+                        className="w-full h-11 gap-2"
+                        onClick={handleBuyNow}
+                        disabled={product.stock === 0}
+                      >
+                        Buy now
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>

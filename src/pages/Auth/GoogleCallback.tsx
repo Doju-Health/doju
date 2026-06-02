@@ -1,12 +1,35 @@
 import { useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { setStoredTokens } from "@/lib/local-storage";
 import { setUser } from "@/redux/slice/auth/auth-slice";
 import { store } from "@/redux/store";
 import { toast } from "sonner";
+import { API } from "@/lib/axios";
+
+/** Scan all URL search params for anything that looks like a JWT (starts with eyJ). */
+function findToken(): string | null {
+  const search = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+
+  // Known param names first
+  const names = [
+    "accessToken", "token", "access_token", "jwt",
+    "bearer", "authToken", "auth_token",
+  ];
+  for (const name of names) {
+    const val = search.get(name) ?? hash.get(name);
+    if (val) return val;
+  }
+
+  // Scan all params for a JWT value (starts with eyJ)
+  for (const [, val] of [...search.entries(), ...hash.entries()]) {
+    if (val.startsWith("eyJ") && val.includes(".")) return val;
+  }
+
+  return null;
+}
 
 export default function GoogleCallback() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const handled = useRef(false);
 
@@ -14,59 +37,47 @@ export default function GoogleCallback() {
     if (handled.current) return;
     handled.current = true;
 
-    const accessToken =
-      searchParams.get("accessToken") ?? searchParams.get("token");
+    (async () => {
+      const token = findToken();
 
-    if (!accessToken) {
-      // If opened as popup, notify opener of failure
-      if (window.opener) {
-        window.opener.postMessage(
-          { type: "GOOGLE_AUTH_FAILURE" },
-          window.location.origin,
-        );
-        window.close();
+      if (!token) {
+        toast.error("Google sign-in failed. Please try again.");
+        navigate("/auth", { replace: true });
         return;
       }
-      toast.error("Google sign-in failed. Please try again.");
-      navigate("/auth", { replace: true });
-      return;
-    }
 
-    // Collect user fields from query params
-    const id = searchParams.get("id") ?? "";
-    const email = searchParams.get("email") ?? "";
-    const fullName = searchParams.get("fullName") ?? "";
-    const role = searchParams.get("role") ?? "buyer";
-    const phoneNumber = searchParams.get("phoneNumber") ?? "";
+      // Persist the token so the API interceptor can attach it
+      setStoredTokens(token, null);
 
-    setStoredTokens(accessToken, null);
+      try {
+        // Fetch real profile data using the token
+        const res = await API.get("/auth/me");
+        const u = res.data?.user ?? res.data;
 
-    store.dispatch(
-      setUser({
-        id,
-        email,
-        fullName,
-        phoneNumber,
-        role,
-        createdAt: new Date().toISOString(),
-      }),
-    );
+        store.dispatch(
+          setUser({
+            id: u.id ?? "",
+            email: u.email ?? "",
+            fullName: u.fullName ?? "",
+            phoneNumber: u.phoneNumber ?? "",
+            role: u.role ?? "buyer",
+            createdAt: u.createdAt ?? new Date().toISOString(),
+          }),
+        );
 
-    // If opened as popup, notify opener and close
-    if (window.opener) {
-      window.opener.postMessage(
-        { type: "GOOGLE_AUTH_SUCCESS", role },
-        window.location.origin,
-      );
-      window.close();
-      return;
-    }
-
-    toast.success("Google sign-in successful!");
-
-    const defaultRoute = role === "seller" ? "/seller/overview" : "/";
-    navigate(defaultRoute, { replace: true });
-  }, [navigate, searchParams]);
+        toast.success("Google sign-in successful!");
+        const redirect = sessionStorage.getItem("auth_redirect") || "";
+        sessionStorage.removeItem("auth_redirect");
+        navigate(
+          redirect || (u.role === "seller" ? "/seller/overview" : "/"),
+          { replace: true },
+        );
+      } catch {
+        toast.error("Google sign-in failed. Please try again.");
+        navigate("/auth", { replace: true });
+      }
+    })();
+  }, [navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

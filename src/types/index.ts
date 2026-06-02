@@ -57,6 +57,8 @@ export interface Product {
   approvalStatus: "pending" | "approved" | "rejected";
   createdAt: Date;
   weeklyPurchases?: number;
+  averageRating?:string;
+  ratingsCount?: number;
 }
 
 export interface CartItem {
