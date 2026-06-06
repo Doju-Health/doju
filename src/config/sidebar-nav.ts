@@ -2,7 +2,6 @@ import {
   Package,
   BarChart3,
   ShoppingCart,
-  MessageCircle,
   Settings,
   LayoutGrid,
   LayoutDashboard,
@@ -10,7 +9,6 @@ import {
   UserRound,
   Store,
   Users,
-  CreditCard,
   History,
 } from "lucide-react";
 import type { NavGroup } from "@/types";
@@ -101,6 +99,11 @@ export const adminSidebarNav: NavGroup[] = [
         title: "Transactions",
         icon: History,
         href: "/admin/transactions",
+      },
+      {
+        title: "Admins",
+        icon: Shield,
+        href: "/admin/admins",
       },
     ],
   },

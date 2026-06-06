@@ -11,6 +11,7 @@ export const useCreateOrder = () => {
       note?: string;
       deliveryCity?: string;
       deliveryState?: string;
+      pickupStore?: string;
     }) => {
       const response = await API.post("/orders/bulk", data);
       return response.data as {

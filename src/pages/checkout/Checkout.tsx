@@ -18,6 +18,10 @@ import {
   jumiaZone,
 } from "@/data/nigeria-geo";
 import {
+  getPickupStationsForZone,
+  type PickupStation,
+} from "@/data/pickup-stations";
+import {
   ArrowLeft,
   ArrowRight,
   Check,
@@ -32,6 +36,9 @@ import {
   Truck,
   ChevronRight,
   Loader2,
+  Store,
+  Clock,
+  ExternalLink,
 } from "lucide-react";
 import dojuLogo from "@/assets/doju-logo.jpg";
 import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
@@ -41,7 +48,7 @@ interface CheckoutStep {
   id: string;
   question: string;
   placeholder: string;
-  type: "text" | "tel" | "textarea" | "select";
+  type: "text" | "tel" | "textarea" | "select" | "pickup";
   icon: React.ReactNode;
   required: boolean;
 }
@@ -168,6 +175,117 @@ function CitySelect({
   );
 }
 
+function PickupStationSelect({
+  value,
+  onChange,
+  zone,
+}: {
+  value: string;
+  onChange: (name: string) => void;
+  zone: number | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const stations = zone ? getPickupStationsForZone(zone) : [];
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={`w-full flex items-center justify-between gap-2 rounded-xl border px-4 py-3.5 text-left text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-doju-lime/50 ${
+            value
+              ? "border-doju-lime bg-doju-lime/5 text-foreground"
+              : "border-border bg-background text-muted-foreground"
+          }`}
+        >
+          <span className="flex items-center gap-2 min-w-0">
+            <Store className={`h-4 w-4 shrink-0 ${value ? "text-doju-lime" : "text-muted-foreground"}`} />
+            <span className="truncate">{value || "Select a pickup station"}</span>
+          </span>
+          <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-0 shadow-xl"
+        align="start"
+        sideOffset={6}
+      >
+        <Command>
+          <div className="flex items-center border-b px-3">
+            <CommandInput placeholder="Search station or area…" className="h-11 flex-1 bg-transparent" />
+          </div>
+          <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
+            No pickup station found.
+          </CommandEmpty>
+          <CommandList className="max-h-80 overflow-y-auto">
+            {stations.length === 0 ? (
+              <div className="py-6 text-center text-sm text-muted-foreground">
+                No stations for this zone.
+              </div>
+            ) : (
+              <CommandGroup heading={`Zone ${zone} — ${stations.length} stations`}>
+                {stations.map((station) => (
+                  <CommandItem
+                    key={station.name}
+                    value={`${station.name} ${station.city} ${station.address}`}
+                    onSelect={() => {
+                      onChange(value === station.name ? "" : station.name);
+                      setOpen(false);
+                    }}
+                    className="flex items-start justify-between gap-2 cursor-pointer py-3"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm leading-tight">{station.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{station.address}</p>
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">{station.city}</p>
+                    </div>
+                    {value === station.name && (
+                      <Check className="h-4 w-4 text-doju-lime shrink-0 mt-0.5" />
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// Card shown below the combobox when a station is selected
+function PickupStationCard({ station }: { station: PickupStation }) {
+  return (
+    <div className="mt-3 rounded-xl border border-doju-lime/30 bg-doju-lime/5 p-4 space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-sm font-semibold text-foreground leading-tight">{station.name}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{station.city} · Zone {station.zone}</p>
+        </div>
+        {station.mapUrl && (
+          <a
+            href={station.mapUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 text-doju-lime hover:opacity-80 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExternalLink className="h-4 w-4" />
+          </a>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">{station.address}</p>
+      {station.nearPlace && station.nearPlace !== station.address && (
+        <p className="text-xs text-muted-foreground/70">Near: {station.nearPlace}</p>
+      )}
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Clock className="h-3.5 w-3.5 shrink-0" />
+        <span>{station.openingHours}</span>
+      </div>
+    </div>
+  );
+}
+
 const Checkout = () => {
   const { items } = useCart();
 
@@ -223,6 +341,14 @@ const Checkout = () => {
       icon: <MapPin className="h-6 w-6" />,
       required: true,
     };
+    const pickupStep: CheckoutStep = {
+      id: "pickupStore",
+      question: "Choose your nearest pickup station",
+      placeholder: "",
+      type: "pickup",
+      icon: <Store className="h-6 w-6" />,
+      required: true,
+    };
     const noteStep: CheckoutStep = {
       id: "notes",
       question: "Anything else you want us to know?",
@@ -256,6 +382,7 @@ const Checkout = () => {
     }
     if (useSavedPhone !== true) result.push(phoneStep);
     if (useSavedCity !== true) result.push(cityStep);
+    result.push(pickupStep);
     result.push(addressStep);
     result.push(noteStep);
 
@@ -308,6 +435,7 @@ const Checkout = () => {
         deliveryAddress: combinedDeliveryAddress,
         note: formData.notes || undefined,
         deliveryCity: selectedCity,
+        pickupStore: formData.pickupStore || undefined,
       });
 
       if (result?.orders?.length > 0) {
@@ -484,6 +612,39 @@ const Checkout = () => {
                   <span className="text-muted-foreground w-16 shrink-0 text-xs pt-0.5">Address</span>
                   <span className="text-foreground">{formData.address || "—"}</span>
                 </div>
+                {formData.pickupStore && (() => {
+                  const station = buyerZone
+                    ? getPickupStationsForZone(buyerZone).find((s) => s.name === formData.pickupStore)
+                    : null;
+                  return (
+                    <div className="flex items-start gap-2 text-sm pt-1">
+                      <span className="text-muted-foreground w-16 shrink-0 text-xs pt-0.5">Pickup</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground text-xs leading-tight">{formData.pickupStore}</p>
+                        {station && (
+                          <>
+                            <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{station.address}</p>
+                            <div className="flex items-center gap-1 mt-1">
+                              <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                              <span className="text-xs text-muted-foreground">{station.openingHours}</span>
+                            </div>
+                            {station.mapUrl && (
+                              <a
+                                href={station.mapUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-doju-lime mt-1 hover:opacity-80"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                View on map
+                              </a>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
                 {formData.notes && (
                   <div className="flex items-start gap-2 text-sm">
                     <span className="text-muted-foreground w-16 shrink-0 text-xs pt-0.5">Note</span>
@@ -685,6 +846,19 @@ const Checkout = () => {
                       className="text-lg min-h-[120px] mb-6"
                       autoFocus
                     />
+                  ) : currentStepData.type === "pickup" ? (
+                    <div className="mb-6">
+                      <PickupStationSelect
+                        value={currentValue}
+                        onChange={(name) => handleInputChange(name)}
+                        zone={buyerZone}
+                      />
+                      {currentValue && (() => {
+                        const stations = buyerZone ? getPickupStationsForZone(buyerZone) : [];
+                        const station = stations.find((s) => s.name === currentValue);
+                        return station ? <PickupStationCard station={station} /> : null;
+                      })()}
+                    </div>
                   ) : currentStepData.type === "select" ? (
                     <div className="mb-6">
                       <CitySelect
