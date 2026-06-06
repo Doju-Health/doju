@@ -39,6 +39,10 @@ const adminAppRoutesConfig = [
     component: () =>
       import("@/pages/admin/pages/transactions/transaction-details.tsx"),
   },
+  {
+    path: "admins",
+    component: () => import("@/pages/admin/pages/admins"),
+  },
 ];
 
 export const adminAppRoutes = adminAppRoutesConfig.map(
