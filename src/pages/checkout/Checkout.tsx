@@ -15,10 +15,12 @@ import { toast } from "sonner";
 import {
   isValidJumiaCity,
   getJumiaZoneForCity,
+  getRegionForCity,
   jumiaZone,
 } from "@/data/nigeria-geo";
 import {
   getPickupStationsForZone,
+  getPickupStationsForZoneAndRegion,
   type PickupStation,
 } from "@/data/pickup-stations";
 import {
@@ -179,13 +181,20 @@ function PickupStationSelect({
   value,
   onChange,
   zone,
+  region,
 }: {
   value: string;
   onChange: (name: string) => void;
   zone: number | null;
+  region: string | null;
 }) {
   const [open, setOpen] = useState(false);
-  const stations = zone ? getPickupStationsForZone(zone) : [];
+  const stations =
+    zone && region
+      ? getPickupStationsForZoneAndRegion(zone, region)
+      : zone
+        ? getPickupStationsForZone(zone)
+        : [];
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -487,6 +496,7 @@ const Checkout = () => {
   const currentStepData = steps[currentStep];
   const selectedCity = useSavedCity ? (savedCity ?? "") : (formData.city ?? "");
   const buyerZone = getJumiaZoneForCity(selectedCity);
+  const buyerRegion = getRegionForCity(selectedCity);
 
   const isValid =
     currentStepData?.id === "cityChoice" || currentStepData?.id === "phoneChoice"
@@ -614,7 +624,10 @@ const Checkout = () => {
                 </div>
                 {formData.pickupStore && (() => {
                   const station = buyerZone
-                    ? getPickupStationsForZone(buyerZone).find((s) => s.name === formData.pickupStore)
+                    ? (buyerRegion
+                        ? getPickupStationsForZoneAndRegion(buyerZone, buyerRegion)
+                        : getPickupStationsForZone(buyerZone)
+                      ).find((s) => s.name === formData.pickupStore)
                     : null;
                   return (
                     <div className="flex items-start gap-2 text-sm pt-1">
@@ -852,9 +865,13 @@ const Checkout = () => {
                         value={currentValue}
                         onChange={(name) => handleInputChange(name)}
                         zone={buyerZone}
+                        region={buyerRegion}
                       />
                       {currentValue && (() => {
-                        const stations = buyerZone ? getPickupStationsForZone(buyerZone) : [];
+                        const stations =
+                          buyerZone && buyerRegion
+                            ? getPickupStationsForZoneAndRegion(buyerZone, buyerRegion)
+                            : buyerZone ? getPickupStationsForZone(buyerZone) : [];
                         const station = stations.find((s) => s.name === currentValue);
                         return station ? <PickupStationCard station={station} /> : null;
                       })()}

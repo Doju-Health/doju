@@ -353,3 +353,9 @@ export const pickupStations: PickupStation[] = [
 
 export const getPickupStationsForZone = (zone: number): PickupStation[] =>
   pickupStations.filter((s) => s.zone === zone);
+
+export const getPickupStationsForZoneAndRegion = (
+  zone: number,
+  region: string,
+): PickupStation[] =>
+  pickupStations.filter((s) => s.zone === zone && s.region === region);
