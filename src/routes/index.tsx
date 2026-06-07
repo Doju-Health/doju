@@ -23,6 +23,7 @@ import { SellerAppLayout } from "@/pages/seller/layout/app-layout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { lazy, Suspense } from "react";
 import AdminLogin from "@/pages/admin/pages/login";
+import AdminCompleteRegistration from "@/pages/admin/pages/complete-registration";
 import { AdminAppLayout } from "@/pages/admin/layout/admin-app-layout";
 import { adminAppRoutes } from "./admin";
 import AdminProtectedRoute from "@/components/auth/AdminProtectedRoute";
@@ -135,6 +136,10 @@ export const allRoutes = [
         <AdminLogin />
       </AdminLoginGuestRoute>
     ),
+  },
+  {
+    path: "/admin/complete-registration/:email",
+    element: <AdminCompleteRegistration />,
   },
   {
     path: "/admin",

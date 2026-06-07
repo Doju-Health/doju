@@ -782,6 +782,26 @@ export const getJumiaZoneForCity = (city: string): number | null => {
   return cityToJumiaZone[city.toLowerCase()] ?? null;
 };
 
+export const getRegionForCity = (city: string): string | null => {
+  // Direct lookup, then case-insensitive fallback
+  let isoCode = cityToState[city];
+  if (!isoCode) {
+    const lcCity = city.toLowerCase();
+    const match = Object.keys(cityToState).find(
+      (k) => k.toLowerCase() === lcCity,
+    );
+    if (match) isoCode = cityToState[match];
+  }
+  if (!isoCode) return null;
+  const stateName =
+    nigeriaStates.find((s) => s.isoCode === isoCode)?.name ?? null;
+  if (!stateName) return null;
+  // nigeriaStates uses "Abuja Federal Capital Territory"; pickup stations use "Federal Capital Territory"
+  if (stateName === "Abuja Federal Capital Territory")
+    return "Federal Capital Territory";
+  return stateName;
+};
+
 export const getDeliveryFee = (
   fromCity: string,
   toCity: string,
