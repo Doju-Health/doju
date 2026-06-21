@@ -60,7 +60,7 @@ API.interceptors.response.use(
       try {
         const { refreshToken } = getStoredTokens();
         if (refreshToken) {
-          const response = await axios.post(baseUrl, {
+          const response = await axios.post(`${baseUrl}/refresh`, {
             refreshToken,
           });
 

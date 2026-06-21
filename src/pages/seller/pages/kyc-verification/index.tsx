@@ -183,7 +183,7 @@ export default function KYCVerificationPage() {
           </p>
         </div>
 
-        {isVerified ? (
+        {isVerified === "verified" ? (
           <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-5 py-4 text-emerald-800">
             <p className="flex items-start gap-2 text-sm font-semibold">
               <CheckCircle className="mt-0.5 size-4" />
@@ -192,6 +192,17 @@ export default function KYCVerificationPage() {
             <p className="mt-1 text-sm">
               Your account is already verified. You can still update your
               business details and documents if needed.
+            </p>
+          </div>
+        ) : isVerified === "pending" ? (
+          <div className="rounded-lg border border-blue-300 bg-blue-50 px-5 py-4 text-blue-800">
+            <p className="flex items-start gap-2 text-sm font-semibold">
+              <AlertTriangle className="mt-0.5 size-4" />
+              KYC Pending Review
+            </p>
+            <p className="mt-1 text-sm">
+              Your KYC submission is under review. We'll notify you once
+              verification is complete.
             </p>
           </div>
         ) : (
@@ -224,7 +235,68 @@ export default function KYCVerificationPage() {
               <div className="space-y-4">
                 <h2 className="text-2xl font-semibold">Personal Details</h2>
                 <div className="h-px w-full bg-border" />
+              </div>
 
+              <div className="space-y-4 pt-2">
+                <h2 className="text-2xl font-semibold">
+                  Business Registration
+                </h2>
+                <div className="h-px w-full bg-border" />
+
+                <div className="grid grid-cols-3 gap-4">
+                  <CustomInput
+                    name="businessName"
+                    label="Registered Business Name"
+                    placeholder="e.g. Acme Stores Ltd"
+                    value={values.businessName}
+                    onChange={handleChange}
+                    error={touched.businessName && errors.businessName}
+                    leftIcon={
+                      <Building2 className="size-4 text-muted-foreground" />
+                    }
+                    leftIconCls="placeholder:pl-1"
+                  />
+                  <CustomInput
+                    name="businessRcNumber"
+                    label="Business Registration Number (RC Number)"
+                    placeholder="e.g. RC1234567 (optional)"
+                    value={values.businessRcNumber}
+                    onChange={handleChange}
+                    error={touched.businessRcNumber && errors.businessRcNumber}
+                    leftIcon={
+                      <FileBadge2 className="size-4 text-muted-foreground" />
+                    }
+                    leftIconCls="placeholder:pl-1"
+                    isRequired={false}
+                  />
+                  <CustomInput
+                    name="businessAddress"
+                    label="Business Address"
+                    placeholder="e.g. 123 Main Street"
+                    value={values.businessAddress}
+                    onChange={handleChange}
+                    error={touched.businessAddress && errors.businessAddress}
+                    leftIcon={
+                      <FileBadge2 className="size-4 text-muted-foreground" />
+                    }
+                    leftIconCls="placeholder:pl-1"
+                  />
+                  <CustomInput
+                    name="businessCity"
+                    label="Business City"
+                    placeholder="e.g. Lagos"
+                    value={values.businessCity}
+                    onChange={handleChange}
+                    error={touched.businessCity && errors.businessCity}
+                    leftIcon={
+                      <FileBadge2 className="size-4 text-muted-foreground" />
+                    }
+                    leftIconCls="placeholder:pl-1"
+                  />
+                </div>
+                <div className="border-b pb-4">
+                  <h2 className="font-medium">Identity Documents</h2>
+                </div>
                 <div className="space-y-2">
                   <Label>National Identification Number (NIN) Image</Label>
 
@@ -288,66 +360,6 @@ export default function KYCVerificationPage() {
                     </p>
                   )}
                 </div>
-              </div>
-
-              <div className="space-y-4 pt-2">
-                <h2 className="text-2xl font-semibold">
-                  Business Registration
-                </h2>
-                <div className="h-px w-full bg-border" />
-
-                <div className="grid grid-cols-3 gap-4">
-                  <CustomInput
-                    name="businessName"
-                    label="Registered Business Name"
-                    placeholder="e.g. Acme Stores Ltd"
-                    value={values.businessName}
-                    onChange={handleChange}
-                    error={touched.businessName && errors.businessName}
-                    leftIcon={
-                      <Building2 className="size-4 text-muted-foreground" />
-                    }
-                    leftIconCls="placeholder:pl-1"
-                  />
-                  <CustomInput
-                    name="businessRcNumber"
-                    label="Business Registration Number (RC Number)"
-                    placeholder="e.g. RC1234567 (optional)"
-                    value={values.businessRcNumber}
-                    onChange={handleChange}
-                    error={touched.businessRcNumber && errors.businessRcNumber}
-                    leftIcon={
-                      <FileBadge2 className="size-4 text-muted-foreground" />
-                    }
-                    leftIconCls="placeholder:pl-1"
-                    isRequired={false}
-                  />
-                  <CustomInput
-                    name="businessAddress"
-                    label="Business Address"
-                    placeholder="e.g. 123 Main Street"
-                    value={values.businessAddress}
-                    onChange={handleChange}
-                    error={touched.businessAddress && errors.businessAddress}
-                    leftIcon={
-                      <FileBadge2 className="size-4 text-muted-foreground" />
-                    }
-                    leftIconCls="placeholder:pl-1"
-                  />
-                  <CustomInput
-                    name="businessCity"
-                    label="Business City"
-                    placeholder="e.g. Lagos"
-                    value={values.businessCity}
-                    onChange={handleChange}
-                    error={touched.businessCity && errors.businessCity}
-                    leftIcon={
-                      <FileBadge2 className="size-4 text-muted-foreground" />
-                    }
-                    leftIconCls="placeholder:pl-1"
-                  />
-                </div>
-
                 <div className="space-y-2">
                   <Label>
                     Upload Business Registration Document (CAC) (Optional)
