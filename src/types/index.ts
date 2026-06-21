@@ -255,7 +255,7 @@ export interface IUsers {
   licenseNumber: string | null;
   paystackRecipientCode: string | null;
   emailVerified: boolean;
-  isVerified: boolean;
+  isVerified: "verified" | "pending" | "unverified";
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

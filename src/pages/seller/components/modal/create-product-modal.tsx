@@ -16,6 +16,9 @@ import { useEditProduct } from "../../api/use-edit-product";
 import { IProductData } from "@/types";
 import { useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
+import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
+import { KYCVerificationModal } from "./kyc-verification-modal";
 
 const MAX_IMAGE_SIZE_BYTES = 10485760;
 
@@ -41,10 +44,13 @@ export const CreateProductModal = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [kycModalOpen, setKycModalOpen] = useState(false);
+
   const { mutate: addProduct, isPending: isAddingProduct } = useAddProduct();
   const { mutate: editProduct, isPending: isEditingProduct } = useEditProduct();
   const { mutateAsync: uploadImages, isPending: isUploading } =
     useUploadImage();
+  const { refetch: refetchProfile } = useGetUserProfile();
 
   const open = controlledOpen ?? internalOpen;
   const setOpen = (value: boolean) => {
@@ -88,6 +94,21 @@ export const CreateProductModal = ({
     }),
     onSubmit: async () => {
       try {
+        const { data: profileData } = await refetchProfile();
+        const verificationStatus = profileData?.user?.isVerified;
+
+        if (verificationStatus === "pending") {
+          toast.error(
+            "Your KYC is pending reviewal. Please wait for our team to verify your account.",
+          );
+          return;
+        }
+
+        if (verificationStatus !== "verified") {
+          setKycModalOpen(true);
+          return;
+        }
+
         if (mode === "edit") {
           if (!initialProduct?.id) return;
 
@@ -237,197 +258,209 @@ export const CreateProductModal = ({
     }
   };
   return (
-    <CustomModal
-      open={open}
-      openChange={handleModalClose}
-      trigger={children}
-      title={mode === "edit" ? "Edit Product" : "Create New Product"}
-      position="right"
-    >
-      <form action="" className="space-y-4" onSubmit={handleSubmit}>
-        <CustomInput
-          name="name"
-          label="Product name"
-          value={values.name}
-          onChange={handleChange}
-          error={touched.name && errors.name}
-        />
-        <CustomTextarea
-          name="description"
-          label="Product description"
-          value={values.description}
-          onChange={handleChange}
-          error={touched.description && errors.description}
-        />
-        <div className="grid grid-cols-2 gap-5">
+    <>
+      <KYCVerificationModal
+        open={kycModalOpen}
+        onOpenChange={setKycModalOpen}
+      />
+      <CustomModal
+        open={open}
+        openChange={handleModalClose}
+        trigger={children}
+        title={mode === "edit" ? "Edit Product" : "Create New Product"}
+        position="right"
+      >
+        <form action="" className="space-y-4" onSubmit={handleSubmit}>
           <CustomInput
-            name="price"
-            label="Price(NGN)"
-            type="number"
-            value={values.price}
+            name="name"
+            label="Product name"
+            value={values.name}
             onChange={handleChange}
-            error={touched.price && errors.price}
+            error={touched.name && errors.name}
+            placeholder="e.g Syringe"
           />
-          <CustomInput
-            name="stock"
-            label="Stock"
-            type="number"
-            value={values.stock}
+          <CustomTextarea
+            name="description"
+            label="Product description"
+            value={values.description}
             onChange={handleChange}
-            error={touched.stock && errors.stock}
+            error={touched.description && errors.description}
+            placeholder="Tell buyers about your product"
           />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <CustomSelect
-            name="categoryId"
-            label="Category"
-            triggerClassName="w-full"
-            placeholder="Select Category"
-            value={values.categoryId}
-            onValueChange={(value) =>
-              setValues({ ...values, categoryId: value })
-            }
-            options={categories?.map((category) => ({
-              label: category.name,
-              value: category.id,
-            }))}
-            error={touched.categoryId && errors.categoryId}
-            disabled={isCategoriesLoading}
-          />
-          <CustomSelect
-            name="size"
-            label="Size"
-            triggerClassName="w-full"
-            placeholder="Select Size"
-            value={values.size}
-            onValueChange={(value) => setValues({ ...values, size: value })}
-            options={[
-              { label: "Small (1-5kg)", value: "small" },
-              { label: "Medium (6-15kg)", value: "medium" },
-              { label: "Large (16-35kg)", value: "large" },
-            ]}
-            error={touched.size && errors.size}
-          />
-        </div>
-
-        {/* Multi-file Image Upload */}
-        <div className="w-full font-reddit">
-          <Label className="text-sm font-reddit font-medium leading-none mb-2 block">
-            Product Images {mode === "edit" ? "(optional)" : ""}
-          </Label>
-
-          {mode === "edit" && existingImageUrls.length > 0 && (
-            <div className="mb-3 space-y-2">
-              <p className="text-sm text-muted-foreground">Current images</p>
-              <div className="grid grid-cols-3 gap-2">
-                {existingImageUrls.map((imageUrl, index) => (
-                  <div
-                    key={`${imageUrl}-${index}`}
-                    className="rounded-lg overflow-hidden border border-border"
-                  >
-                    <img
-                      src={imageUrl}
-                      alt={`Product ${index + 1}`}
-                      className="w-full h-20 object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleFileChange}
-            accept="image/*"
-            multiple
-          />
-
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className={cn(
-              "flex flex-col items-center justify-center gap-2 w-full rounded-lg border border-dashed border-input bg-background px-4 py-6 text-sm transition-colors cursor-pointer",
-              "hover:border-ring hover:bg-muted/50",
-              fileError && "border-destructive",
-            )}
-          >
-            <Upload className="h-8 w-8 text-muted-foreground" />
-            <span className="text-muted-foreground text-center">
-              Click to upload images
-              <br />
-              <span className="text-xs">PNG, JPG, WEBP (multiple allowed)</span>
-            </span>
+          <div className="grid grid-cols-2 gap-5">
+            <CustomInput
+              name="price"
+              label="Price(NGN)"
+              type="number"
+              value={values.price}
+              onChange={handleChange}
+              error={touched.price && errors.price}
+              placeholder="0"
+            />
+            <CustomInput
+              name="stock"
+              label="Stock"
+              type="number"
+              value={values.stock}
+              onChange={handleChange}
+              error={touched.stock && errors.stock}
+              placeholder="0"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <CustomSelect
+              name="categoryId"
+              label="Category"
+              triggerClassName="w-full"
+              placeholder="Select Category"
+              value={values.categoryId}
+              onValueChange={(value) =>
+                setValues({ ...values, categoryId: value })
+              }
+              options={categories?.map((category) => ({
+                label: category.name,
+                value: category.id,
+              }))}
+              error={touched.categoryId && errors.categoryId}
+              disabled={isCategoriesLoading}
+            />
+            <CustomSelect
+              name="size"
+              label="Size"
+              triggerClassName="w-full"
+              placeholder="Select Size"
+              value={values.size}
+              onValueChange={(value) => setValues({ ...values, size: value })}
+              options={[
+                { label: "Small (1-5kg)", value: "small" },
+                { label: "Medium (6-15kg)", value: "medium" },
+                { label: "Large (16-35kg)", value: "large" },
+              ]}
+              error={touched.size && errors.size}
+            />
           </div>
 
-          {fileError && (
-            <p className="text-sm text-destructive mt-1.5">{fileError}</p>
-          )}
+          {/* Multi-file Image Upload */}
+          <div className="w-full font-reddit">
+            <Label className="text-sm font-reddit font-medium leading-none mb-2 block">
+              Product Images {mode === "edit" ? "(optional)" : ""}
+            </Label>
 
-          {/* Selected files preview */}
-          {selectedFiles.length > 0 && (
-            <div className="mt-3 space-y-2">
-              <p className="text-sm text-muted-foreground">
-                {selectedFiles.length} image
-                {selectedFiles.length > 1 ? "s" : ""} selected
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {selectedFiles.map((file, index) => (
-                  <div
-                    key={`${file.name}-${index}`}
-                    className="relative group rounded-lg overflow-hidden border border-border"
-                  >
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt={file.name}
-                      className="w-full h-20 object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFile(index);
-                      }}
-                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            {mode === "edit" && existingImageUrls.length > 0 && (
+              <div className="mb-3 space-y-2">
+                <p className="text-sm text-muted-foreground">Current images</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {existingImageUrls.map((imageUrl, index) => (
+                    <div
+                      key={`${imageUrl}-${index}`}
+                      className="rounded-lg overflow-hidden border border-border"
                     >
-                      <X className="h-3 w-3" />
-                    </button>
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5">
-                      <p className="text-[10px] text-white truncate">
-                        {file.name}
-                      </p>
+                      <img
+                        src={imageUrl}
+                        alt={`Product ${index + 1}`}
+                        className="w-full h-20 object-cover"
+                      />
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
+            )}
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileChange}
+              accept="image/*"
+              multiple
+            />
+
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className={cn(
+                "flex flex-col items-center justify-center gap-2 w-full rounded-lg border border-dashed border-input bg-background px-4 py-6 text-sm transition-colors cursor-pointer",
+                "hover:border-ring hover:bg-muted/50",
+                fileError && "border-destructive",
+              )}
+            >
+              <Upload className="h-8 w-8 text-muted-foreground" />
+              <span className="text-muted-foreground text-center">
+                Click to upload images
+                <br />
+                <span className="text-xs">
+                  PNG, JPG, WEBP (multiple allowed)
+                </span>
+              </span>
+            </div>
+
+            {fileError && (
+              <p className="text-sm text-destructive mt-1.5">{fileError}</p>
+            )}
+
+            {/* Selected files preview */}
+            {selectedFiles.length > 0 && (
+              <div className="mt-3 space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  {selectedFiles.length} image
+                  {selectedFiles.length > 1 ? "s" : ""} selected
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {selectedFiles.map((file, index) => (
+                    <div
+                      key={`${file.name}-${index}`}
+                      className="relative group rounded-lg overflow-hidden border border-border"
+                    >
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={file.name}
+                        className="w-full h-20 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFile(index);
+                        }}
+                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5">
+                        <p className="text-[10px] text-white truncate">
+                          {file.name}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {isUploading && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Uploading product images...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <Progress value={uploadProgress} className="h-2" />
             </div>
           )}
-        </div>
 
-        {isUploading && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Uploading product images...</span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <Progress value={uploadProgress} className="h-2" />
-          </div>
-        )}
-
-        <Button
-          isLoading={isAddingProduct || isEditingProduct || isUploading}
-          type="submit"
-          variant="doju-primary"
-          className="w-full"
-        >
-          {isUploading
-            ? "Uploading images..."
-            : mode === "edit"
-              ? "Save Changes"
-              : "Submit"}
-        </Button>
-      </form>
-    </CustomModal>
+          <Button
+            isLoading={isAddingProduct || isEditingProduct || isUploading}
+            type="submit"
+            variant="doju-primary"
+            className="w-full"
+          >
+            {isUploading
+              ? "Uploading images..."
+              : mode === "edit"
+                ? "Save Changes"
+                : "Submit Product"}
+          </Button>
+        </form>
+      </CustomModal>
+    </>
   );
 };
