@@ -15,10 +15,20 @@ import { adminSidebarNav } from "@/config/sidebar-nav";
 import DojuLogo from "@/assets/doju-logo.png";
 import { LogOutModal } from "../components/logout-modal";
 import { LogOut } from "lucide-react";
-// TODO: Replace with real user data from auth context
+import { useAppSelector } from "@/redux/hooks";
 
 export function AdminAppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { setOpenMobile } = useSidebar();
+  const { user } = useAppSelector((state) => state.authData);
+
+  const visibleNav = adminSidebarNav
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) => !item.roles || item.roles.includes(user?.role ?? ""),
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <Sidebar collapsible="icon" {...props} className="h-full! relative!">
@@ -35,7 +45,7 @@ export function AdminAppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        <AdminNavMain groups={adminSidebarNav} />
+        <AdminNavMain groups={visibleNav} />
       </SidebarContent>
 
       <SidebarRail />

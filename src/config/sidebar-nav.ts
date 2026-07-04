@@ -104,16 +104,7 @@ export const adminSidebarNav: NavGroup[] = [
         title: "Admins",
         icon: Shield,
         href: "/admin/admins",
-      },
-    ],
-  },
-  {
-    label: "Configuration",
-    items: [
-      {
-        title: "Settings",
-        icon: Settings,
-        href: "/seller/settings",
+        roles: ["super_admin"],
       },
     ],
   },

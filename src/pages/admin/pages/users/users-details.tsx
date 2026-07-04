@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Building2,
   BadgeCheck,
+  BadgeX,
   CalendarClock,
   Mail,
   Phone,
@@ -35,11 +36,13 @@ import {
 import { QueryWrapper } from "@/components/query-wrapper/query-wrapper";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CustomTextarea } from "@/components/ui/textarea/custom-textarea";
 import { IUsers } from "@/types";
 import { cn } from "@/lib/utils";
 import { useGetAUser } from "../../api/use-get-a-user";
 import { useDeleteUser } from "../../api/use-delete-user";
 import { useVerifySeller } from "../../api/use-verify-seller";
+import { useRejectSeller } from "../../api/use-reject-seller";
 import { AdminSellerProductsTable } from "../../components/seller-products-table/seller-products-table";
 import { AdminBuyerOrdersTable } from "../../components/buyer-orders-table/buyer-orders-table";
 
@@ -76,6 +79,12 @@ export default function UserDetails() {
   const { mutate: verifySeller, isPending: isVerifyPending } =
     useVerifySeller();
   const [isVerifySellerModalOpen, setIsVerifySellerModalOpen] = useState(false);
+  const { mutate: rejectSeller, isPending: isRejectPending } =
+    useRejectSeller();
+  const [isRejectSellerModalOpen, setIsRejectSellerModalOpen] =
+    useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectReasonError, setRejectReasonError] = useState("");
 
   const queryPayload = getUser.data as { data?: IUsers } | IUsers | undefined;
   const user: IUsers | undefined =
@@ -116,6 +125,26 @@ export default function UserDetails() {
       {
         onSuccess: () => {
           setIsVerifySellerModalOpen(false);
+        },
+      },
+    );
+  };
+
+  const handleRejectSeller = () => {
+    if (!user?.id) return;
+
+    if (!rejectReason.trim()) {
+      setRejectReasonError("Please provide a reason for rejection");
+      return;
+    }
+
+    rejectSeller(
+      { id: user.id, reason: rejectReason.trim() },
+      {
+        onSuccess: () => {
+          setIsRejectSellerModalOpen(false);
+          setRejectReason("");
+          setRejectReasonError("");
         },
       },
     );
@@ -175,6 +204,65 @@ export default function UserDetails() {
                       disabled={isVerifyPending}
                     >
                       {isVerifyPending ? "Verifying..." : "Confirm"}
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+
+            {user?.role === "seller" && !user?.isVerified && (
+              <AlertDialog
+                open={isRejectSellerModalOpen}
+                onOpenChange={(open) => {
+                  setIsRejectSellerModalOpen(open);
+                  if (!open) {
+                    setRejectReason("");
+                    setRejectReasonError("");
+                  }
+                }}
+              >
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    disabled={!user || isRejectPending}
+                  >
+                    <BadgeX className="size-4" />
+                    Reject seller
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Reject this seller?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      You are about to reject {user?.fullName ?? "this seller"}
+                      . Please provide a reason for the rejection.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <CustomTextarea
+                    name="rejectReason"
+                    label="Reason for rejection"
+                    placeholder="e.g. Submitted documents are unclear or invalid"
+                    value={rejectReason}
+                    onChange={(e) => {
+                      setRejectReason(e.target.value);
+                      if (rejectReasonError) setRejectReasonError("");
+                    }}
+                    error={rejectReasonError}
+                    disabled={isRejectPending}
+                  />
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isRejectPending}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={handleRejectSeller}
+                      disabled={isRejectPending}
+                    >
+                      {isRejectPending ? "Rejecting..." : "Confirm"}
                     </Button>
                   </AlertDialogFooter>
                 </AlertDialogContent>

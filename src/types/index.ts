@@ -107,6 +107,7 @@ export interface NavItem {
   icon: LucideIcon;
   href?: string;
   isActive?: boolean;
+  roles?: string[];
 }
 
 export interface NavGroup {
