@@ -9,7 +9,10 @@ interface AdminLoginGuestRouteProps {
 const AdminLoginGuestRoute = ({ children }: AdminLoginGuestRouteProps) => {
   const { user, isAuthenticated } = useAppSelector((state) => state.authData);
 
-  if (isAuthenticated && user?.role === "admin") {
+  if (
+    isAuthenticated &&
+    (user?.role === "admin" || user?.role === "super_admin")
+  ) {
     return <Navigate to="/admin/dashboard" replace />;
   }
 

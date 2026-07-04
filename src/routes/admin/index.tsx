@@ -1,5 +1,6 @@
 import { lazy } from "react";
 import { withSuspense } from "@/components/suspense/suspense";
+import SuperAdminProtectedRoute from "@/components/auth/SuperAdminProtectedRoute";
 
 const adminAppRoutesConfig = [
   {
@@ -51,7 +52,14 @@ export const adminAppRoutes = adminAppRoutesConfig.map(
 
     return {
       path,
-      element: <LazyComponent />,
+      element:
+        path === "admins" ? (
+          <SuperAdminProtectedRoute>
+            <LazyComponent />
+          </SuperAdminProtectedRoute>
+        ) : (
+          <LazyComponent />
+        ),
     };
   },
 );
