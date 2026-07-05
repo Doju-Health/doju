@@ -43,9 +43,9 @@ const Footer = () => {
                 className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 TikTok
-              </a>
+              </a> 
               <a
-                href="⁠⁠https://www.facebook.com/share/1CixRwtcXE/?mibextid=wwXIfr"
+                href="https://www.facebook.com/share/1CixRwtcXE/?mibextid=wwXIfr"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -54,7 +54,7 @@ const Footer = () => {
               </a>
           
               <a
-                href="⁠https://www.linkedin.com/company/doju-health-ltd/"
+                href="https://www.linkedin.com/company/doju-health-ltd/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"

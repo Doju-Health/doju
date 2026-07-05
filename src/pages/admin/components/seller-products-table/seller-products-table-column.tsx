@@ -123,7 +123,7 @@ ColumnDef<IProductData>[] => [
     header: "STATUS",
     accessorKey: "status",
     cell: ({ row }) => {
-      const status = row.original.isActive;
+      const status = row.original.status ? "Active" : "Inactive";
       return (
         <p
           className={cn(
