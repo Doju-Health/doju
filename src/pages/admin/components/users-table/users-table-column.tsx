@@ -23,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { formatDate } from "date-fns";
 import { useState } from "react";
 import { useDeactivateUser } from "../../api/use-deactivate-user";
+import { useDeleteUser } from "../../api/use-delete-user";
 
 const ActionCell = ({
   id,
@@ -35,7 +36,10 @@ const ActionCell = ({
 }) => {
   const navigate = useNavigate();
   const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteMode, setDeleteMode] = useState<"soft" | "hard" | null>(null);
   const { mutate: deactivateUser, isPending } = useDeactivateUser();
+  const { mutate: deleteUser, isPending: isDeletePending } = useDeleteUser();
 
   const handleViewDetails = () => {
     navigate(`/admin/users/${id}`);
@@ -48,6 +52,17 @@ const ActionCell = ({
         onSuccess: () => {
           setIsDeactivateModalOpen(false);
         },
+      },
+    );
+  };
+
+  const handleDelete = (hard: boolean) => {
+    setDeleteMode(hard ? "hard" : "soft");
+    deleteUser(
+      { id, hard },
+      {
+        onSuccess: () => setIsDeleteModalOpen(false),
+        onError: () => setDeleteMode(null),
       },
     );
   };
@@ -75,7 +90,15 @@ const ActionCell = ({
           >
             Deactivate
           </DropdownMenuItem>
-          <DropdownMenuItem className="justify-cente">Delete</DropdownMenuItem>
+          <DropdownMenuItem
+            className="justify-cente"
+            onSelect={(event) => {
+              event.preventDefault();
+              setIsDeleteModalOpen(true);
+            }}
+          >
+            Delete
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -100,6 +123,46 @@ const ActionCell = ({
               disabled={isPending}
             >
               {isPending ? "Deactivating..." : "Confirm"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Choose how to delete this account. Soft delete keeps the record
+              for potential recovery, while hard delete permanently removes
+              it. The account for{" "}
+              <span className="font-medium text-foreground">{fullName}</span>{" "}
+              is about to be deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletePending}>
+              Cancel
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleDelete(false)}
+              disabled={isDeletePending}
+            >
+              {isDeletePending && deleteMode === "soft"
+                ? "Soft deleting..."
+                : "Soft delete"}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => handleDelete(true)}
+              disabled={isDeletePending}
+            >
+              {isDeletePending && deleteMode === "hard"
+                ? "Hard deleting..."
+                : "Hard delete"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
