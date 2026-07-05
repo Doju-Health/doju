@@ -1,12 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  CheckCircle,
-  Clock,
-  EllipsisVertical,
-  Truck,
-  XCircle,
-  PackageCheck,
-} from "lucide-react";
+import { CheckCircle, Clock, EllipsisVertical, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,24 +8,55 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { Badge } from "@/components/ui/badge";
-import { ISellerOrder, IUsers } from "@/types";
-import { cn, formatPriceAmount } from "@/lib/utils";
+import { IUsers } from "@/types";
+import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "date-fns";
+
+const getStatusBadge = (status: IUsers["isVerified"]) => {
+  switch (status) {
+    case "verified":
+      return (
+        <Badge className="bg-green-100 text-green-700 gap-1 hover:bg-green-200">
+          <CheckCircle className="h-3 w-3" />
+          Verified
+        </Badge>
+      );
+    case "pending":
+      return (
+        <Badge className="bg-yellow-100 text-yellow-700 gap-1 hover:bg-yellow-200">
+          <Clock className="h-3 w-3" /> 
+          Pending
+        </Badge>
+      );
+    case "unverified":
+      return (
+        <Badge className="bg-red-100 text-red-700 gap-1 hover:bg-red-200">
+          <X className="h-3 w-3" />
+          Unverified
+        </Badge>
+      );
+    default:
+      return <Badge>{status}</Badge>;
+  }
+};
 
 const ActionCell = ({ id }: { id: string }) => {
   const navigate = useNavigate();
 
-const handleViewDetails = () => {
-  navigate(`/admin/users/${id}`);
-}
+  const handleViewDetails = () => {
+    navigate(`/admin/users/${id}`);
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="cursor-pointer">
         <EllipsisVertical className="size-5 text-gray-600 dark:text-gray-400" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem className="hover:text-white! cursor-pointer" onClick={handleViewDetails}>
+        <DropdownMenuItem
+          className="hover:text-white! cursor-pointer"
+          onClick={handleViewDetails}
+        >
           View Details
         </DropdownMenuItem>
         <DropdownMenuItem className="justify-cente">
@@ -44,8 +68,7 @@ const handleViewDetails = () => {
   );
 };
 
-export const getSellersColumn = (): 
-ColumnDef<IUsers>[] => [
+export const getSellersColumn = (): ColumnDef<IUsers>[] => [
   {
     header: "NAME",
     accessorKey: "name",
@@ -110,18 +133,7 @@ ColumnDef<IUsers>[] => [
     accessorKey: "isVerified",
     cell: ({ row }) => {
       const isVerified = row.original.isVerified;
-      return (
-        <p
-          className={cn(
-            isVerified
-              ? "text-green-500 bg-green-100"
-              : "text-red-500 bg-red-100",
-            "px-2 py-1 text-xs w-fit rounded-full",
-          )}
-        >
-          {isVerified ? "Verified" : "Unverified"}
-        </p>
-      );
+      return <div>{getStatusBadge(isVerified)}</div>;
     },
   },
   {

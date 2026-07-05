@@ -1,6 +1,7 @@
 // import { SidebarInset } from "@/components/ui/sidebar";
 import { AdminAppSidebar } from "./admin-app-sidebar";
 import { Outlet } from "react-router-dom";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export const AdminAppLayout = () => {
   return (
@@ -8,6 +9,7 @@ export const AdminAppLayout = () => {
       <AdminAppSidebar />
       {/* <SidebarInset > */}
       <main className="overflow-y-auto overflow-x-hidden flex-1 p-5">
+        <SidebarTrigger className="md:hidden mb-4" />
         <Outlet />
       </main>
       {/* </SidebarInset> */}

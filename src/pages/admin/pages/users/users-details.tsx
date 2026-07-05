@@ -7,7 +7,6 @@ import {
   CalendarClock,
   Mail,
   Phone,
-  Shield,
   Trash2,
   UserRound,
 } from "lucide-react";
@@ -170,7 +169,7 @@ export default function UserDetails() {
           </div>
 
           <div className="flex flex-col gap-2 w-full sm:w-auto">
-            {user?.role === "seller" && !user?.isVerified && (
+            {user?.role === "seller" && user?.isVerified !== "verified" && (
               <AlertDialog
                 open={isVerifySellerModalOpen}
                 onOpenChange={setIsVerifySellerModalOpen}
@@ -210,7 +209,7 @@ export default function UserDetails() {
               </AlertDialog>
             )}
 
-            {user?.role === "seller" && !user?.isVerified && (
+            {user?.role === "seller" && user?.isVerified !== "verified" && (
               <AlertDialog
                 open={isRejectSellerModalOpen}
                 onOpenChange={(open) => {
@@ -408,14 +407,18 @@ export default function UserDetails() {
                         <Badge
                           variant="outline"
                           className={cn(
-                            user.isVerified
+                            user.isVerified === "verified"
                               ? "border-green-200 bg-green-100 text-green-700"
-                              : "border-amber-200 bg-amber-100 text-amber-700",
+                              : user.isVerified === "pending"
+                                ? "border-amber-200 bg-amber-100 text-amber-700"
+                                : "border-red-200 bg-red-100 text-red-700",
                           )}
                         >
-                          {user.isVerified
+                          {user.isVerified === "verified"
                             ? "Identity verified"
-                            : "Identity pending"}
+                            : user.isVerified === "pending"
+                              ? "Identity pending"
+                              : "Identity unverified"}
                         </Badge>
                       </div>
                     </div>
@@ -489,31 +492,11 @@ export default function UserDetails() {
                       {formatNullable(user.companyName)}
                     </p>
                   </div>
-                  <Separator />
-                  <div className="space-y-1">
-                    <p className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
-                      <Shield className="size-4" />
-                      License number
-                    </p>
-                    <p className="font-medium">
-                      {formatNullable(user.licenseNumber)}
-                    </p>
-                  </div>
-                  <Separator />
-                  <div className="space-y-1">
-                    <p className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
-                      <BadgeCheck className="size-4" />
-                      Paystack recipient code
-                    </p>
-                    <p className="font-medium">
-                      {formatNullable(user.paystackRecipientCode)}
-                    </p>
-                  </div>
                 </CardContent>
               </Card>
             </div>
 
-            {user.role === "seller" && !user.isVerified && (
+            {user.role === "seller" && user.isVerified !== "verified" && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">
