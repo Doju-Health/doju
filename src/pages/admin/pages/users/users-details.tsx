@@ -496,7 +496,8 @@ export default function UserDetails() {
               </Card>
             </div>
 
-            {user.role === "seller" && user.isVerified !== "verified" && (
+            {user.role === "seller"  && (
+              /** verified and unverified users both display verification documents */
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">
