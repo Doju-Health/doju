@@ -20,6 +20,7 @@ import { useUpdateProfile } from "../../api/use-update-profile";
 import { Progress } from "@/components/ui/progress";
 import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
 import { QueryWrapper } from "@/components/query-wrapper/query-wrapper";
+import { jumiaZone } from "@/data/nigeria-geo";
 
 type FileErrors = {
   ninImage?: string;
@@ -71,6 +72,8 @@ export default function KYCVerificationPage() {
       URL.revokeObjectURL(previewUrl);
     };
   }, [cacDocument]);
+
+  const [businessCity,setBusinessCity] = useState<string>("");
 
   const {
     values,
@@ -281,18 +284,32 @@ export default function KYCVerificationPage() {
                     }
                     leftIconCls="placeholder:pl-1"
                   />
-                  <CustomInput
+
+
+                  <select
                     name="businessCity"
-                    label="Business City"
-                    placeholder="e.g. Lagos"
                     value={values.businessCity}
                     onChange={handleChange}
-                    error={touched.businessCity && errors.businessCity}
-                    leftIcon={
-                      <FileBadge2 className="size-4 text-muted-foreground" />
-                    }
-                    leftIconCls="placeholder:pl-1"
-                  />
+                    className="w-full rounded-lg border border-input bg-background px-2 py-3 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 text-sm"
+                  >
+                    <option value="" disabled>
+                      Select your city
+                    </option>
+                    {Object.entries(jumiaZone).map(([zoneName, cities]) => (
+                      <optgroup
+                        key={zoneName}
+                        label={`Zone ${zoneName.replace("ZONE", "")}`}
+                      >
+                        {cities.map((city) => (
+                          <option key={city} value={city}>
+                            {city}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+
+                  </select>
+
                 </div>
                 <div className="border-b pb-4">
                   <h2 className="font-medium">Identity Documents</h2>
