@@ -32,6 +32,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { DocumentPreview } from "@/components/document-preview/document-preview";
 import { QueryWrapper } from "@/components/query-wrapper/query-wrapper";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -515,17 +516,7 @@ export default function UserDetails() {
                         NIN
                       </p>
                       {user.ninUrl ? (
-                        <a
-                          href={user.ninUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <img
-                            src={user.ninUrl}
-                            alt="NIN document"
-                            className="rounded-lg border object-cover w-full max-h-64 hover:opacity-90 transition-opacity"
-                          />
-                        </a>
+                        <DocumentPreview url={user.ninUrl} label="NIN" />
                       ) : (
                         <p className="text-sm text-muted-foreground">
                           Not provided
@@ -537,17 +528,7 @@ export default function UserDetails() {
                         CAC
                       </p>
                       {user.cacUrl ? (
-                        <a
-                          href={user.cacUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <img
-                            src={user.cacUrl}
-                            alt="CAC document"
-                            className="rounded-lg border object-cover w-full max-h-64 hover:opacity-90 transition-opacity"
-                          />
-                        </a>
+                        <DocumentPreview url={user.cacUrl} label="CAC" />
                       ) : (
                         <p className="text-sm text-muted-foreground">
                           Not provided

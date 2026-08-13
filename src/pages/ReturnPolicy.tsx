@@ -118,7 +118,7 @@ const ReturnPolicy = () => {
                   Contact
                 </h2>
                 <p className="text-muted-foreground">
-                  For return questions, contact supports@dojuhealth.com or call +2348139273018
+                  For return questions, contact support@dojuhealth.com or call +2348139273018
                 </p>
               </section>
             </div>

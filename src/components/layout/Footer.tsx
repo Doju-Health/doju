@@ -70,7 +70,41 @@ const Footer = () => {
               Contact
             </h4>
             <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
-              <p className="break-all">dojuhealthltd@gmail.com</p>
+              <p className="break-all">
+                <a
+                  href="mailto:info@dojuhealth.com"
+                  className="hover:text-foreground transition-colors"
+                >
+                  info@dojuhealth.com
+                </a>
+              </p>
+              <p className="break-all">
+                Partnership:{" "}
+                <a
+                  href="mailto:partnership@dojuhealth.com"
+                  className="hover:text-foreground transition-colors"
+                >
+                  partnership@dojuhealth.com
+                </a>
+              </p>
+              <p className="break-all">
+                Customer Service:{" "}
+                <a
+                  href="mailto:support@dojuhealth.com"
+                  className="hover:text-foreground transition-colors"
+                >
+                  support@dojuhealth.com
+                </a>
+              </p>
+              <p className="break-all">
+                Vendor:{" "}
+                <a
+                  href="mailto:vendors@dojuhealth.com"
+                  className="hover:text-foreground transition-colors"
+                >
+                  vendors@dojuhealth.com
+                </a>
+              </p>
               <p>+234 813 927 3018</p>
               <p>Mon–Sun, 24hours</p>
             </div>
