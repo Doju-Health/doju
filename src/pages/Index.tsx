@@ -7,12 +7,9 @@ import Footer from "@/components/layout/Footer";
 import CategoryCard from "@/components/products/CategoryCard";
 import AnimatedStat from "@/components/home/AnimatedStat";
 import TopSellingCarousel from "@/components/home/TopSellingCarousel";
-import {
-  featuredProducts,
-  categories as mockCategories,
-} from "@/data/mockData";
+import { categories as mockCategories } from "@/data/mockData";
 import { useGetCategories } from "@/pages/seller/api/use-get-categories";
-import { ApiCategory, Category } from "@/types";
+import { ApiCategory, Category, Product } from "@/types";
 import {
   Shield,
   Truck,
@@ -32,8 +29,10 @@ import heroHospitalBg from "@/assets/hero-hospital-bg.jpg";
 import { useRef, useEffect, useState, useMemo } from "react";
 import SEO from "@/components/SEO";
 
-// Top 4 products for homepage
-const topProducts = featuredProducts.slice(0, 4);
+// Top 4 products for homepage.
+// TODO: populate from the top-selling endpoint once it exists. Until then this
+// stays empty so the carousel renders its empty state instead of mock data.
+const topProducts: Product[] = [];
 
 const Index = () => {
   const containerRef = useRef<HTMLDivElement>(null);

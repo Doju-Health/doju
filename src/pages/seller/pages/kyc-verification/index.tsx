@@ -74,7 +74,6 @@ export default function KYCVerificationPage() {
     };
   }, [cacDocument]);
 
-
   const {
     values,
     errors,
@@ -308,7 +307,6 @@ export default function KYCVerificationPage() {
                     }))}
                     error={touched.businessCity && errors.businessCity}
                   />
-
                 </div>
                 <div className="border-b pb-4">
                   <h2 className="font-medium">Identity Documents</h2>

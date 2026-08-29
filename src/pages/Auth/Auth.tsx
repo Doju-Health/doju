@@ -18,6 +18,8 @@ import { z } from "zod";
 import { useRegister } from "./api/use-register";
 import { useVerifyEmail } from "./api/use-verify-email";
 import { useLogin } from "./api/use-login";
+import { useResendVerification } from "./api/use-resend-verification";
+import { AuthApiError, isUnverifiedEmailError } from "./utils";
 
 
 const emailSchema = z.string().email("Please enter a valid email address");
@@ -94,6 +96,8 @@ const Auth = () => {
   const { mutate } = useRegister();
   const { mutate: verifyEmail, isPending: isVerifying } = useVerifyEmail();
   const { mutate: login, isPending: isLoggingIn } = useLogin();
+  const { mutate: resendVerification, isPending: isResending } =
+    useResendVerification();
 
   const [isLogin, setIsLogin] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
@@ -166,6 +170,11 @@ const Auth = () => {
     return true;
   };
 
+  const handleResendVerification = () => {
+    if (!formData.email) return;
+    resendVerification({ email: formData.email });
+  };
+
   const handleNext = async () => {
     setError("");
 
@@ -193,8 +202,17 @@ const Auth = () => {
                   navigate(redirectUrl || defaultRoute);
                 }, 1000);
               },
-              onError: () => {
+              onError: (error: AuthApiError) => {
                 setIsSubmitting(false);
+
+                // The account exists but was never verified: send a fresh code
+                // and bring the verification modal back so they can finish.
+                if (isUnverifiedEmailError(error)) {
+                  setOtp("");
+                  setOtpError("");
+                  setShowOtpModal(true);
+                  handleResendVerification();
+                }
               },
             },
           );
@@ -658,8 +676,13 @@ const Auth = () => {
 
             <p className="text-xs text-muted-foreground text-center">
               Didn't receive the code?{" "}
-              <button className="text-doju-lime font-semibold hover:underline">
-                Resend OTP
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={isResending}
+                className="text-doju-lime font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isResending ? "Sending..." : "Resend OTP"}
               </button>
             </p>
           </div>

@@ -5,7 +5,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/products/ProductCard';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, PackageSearch } from 'lucide-react';
 import { Product } from '@/types';
 
 interface TopSellingCarouselProps {
@@ -13,6 +13,8 @@ interface TopSellingCarouselProps {
 }
 
 const TopSellingCarousel = ({ topProducts }: TopSellingCarouselProps) => {
+  const isEmpty = topProducts.length === 0;
+
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'start',
     loop: false,
@@ -69,8 +71,8 @@ const TopSellingCarousel = ({ topProducts }: TopSellingCarouselProps) => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Navigation arrows - visible on larger screens */}
-            <div className="hidden sm:flex items-center gap-2">
+            {/* Navigation arrows - visible on larger screens, pointless while empty */}
+            <div className={`${isEmpty ? 'hidden' : 'hidden sm:flex'} items-center gap-2`}>
               <Button
                 variant="outline"
                 size="icon"
@@ -99,7 +101,33 @@ const TopSellingCarousel = ({ topProducts }: TopSellingCarouselProps) => {
           </div>
         </motion.div>
         
-        {/* Carousel Container */}
+        {/* Empty state - shown until the top-selling endpoint is available */}
+        {isEmpty ? (
+          <motion.div
+            className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-background/60 px-6 py-12 sm:py-16 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-doju-lime/10">
+              <PackageSearch className="h-7 w-7 text-doju-lime" />
+            </div>
+            <h3 className="mt-4 text-base sm:text-lg font-semibold text-foreground">
+              No top sellers yet
+            </h3>
+            <p className="mt-1.5 max-w-md text-sm text-muted-foreground">
+              We're still gathering sales data. Once orders start rolling in,
+              the best performing products will appear here.
+            </p>
+            <Link to="/marketplace" className="mt-6">
+              <Button variant="doju-primary" className="gap-2 group h-10 sm:h-11 text-sm">
+                Browse the marketplace
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </motion.div>
+        ) : (
+        /* Carousel Container */
         <div className="relative">
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex gap-4 sm:gap-6">
@@ -132,6 +160,7 @@ const TopSellingCarousel = ({ topProducts }: TopSellingCarouselProps) => {
             </div>
           </motion.div>
         </div>
+        )}
       </div>
     </section>
   );
