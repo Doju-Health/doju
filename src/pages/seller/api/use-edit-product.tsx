@@ -9,17 +9,20 @@ export const useEditProduct = () => {
     mutationFn: async (data: {
       id: string;
       name: string;
-      price: number;
       description: string;
+      price: number;
       stock: number;
+      size: string;
       categoryId: string;
       imageUrl?: string[];
+      images?: string[];
     }) => {
       const response = await API.patch(`/products/${data.id}`, data);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["sellersProducts"] });
+      queryClient.invalidateQueries({ queryKey: ["product", variables.id] });
       toast.success("Product updated successfully.");
     },
     onError: (error: {

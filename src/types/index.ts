@@ -161,6 +161,7 @@ export interface ApiProduct {
   description: string;
   price: string;
   stock: number;
+  size?: string;
   imageUrl: string[];
   seller: {
     id: string;

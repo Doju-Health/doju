@@ -1,11 +1,13 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useGetAProduct } from "@/pages/marketplace/api/use-get-a-product";
 import { useDeleteProduct } from "@/pages/seller/api/use-delete-product";
+import { CreateProductModal } from "@/pages/seller/components/modal/create-product-modal";
+import type { IProductData } from "@/types";
 import { formatPriceAmount } from "@/lib/utils";
 import {
   ChevronLeft,
@@ -36,8 +38,22 @@ const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
   const { data: product, isLoading, error } = useGetAProduct(id!);
+
+  const editableProduct = useMemo<IProductData | null>(
+    () =>
+      product
+        ? {
+            ...product,
+            price: Number(product.price),
+            size: product.size ?? "",
+            status: product.isActive ? "active" : "inactive",
+          }
+        : null,
+    [product],
+  );
 
   if (isLoading) {
     return (
@@ -93,7 +109,12 @@ const ProductDetails = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => setShowEditModal(true)}
+          >
             <Edit className="h-4 w-4" />
             Edit Product
           </Button>
@@ -349,11 +370,19 @@ const ProductDetails = () => {
               <CardTitle className="text-lg">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start gap-2">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={() => setShowEditModal(true)}
+              >
                 <Edit className="h-4 w-4" />
                 Edit Product Details
               </Button>
-              <Button variant="outline" className="w-full justify-start gap-2">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={() => setShowEditModal(true)}
+              >
                 <Package className="h-4 w-4" />
                 Update Stock
               </Button>
@@ -369,6 +398,13 @@ const ProductDetails = () => {
           </Card>
         </div>
       </div>
+
+      <CreateProductModal
+        mode="edit"
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        initialProduct={editableProduct}
+      />
 
       <AlertDialog
         open={showDeleteDialog}

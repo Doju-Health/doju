@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -9,48 +9,64 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Package, ArrowRight } from "lucide-react";
-import { allProducts, categories as mockCategories } from "@/data/mockData";
+import { Search, Package, ArrowRight, Loader2 } from "lucide-react";
 import { useGetCategories } from "@/pages/seller/api/use-get-categories";
-import { ApiCategory, Category } from "@/types";
+import { useGetProducts } from "@/pages/marketplace/api/use-get-products";
+import { mapApiProduct } from "@/lib/product-mapper";
+import { ApiCategory, ApiProduct, Category, Product } from "@/types";
 
 interface SearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+/** How many approved products to pull in for client-side matching. */
+const SEARCH_POOL_LIMIT = 100;
+const MAX_RESULTS = 6;
+
 const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<typeof allProducts>([]);
 
-  const { data: apiCategories = [], isLoading: categoriesLoading } =
-    useGetCategories();
+  const { data: apiCategories = [] } = useGetCategories();
+  const { data: productsResponse, isLoading: productsLoading } = useGetProducts(
+    { page: 1, limit: SEARCH_POOL_LIMIT },
+    { enabled: open },
+  );
+
+  const products: Product[] = useMemo(
+    () =>
+      ((productsResponse?.data ?? []) as ApiProduct[])
+        .filter((p) => p.isActive)
+        .map(mapApiProduct),
+    [productsResponse?.data],
+  );
 
   const categories: Category[] = useMemo(() => {
-    if (categoriesLoading || !apiCategories || apiCategories.length === 0) {
-      return mockCategories;
-    }
+    const counts = products.reduce<Record<string, number>>((acc, product) => {
+      acc[product.category] = (acc[product.category] ?? 0) + 1;
+      return acc;
+    }, {});
+
     return (apiCategories as ApiCategory[])
       .filter((c) => c.isActive)
       .map((c) => ({
         id: c.id,
         name: c.name,
         description: c.description,
-        icon: '',
-        productCount: 0,
+        icon: "",
+        productCount: counts[c.name] ?? 0,
         image: c.imageUrl,
       }));
-  }, [apiCategories, categoriesLoading]);
+  }, [apiCategories, products]);
 
-  useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([]);
-      return;
-    }
+  const searchTerm = query.trim().toLowerCase();
+  const hasQuery = searchTerm.length >= 2;
 
-    const searchTerm = query.toLowerCase();
-    const filtered = allProducts
+  const results = useMemo(() => {
+    if (!hasQuery) return [];
+
+    return products
       .filter(
         (product) =>
           product.name.toLowerCase().includes(searchTerm) ||
@@ -59,10 +75,12 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
           product.description.toLowerCase().includes(searchTerm) ||
           product.sku.toLowerCase().includes(searchTerm),
       )
-      .slice(0, 6);
+      .slice(0, MAX_RESULTS);
+  }, [products, searchTerm, hasQuery]);
 
-    setResults(filtered);
-  }, [query]);
+  const matchingCategories = hasQuery
+    ? categories.filter((cat) => cat.name.toLowerCase().includes(searchTerm))
+    : [];
 
   const handleProductClick = (productId: string) => {
     onOpenChange(false);
@@ -91,13 +109,6 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
     }).format(price);
   };
 
-  const matchingCategories =
-    query.trim().length >= 2
-      ? categories.filter((cat) =>
-          cat.name.toLowerCase().includes(query.toLowerCase()),
-        )
-      : [];
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl p-0 gap-0 overflow-hidden">
@@ -117,7 +128,7 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
 
         <div className="max-h-[400px] overflow-y-auto">
           <AnimatePresence mode="wait">
-            {query.trim().length < 2 ? (
+            {!hasQuery ? (
               <motion.div
                 key="suggestions"
                 initial={{ opacity: 0 }}
@@ -140,6 +151,17 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
                     </Badge>
                   ))}
                 </div>
+              </motion.div>
+            ) : productsLoading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="p-8 flex items-center justify-center gap-2 text-muted-foreground"
+              >
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm">Searching products...</span>
               </motion.div>
             ) : (
               <motion.div
@@ -199,11 +221,11 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
                             <p className="font-medium text-foreground truncate">
                               {product.name}
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground truncate">
                               {product.brand} • {product.category}
                             </p>
                           </div>
-                          <p className="font-semibold text-doju-lime">
+                          <p className="font-semibold text-doju-lime whitespace-nowrap">
                             {formatPrice(product.price)}
                           </p>
                         </motion.div>

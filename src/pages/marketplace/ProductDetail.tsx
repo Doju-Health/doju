@@ -23,23 +23,7 @@ import { useGetAProduct } from "./api/use-get-a-product";
 import { useGetProducts } from "./api/use-get-products";
 import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
 import { getDeliveryFee, jumiaZone } from "@/data/nigeria-geo";
-
-/** Map an API product to the internal Product shape used by ProductCard & cart */
-const mapApiProduct = (p: ApiProduct): Product => ({
-  id: p.id,
-  name: p.name,
-  description: p.description,
-  price: Number(p.price),
-  images: p.imageUrl?.filter(Boolean) ?? [],
-  category: p.category?.name ?? "Other",
-  brand: p.seller?.fullName ?? "DOJU Seller",
-  sku: `DB-${p.id.slice(0, 8)}`,
-  stock: p.stock,
-  sellerId: p.seller?.id ?? "",
-  sellerCity: p.seller?.businessCity ?? undefined,
-  approvalStatus: "approved",
-  createdAt: new Date(p.createdAt),
-});
+import { mapApiProduct } from "@/lib/product-mapper";
 
 const StarRating = ({ rating = 4.7 }: { rating?: number }) => (
   <div className="flex items-center gap-0.5">

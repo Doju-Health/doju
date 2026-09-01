@@ -3,7 +3,10 @@ import { buildQueryString } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { ApiProduct, PaginatedResponse } from "@/types";
 
-export const useGetProducts = (filters?: { page?: number; limit?: number }) => {
+export const useGetProducts = (
+  filters?: { page?: number; limit?: number },
+  options?: { enabled?: boolean },
+) => {
   const getProducts = async (): Promise<PaginatedResponse<ApiProduct>> => {
     const queryString = buildQueryString({ ...filters });
     const response = await API.get(
@@ -15,5 +18,6 @@ export const useGetProducts = (filters?: { page?: number; limit?: number }) => {
   return useQuery({
     queryKey: ["products", filters],
     queryFn: getProducts,
+    enabled: options?.enabled ?? true,
   });
 };

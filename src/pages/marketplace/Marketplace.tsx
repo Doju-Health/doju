@@ -14,23 +14,7 @@ import { Search, ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import { useGetProducts } from "./api/use-get-products";
 import { useGetCategories } from "../seller/api/use-get-categories";
 import heroMedical from "@/assets/hero-medical.jpg";
-
-/** Map an API product to the internal Product shape used by ProductCard & cart */
-const mapApiProduct = (p: ApiProduct): Product => ({
-  id: p.id,
-  name: p.name,
-  description: p.description,
-  price: Number(p.price),
-  images: p.imageUrl?.filter(Boolean) ?? [],
-  category: p.category?.name ?? "Other",
-  brand: p.seller?.fullName ?? "DOJU Seller",
-  sku: `DB-${p.id.slice(0, 8)}`,
-  stock: p.stock,
-  sellerId: p.seller?.id ?? "",
-  sellerCity: p.seller?.businessCity ?? undefined,
-  approvalStatus: "approved",
-  createdAt: new Date(p.createdAt),
-});
+import { mapApiProduct } from "@/lib/product-mapper";
 
 const Marketplace = () => {
   const [page, setPage] = useState(1);
