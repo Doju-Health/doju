@@ -19,7 +19,7 @@ export const useCompleteOrder = () => {
         rating: data.rating,
       };
       if (data.bulkOrderId) payload.bulkOrderId = data.bulkOrderId;
-      const response = await API.post("/payment/confirm-delivery", payload);
+      const response = await API.post("/payments/confirm-delivery", payload);
       return response.data;
     },
     onSuccess: () => {
