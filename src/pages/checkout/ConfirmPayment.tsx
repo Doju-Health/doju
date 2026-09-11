@@ -88,7 +88,7 @@ const ConfirmPayment = () => {
   const showFailure = wasAbandoned || isError || (!isPending && !isVerified);
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4 w-screen">
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center">
         {!showFailure ? (
           <>
