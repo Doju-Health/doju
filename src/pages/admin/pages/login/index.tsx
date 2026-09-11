@@ -20,10 +20,10 @@ export default function AdminLogin() {
           .string()
           .email("Enter a valid email")
           .required("Email is required"),
-        password: yup
-          .string()
-          .min(6, "Password must be at least 6 characters")
-          .required("Password is required"),
+        // Sign-in deliberately does not apply the complexity policy: it would
+        // lock out accounts created before the policy and tell an attacker the
+        // shape of what they are guessing.
+        password: yup.string().required("Password is required"),
       }),
       onSubmit: () => {
         mutate(values, {

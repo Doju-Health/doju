@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input/input";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Mail } from "lucide-react";
+import {
+  PASSWORD_MIN_LENGTH,
+  isPasswordValid,
+} from "@/lib/password-policy";
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
 
 interface OnboardingStep {
   question: string;
@@ -34,7 +39,7 @@ const steps: OnboardingStep[] = [
   },
   {
     question: "Create a password",
-    placeholder: "At least 8 characters",
+    placeholder: `At least ${PASSWORD_MIN_LENGTH} characters`,
     field: "password",
     type: "password",
   },
@@ -78,7 +83,10 @@ const BuyerOnboarding = () => {
   };
 
   const currentValue = formData[steps[currentStep]?.field] || "";
-  const isValid = currentValue.length > 0;
+  const isPasswordStep = steps[currentStep]?.field === "password";
+  const isValid = isPasswordStep
+    ? isPasswordValid(currentValue)
+    : currentValue.length > 0;
 
   const pageVariants = {
     initial: { opacity: 0, x: 20 },
@@ -226,6 +234,14 @@ const BuyerOnboarding = () => {
                   }
                 }}
               />
+
+              {isPasswordStep && (
+                <PasswordRequirements
+                  password={currentValue}
+                  showWhenEmpty
+                  className="-mt-3 mb-6"
+                />
+              )}
 
               <motion.div
                 initial={{ opacity: 0, y: 10 }}

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input/input";
 import { ArrowLeft, ArrowRight, Lock, CheckCircle } from "lucide-react";
 import { useResetPassword } from "./Auth/api/use-reset-password";
+import { getPasswordError } from "@/lib/password-policy";
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -34,6 +36,13 @@ const ResetPassword = () => {
       setError("All fields are required");
       return;
     }
+
+    const passwordError = getPasswordError(newPassword);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -116,7 +125,12 @@ const ResetPassword = () => {
                   placeholder="New password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="text-lg h-14 mb-4"
+                  className="text-lg h-14 mb-2"
+                />
+                <PasswordRequirements
+                  password={newPassword}
+                  showWhenEmpty
+                  className="mb-4"
                 />
                 <Input
                   type="password"

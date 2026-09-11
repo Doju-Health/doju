@@ -68,7 +68,7 @@ const Privacy = () => {
                 </p>
                 <p className="text-muted-foreground">
                   <strong>Privacy Contact Email:</strong>{" "}
-                  dojuhealthltd@gmail.com
+                  info@dojuhealth.com
                 </p>
                 <p className="text-muted-foreground">
                   <strong>Phone:</strong> 08139273018
@@ -400,7 +400,7 @@ const Privacy = () => {
                   <strong>Attention:</strong> Privacy Contact
                 </p>
                 <p className="text-muted-foreground">
-                  <strong>Email:</strong> dojuhealthltd@gmail.com
+                  <strong>Email:</strong> info@dojuhealth.com
                 </p>
                 <p className="text-muted-foreground">
                   You also have the right to lodge a complaint with the Nigeria

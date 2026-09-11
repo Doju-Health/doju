@@ -20,11 +20,14 @@ import {
 import { toast } from "sonner";
 import dojuLogo from "@/assets/doju-logo.jpg";
 import { z } from "zod";
+import {
+  loginPasswordZodSchema,
+  passwordZodSchema,
+  PASSWORD_MIN_LENGTH,
+} from "@/lib/password-policy";
 
 const emailSchema = z.string().email("Please enter a valid email address");
-const passwordSchema = z
-  .string()
-  .min(6, "Password must be at least 6 characters");
+const passwordSchema = passwordZodSchema;
 
 interface OnboardingStep {
   question: string;
@@ -73,7 +76,7 @@ const signupSteps: OnboardingStep[] = [
   // Step 3: Security
   {
     question: "Create a secure password",
-    placeholder: "At least 6 characters",
+    placeholder: `At least ${PASSWORD_MIN_LENGTH} characters`,
     field: "password",
     type: "password",
     icon: Lock,
@@ -154,7 +157,7 @@ const SellerOnboarding = () => {
 
     if (currentStep.field === "password") {
       try {
-        passwordSchema.parse(value);
+        (isLogin ? loginPasswordZodSchema : passwordSchema).parse(value);
       } catch (e) {
         if (e instanceof z.ZodError) {
           setError(e.errors[0].message);

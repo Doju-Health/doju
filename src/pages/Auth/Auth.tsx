@@ -20,12 +20,14 @@ import { useVerifyEmail } from "./api/use-verify-email";
 import { useLogin } from "./api/use-login";
 import { useResendVerification } from "./api/use-resend-verification";
 import { AuthApiError, isUnverifiedEmailError } from "./utils";
+import {
+  loginPasswordZodSchema,
+  passwordZodSchema,
+} from "@/lib/password-policy";
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
 
 
 const emailSchema = z.string().email("Please enter a valid email address");
-const passwordSchema = z
-  .string()
-  .min(6, "Password must be at least 6 characters");
 
 interface Step {
   id: string;
@@ -157,8 +159,11 @@ const Auth = () => {
     }
 
     if (currentStepData.field === "password") {
+      // Sign-in only checks that something was entered — the complexity policy
+      // applies when a password is being set, not when an existing one is used.
+      const schema = isLogin ? loginPasswordZodSchema : passwordZodSchema;
       try {
-        passwordSchema.parse(value);
+        schema.parse(value);
       } catch (e) {
         if (e instanceof z.ZodError) {
           setError(e.errors[0].message);
@@ -468,6 +473,14 @@ const Auth = () => {
                       </button>
                     )}
                   </div>
+                )}
+
+                {/* Password policy checklist — sign-up only */}
+                {!isLogin && currentStepData.field === "password" && (
+                  <PasswordRequirements
+                    password={String(formData.password ?? "")}
+                    showWhenEmpty
+                  />
                 )}
 
                 {/* Error */}

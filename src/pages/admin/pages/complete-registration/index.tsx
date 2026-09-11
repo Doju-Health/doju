@@ -6,6 +6,11 @@ import { useFormHandler } from "@/hooks/use-form-handler";
 import * as yup from "yup";
 import { useCompleteAdminRegistration } from "../../api/use-complete-admin-registration";
 import DojuLogo from "@/assets/doju-logo.png";
+import {
+  PASSWORD_MIN_LENGTH,
+  passwordYupSchema,
+} from "@/lib/password-policy";
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
 
 export default function AdminCompleteRegistration() {
   const { email: encodedEmail = "" } = useParams<{ email: string }>();
@@ -18,10 +23,7 @@ export default function AdminCompleteRegistration() {
     useFormHandler({
       initialValues: { password: "", confirmPassword: "" },
       validationSchema: yup.object({
-        password: yup
-          .string()
-          .min(8, "Password must be at least 8 characters")
-          .required("Password is required"),
+        password: passwordYupSchema,
         confirmPassword: yup
           .string()
           .oneOf([yup.ref("password")], "Passwords do not match")
@@ -83,9 +85,11 @@ export default function AdminCompleteRegistration() {
             leftIcon={<Lock className="size-4 text-slate-400" />}
             leftIconCls="pl-10"
             error={touched.password && errors.password}
-            placeholder="At least 8 characters"
+            placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
             className="bg-slate-50 text-slate-900 border-slate-300 focus:border-doju-lime"
           />
+
+          <PasswordRequirements password={values.password} showWhenEmpty />
 
           <CustomInput
             name="confirmPassword"
