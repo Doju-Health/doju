@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/chart";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { CreateProductModal } from "../../components/modal/create-product-modal";
+import { useNavigate } from "react-router-dom";
 
 type TopProduct = {
   id: string;
@@ -154,6 +155,7 @@ const getStatusBadge = (status: string) => {
 };
 
 export default function SellerDashboard() {
+  const navigate = useNavigate();
   const dashboardQuery = useGetDashboardOverview();
   const overview: DashboardOverview | undefined = dashboardQuery?.data;
   const [months, setMonths] = useState(6);
@@ -539,7 +541,11 @@ export default function SellerDashboard() {
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-foreground">Recent Orders</h3>
-            <Button variant="ghost" size="sm">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/seller/orders")}
+            >
               View All
               <ArrowUpRight className="h-4 w-4 ml-1" />
             </Button>

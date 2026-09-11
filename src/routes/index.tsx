@@ -2,6 +2,7 @@ import About from "@/pages/About";
 import Careers from "@/pages/Careers";
 import Cart from "@/pages/Cart";
 import Checkout from "@/pages/checkout/Checkout";
+import ConfirmPayment from "@/pages/checkout/ConfirmPayment";
 import DispatchDashboard from "@/pages/dispatch/DispatchDashboard";
 import DispatchRegistration from "@/pages/dispatch/DispatchRegistration";
 import Index from "@/pages/Index";
@@ -107,6 +108,11 @@ export const allRoutes = [
         <Checkout />
       </ProtectedRoute>
     ),
+  },
+
+  {
+    path: "/confirm-payment",
+    element: <ConfirmPayment />,
   },
 
   { path: "cart", element: <Cart /> },

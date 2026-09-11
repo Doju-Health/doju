@@ -480,7 +480,7 @@ const Checkout = () => {
     try {
       const paymentData = await initializePaymentMutation.mutateAsync({
         bulkOrderId: orderResult.orderId,
-        callbackUrl: `${import.meta.env.VITE_APP_URL || window.location.origin}/track-order`,
+        callbackUrl: `${import.meta.env.VITE_APP_URL || window.location.origin}/confirm-payment`,
       });
       if (paymentData?.authorizationUrl) {
         window.location.href = paymentData.authorizationUrl;
