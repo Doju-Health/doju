@@ -14,11 +14,19 @@ export const useCompleteOrder = () => {
   return useMutation({
     mutationFn: async (data: ConfirmDeliveryPayload) => {
       const payload: Record<string, unknown> = {
-        orderId: data.orderId,
         feedback: data.feedback,
         rating: data.rating,
       };
-      if (data.bulkOrderId) payload.bulkOrderId = data.bulkOrderId;
+
+      // The API takes one identifier or the other, never both: a bulk order is
+      // confirmed by its bulkOrderId, a standalone order by its orderId.
+      const bulkOrderId = data.bulkOrderId?.trim();
+      if (bulkOrderId) {
+        payload.bulkOrderId = bulkOrderId;
+      } else {
+        payload.orderId = data.orderId;
+      }
+
       const response = await API.post("/payments/confirm-delivery", payload);
       return response.data;
     },
