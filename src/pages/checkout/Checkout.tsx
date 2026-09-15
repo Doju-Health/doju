@@ -20,7 +20,11 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useCart, useAppSelector } from "@/redux/hooks";
-import { useCreateOrder } from "@/pages/checkout/api/use-create-orders";
+import {
+  useCreateOrder,
+  useCreateSingleOrder,
+  type SingleOrderResponse,
+} from "@/pages/checkout/api/use-create-orders";
 import { useInitializePayment } from "@/pages/checkout/api/use-initialize-payment";
 import { toast } from "sonner";
 import {
@@ -94,6 +98,23 @@ interface BulkOrderResponse {
   orders: OrderItem[];
   bulkOrderId?: string;
 }
+
+const toNumber = (value: number | string | null | undefined) => Number(value ?? 0) || 0;
+
+/**
+ * Reshapes the single order returned by POST /orders into the same structure
+ * the bulk endpoint returns, so the summary screen and payment step below work
+ * off one shape regardless of which endpoint created the order.
+ */
+const toOrderSummary = (order: SingleOrderResponse): BulkOrderResponse => ({
+  orderId: order.id,
+  bulkOrderId: order.bulkOrderId ?? undefined,
+  totalPrice: toNumber(order.totalPrice),
+  bulkDeliveryFee: toNumber(order.deliveryFee),
+  bulkEstimatedPlatformFee: toNumber(order.estimatedPlatformFee),
+  bulkEstimatedSellerAmount: toNumber(order.estimatedSellerAmount),
+  orders: [order as unknown as OrderItem],
+});
 
 const zoneColors: Record<number, string> = {
   1: "bg-emerald-500/15 text-emerald-600",
@@ -344,6 +365,7 @@ const Checkout = () => {
   const { data: profileData, isLoading: profileLoading } = useGetUserProfile();
   const updateProfileMutation = useUpdateProfile({ silent: true });
   const createOrderMutation = useCreateOrder();
+  const createSingleOrderMutation = useCreateSingleOrder();
   const initializePaymentMutation = useInitializePayment();
   const navigate = useNavigate();
 
@@ -493,18 +515,36 @@ const Checkout = () => {
       }
       await updateProfileMutation.mutateAsync(profileUpdates);
 
-      const result: BulkOrderResponse = await createOrderMutation.mutateAsync({
-        productIds: items.map((item) => item.product.id),
-        quantities: items.map((item) => item.quantity),
+      const deliveryDetails = {
         deliveryAddress: combinedDeliveryAddress,
         note: formData.notes || undefined,
         deliveryCity: selectedCity,
-        pickupStore:
-          `${formData.pickupStore}, ${combinedDeliveryAddress}` || undefined,
-      });
+        // A template literal is always truthy, so `|| undefined` never fired
+        // and an unselected store was sent as ", <address>".
+        pickupStore: formData.pickupStore
+          ? `${formData.pickupStore}, ${combinedDeliveryAddress}`
+          : undefined,
+      };
+
+      // A cart holding a single product goes to POST /orders; anything with
+      // more than one product goes to the bulk endpoint.
+      const result: BulkOrderResponse =
+        items.length === 1
+          ? toOrderSummary(
+              await createSingleOrderMutation.mutateAsync({
+                productId: items[0].product.id,
+                quantity: items[0].quantity,
+                ...deliveryDetails,
+              }),
+            )
+          : await createOrderMutation.mutateAsync({
+              productIds: items.map((item) => item.product.id),
+              quantities: items.map((item) => item.quantity),
+              ...deliveryDetails,
+            });
 
       if (result?.orders?.length > 0) {
-        console.log(result);
+        setOrderResult(result);
       }
     } catch (error) {
       console.error("Error placing order:", error);
@@ -534,10 +574,16 @@ const Checkout = () => {
     if (!orderResult) return;
     setInitializingPayment(true);
     try {
-      const paymentData = await initializePaymentMutation.mutateAsync({
-        bulkOrderId: orderResult.bulkOrderId,
-        callbackUrl: `${import.meta.env.VITE_APP_URL || window.location.origin}/confirm-payment`,
-      });
+      const callbackUrl = `${import.meta.env.VITE_APP_URL || window.location.origin}/confirm-payment`;
+
+      // Bulk orders are identified by bulkOrderId; a single-product order comes
+      // back with bulkOrderId null, so it is identified by its own id. Exactly
+      // one of the two is sent.
+      const paymentData = await initializePaymentMutation.mutateAsync(
+        orderResult.bulkOrderId
+          ? { bulkOrderId: orderResult.bulkOrderId, callbackUrl }
+          : { orderId: orderResult.orderId, callbackUrl },
+      );
       if (paymentData?.authorizationUrl) {
         window.location.href = paymentData.authorizationUrl;
       }
