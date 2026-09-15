@@ -6,8 +6,19 @@ import { Input } from "@/components/ui/input/input";
 import { Textarea } from "@/components/ui/textarea/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { useCart, useAppSelector } from "@/redux/hooks";
 import { useCreateOrder } from "@/pages/checkout/api/use-create-orders";
 import { useInitializePayment } from "@/pages/checkout/api/use-initialize-payment";
@@ -81,6 +92,7 @@ interface BulkOrderResponse {
   bulkEstimatedPlatformFee: number;
   bulkEstimatedSellerAmount: number;
   orders: OrderItem[];
+  bulkOrderId?: string;
 }
 
 const zoneColors: Record<number, string> = {
@@ -114,8 +126,12 @@ function CitySelect({
           }`}
         >
           <span className="flex items-center gap-2 min-w-0">
-            <MapPin className={`h-4 w-4 shrink-0 ${value ? "text-doju-lime" : "text-muted-foreground"}`} />
-            <span className="truncate">{value || "Select your delivery city"}</span>
+            <MapPin
+              className={`h-4 w-4 shrink-0 ${value ? "text-doju-lime" : "text-muted-foreground"}`}
+            />
+            <span className="truncate">
+              {value || "Select your delivery city"}
+            </span>
           </span>
           <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
         </button>
@@ -127,7 +143,10 @@ function CitySelect({
       >
         <Command>
           <div className="flex items-center border-b px-3">
-            <CommandInput placeholder="Search city…" className="h-11 flex-1 bg-transparent" />
+            <CommandInput
+              placeholder="Search city…"
+              className="h-11 flex-1 bg-transparent"
+            />
           </div>
           <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
             No city found.
@@ -208,8 +227,12 @@ function PickupStationSelect({
           }`}
         >
           <span className="flex items-center gap-2 min-w-0">
-            <Store className={`h-4 w-4 shrink-0 ${value ? "text-doju-lime" : "text-muted-foreground"}`} />
-            <span className="truncate">{value || "Select a pickup station"}</span>
+            <Store
+              className={`h-4 w-4 shrink-0 ${value ? "text-doju-lime" : "text-muted-foreground"}`}
+            />
+            <span className="truncate">
+              {value || "Select a pickup station"}
+            </span>
           </span>
           <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
         </button>
@@ -221,7 +244,10 @@ function PickupStationSelect({
       >
         <Command>
           <div className="flex items-center border-b px-3">
-            <CommandInput placeholder="Search station or area…" className="h-11 flex-1 bg-transparent" />
+            <CommandInput
+              placeholder="Search station or area…"
+              className="h-11 flex-1 bg-transparent"
+            />
           </div>
           <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
             No pickup station found.
@@ -232,7 +258,9 @@ function PickupStationSelect({
                 No stations for this zone.
               </div>
             ) : (
-              <CommandGroup heading={`Zone ${zone} — ${stations.length} stations`}>
+              <CommandGroup
+                heading={`Zone ${zone} — ${stations.length} stations`}
+              >
                 {stations.map((station) => (
                   <CommandItem
                     key={station.name}
@@ -244,9 +272,15 @@ function PickupStationSelect({
                     className="flex items-start justify-between gap-2 cursor-pointer py-3"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm leading-tight">{station.name}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{station.address}</p>
-                      <p className="text-xs text-muted-foreground/70 mt-0.5">{station.city}</p>
+                      <p className="font-medium text-sm leading-tight">
+                        {station.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                        {station.address}
+                      </p>
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">
+                        {station.city}
+                      </p>
                     </div>
                     {value === station.name && (
                       <Check className="h-4 w-4 text-doju-lime shrink-0 mt-0.5" />
@@ -268,8 +302,12 @@ function PickupStationCard({ station }: { station: PickupStation }) {
     <div className="mt-3 rounded-xl border border-doju-lime/30 bg-doju-lime/5 p-4 space-y-2">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-sm font-semibold text-foreground leading-tight">{station.name}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{station.city} · Zone {station.zone}</p>
+          <p className="text-sm font-semibold text-foreground leading-tight">
+            {station.name}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {station.city} · Zone {station.zone}
+          </p>
         </div>
         {station.mapUrl && (
           <a
@@ -283,9 +321,13 @@ function PickupStationCard({ station }: { station: PickupStation }) {
           </a>
         )}
       </div>
-      <p className="text-xs text-muted-foreground leading-relaxed">{station.address}</p>
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        {station.address}
+      </p>
       {station.nearPlace && station.nearPlace !== station.address && (
-        <p className="text-xs text-muted-foreground/70">Near: {station.nearPlace}</p>
+        <p className="text-xs text-muted-foreground/70">
+          Near: {station.nearPlace}
+        </p>
       )}
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Clock className="h-3.5 w-3.5 shrink-0" />
@@ -307,7 +349,9 @@ const Checkout = () => {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Record<string, string>>({});
-  const [orderResult, setOrderResult] = useState<BulkOrderResponse | null>(null);
+  const [orderResult, setOrderResult] = useState<BulkOrderResponse | null>(
+    null,
+  );
   const [placingOrder, setPlacingOrder] = useState(false);
   const [initializingPayment, setInitializingPayment] = useState(false);
   const [saveNewAddress, setSaveNewAddress] = useState(false);
@@ -361,7 +405,8 @@ const Checkout = () => {
     const noteStep: CheckoutStep = {
       id: "notes",
       question: "Anything else you want us to know?",
-      placeholder: "Special delivery instructions, gate codes, landmarks… (optional)",
+      placeholder:
+        "Special delivery instructions, gate codes, landmarks… (optional)",
       type: "textarea",
       icon: <MessageSquare className="h-6 w-6" />,
       required: false,
@@ -396,7 +441,13 @@ const Checkout = () => {
     result.push(noteStep);
 
     return result;
-  }, [hasSavedCity, hasSavedPhone, profileLoading, useSavedCity, useSavedPhone]);
+  }, [
+    hasSavedCity,
+    hasSavedPhone,
+    profileLoading,
+    useSavedCity,
+    useSavedPhone,
+  ]);
 
   const progress = ((currentStep + 1) / steps.length) * 100;
 
@@ -427,12 +478,16 @@ const Checkout = () => {
     }
     setPlacingOrder(true);
     try {
-      const selectedCity = useSavedCity ? (savedCity ?? "") : (formData.city ?? "");
+      const selectedCity = useSavedCity
+        ? (savedCity ?? "")
+        : (formData.city ?? "");
       const combinedDeliveryAddress = [formData.address, selectedCity]
         .filter(Boolean)
         .join(", ");
 
-      const profileUpdates: { city?: string; address?: string } = { city: selectedCity };
+      const profileUpdates: { city?: string; address?: string } = {
+        city: selectedCity,
+      };
       if (saveNewAddress && formData.address) {
         profileUpdates.address = combinedDeliveryAddress;
       }
@@ -444,11 +499,12 @@ const Checkout = () => {
         deliveryAddress: combinedDeliveryAddress,
         note: formData.notes || undefined,
         deliveryCity: selectedCity,
-        pickupStore: formData.pickupStore || undefined,
+        pickupStore:
+          `${formData.pickupStore}, ${combinedDeliveryAddress}` || undefined,
       });
 
       if (result?.orders?.length > 0) {
-        setOrderResult(result);
+        console.log(result);
       }
     } catch (error) {
       console.error("Error placing order:", error);
@@ -479,7 +535,7 @@ const Checkout = () => {
     setInitializingPayment(true);
     try {
       const paymentData = await initializePaymentMutation.mutateAsync({
-        bulkOrderId: orderResult.orderId,
+        bulkOrderId: orderResult.bulkOrderId,
         callbackUrl: `${import.meta.env.VITE_APP_URL || window.location.origin}/confirm-payment`,
       });
       if (paymentData?.authorizationUrl) {
@@ -499,7 +555,8 @@ const Checkout = () => {
   const buyerRegion = getRegionForCity(selectedCity);
 
   const isValid =
-    currentStepData?.id === "cityChoice" || currentStepData?.id === "phoneChoice"
+    currentStepData?.id === "cityChoice" ||
+    currentStepData?.id === "phoneChoice"
       ? true
       : currentStepData?.required
         ? currentValue.length > 0
@@ -530,7 +587,11 @@ const Checkout = () => {
               Back
             </button>
             <Link to="/" className="flex items-center gap-2">
-              <img src={dojuLogo} alt="DOJU" className="h-8 w-8 rounded-full object-cover" />
+              <img
+                src={dojuLogo}
+                alt="DOJU"
+                className="h-8 w-8 rounded-full object-cover"
+              />
               <span className="text-xl font-bold text-foreground">DOJU</span>
             </Link>
             <div className="w-16" />
@@ -549,7 +610,9 @@ const Checkout = () => {
                 <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-doju-lime/15 mb-3">
                   <Package className="h-6 w-6 text-doju-lime" />
                 </div>
-                <h1 className="text-2xl font-bold text-foreground">Order Summary</h1>
+                <h1 className="text-2xl font-bold text-foreground">
+                  Order Summary
+                </h1>
                 <p className="text-sm text-muted-foreground mt-1">
                   Review your order before proceeding to payment
                 </p>
@@ -560,7 +623,8 @@ const Checkout = () => {
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
                   <ShoppingBag className="h-4 w-4 text-doju-lime" />
                   <span className="font-semibold text-sm">
-                    {orderResult.orders.length} {orderResult.orders.length === 1 ? "item" : "items"}
+                    {orderResult.orders.length}{" "}
+                    {orderResult.orders.length === 1 ? "item" : "items"}
                   </span>
                 </div>
                 <div className="divide-y divide-border">
@@ -569,7 +633,9 @@ const Checkout = () => {
                       <div className="flex gap-3">
                         <div className="h-16 w-16 rounded-lg bg-muted overflow-hidden shrink-0">
                           <img
-                            src={order.product.imageUrl?.[0] || "/placeholder.svg"}
+                            src={
+                              order.product.imageUrl?.[0] || "/placeholder.svg"
+                            }
                             alt={order.product.name}
                             className="h-full w-full object-cover"
                           />
@@ -605,10 +671,14 @@ const Checkout = () => {
               <div className="rounded-xl border border-border bg-card p-4 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <MapPin className="h-4 w-4 text-doju-lime" />
-                  <span className="font-semibold text-sm">Delivery details</span>
+                  <span className="font-semibold text-sm">
+                    Delivery details
+                  </span>
                 </div>
                 <div className="flex items-start gap-2 text-sm">
-                  <span className="text-muted-foreground w-16 shrink-0 text-xs pt-0.5">City</span>
+                  <span className="text-muted-foreground w-16 shrink-0 text-xs pt-0.5">
+                    City
+                  </span>
                   <span className="font-medium text-foreground">
                     {selectedCity}
                     {buyerZone && (
@@ -619,49 +689,69 @@ const Checkout = () => {
                   </span>
                 </div>
                 <div className="flex items-start gap-2 text-sm">
-                  <span className="text-muted-foreground w-16 shrink-0 text-xs pt-0.5">Address</span>
-                  <span className="text-foreground">{formData.address || "—"}</span>
+                  <span className="text-muted-foreground w-16 shrink-0 text-xs pt-0.5">
+                    Address
+                  </span>
+                  <span className="text-foreground">
+                    {formData.address || "—"}
+                  </span>
                 </div>
-                {formData.pickupStore && (() => {
-                  const station = buyerZone
-                    ? (buyerRegion
-                        ? getPickupStationsForZoneAndRegion(buyerZone, buyerRegion)
-                        : getPickupStationsForZone(buyerZone)
-                      ).find((s) => s.name === formData.pickupStore)
-                    : null;
-                  return (
-                    <div className="flex items-start gap-2 text-sm pt-1">
-                      <span className="text-muted-foreground w-16 shrink-0 text-xs pt-0.5">Pickup</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground text-xs leading-tight">{formData.pickupStore}</p>
-                        {station && (
-                          <>
-                            <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{station.address}</p>
-                            <div className="flex items-center gap-1 mt-1">
-                              <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
-                              <span className="text-xs text-muted-foreground">{station.openingHours}</span>
-                            </div>
-                            {station.mapUrl && (
-                              <a
-                                href={station.mapUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs text-doju-lime mt-1 hover:opacity-80"
-                              >
-                                <ExternalLink className="h-3 w-3" />
-                                View on map
-                              </a>
-                            )}
-                          </>
-                        )}
+                {formData.pickupStore &&
+                  (() => {
+                    const station = buyerZone
+                      ? (buyerRegion
+                          ? getPickupStationsForZoneAndRegion(
+                              buyerZone,
+                              buyerRegion,
+                            )
+                          : getPickupStationsForZone(buyerZone)
+                        ).find((s) => s.name === formData.pickupStore)
+                      : null;
+                    return (
+                      <div className="flex items-start gap-2 text-sm pt-1">
+                        <span className="text-muted-foreground w-16 shrink-0 text-xs pt-0.5">
+                          Pickup
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-foreground text-xs leading-tight">
+                            {formData.pickupStore}
+                          </p>
+                          {station && (
+                            <>
+                              <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                                {station.address}
+                              </p>
+                              <div className="flex items-center gap-1 mt-1">
+                                <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                                <span className="text-xs text-muted-foreground">
+                                  {station.openingHours}
+                                </span>
+                              </div>
+                              {station.mapUrl && (
+                                <a
+                                  href={station.mapUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs text-doju-lime mt-1 hover:opacity-80"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  View on map
+                                </a>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()}
                 {formData.notes && (
                   <div className="flex items-start gap-2 text-sm">
-                    <span className="text-muted-foreground w-16 shrink-0 text-xs pt-0.5">Note</span>
-                    <span className="text-muted-foreground italic">"{formData.notes}"</span>
+                    <span className="text-muted-foreground w-16 shrink-0 text-xs pt-0.5">
+                      Note
+                    </span>
+                    <span className="text-muted-foreground italic">
+                      "{formData.notes}"
+                    </span>
                   </div>
                 )}
               </div>
@@ -683,11 +773,15 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>Est. platform fee</span>
-                    <span>{formatPrice(orderResult.bulkEstimatedPlatformFee)}</span>
+                    <span>
+                      {formatPrice(orderResult.bulkEstimatedPlatformFee)}
+                    </span>
                   </div>
                   <div className="border-t border-border pt-2.5 flex justify-between font-bold text-base">
                     <span>Total</span>
-                    <span className="text-doju-lime">{formatPrice(orderResult.totalPrice)}</span>
+                    <span className="text-doju-lime">
+                      {formatPrice(orderResult.totalPrice)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -740,7 +834,11 @@ const Checkout = () => {
             Back
           </button>
           <Link to="/" className="flex items-center gap-2">
-            <img src={dojuLogo} alt="DOJU" className="h-8 w-8 rounded-full object-cover" />
+            <img
+              src={dojuLogo}
+              alt="DOJU"
+              className="h-8 w-8 rounded-full object-cover"
+            />
             <span className="text-xl font-bold text-foreground">DOJU</span>
           </Link>
           <div className="w-16" />
@@ -752,7 +850,9 @@ const Checkout = () => {
           {profileLoading ? (
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-doju-lime mx-auto mb-4" />
-              <p className="text-sm text-muted-foreground">Loading your information…</p>
+              <p className="text-sm text-muted-foreground">
+                Loading your information…
+              </p>
             </div>
           ) : (
             <>
@@ -796,7 +896,9 @@ const Checkout = () => {
                     <div className="space-y-4 mb-6">
                       <div className="p-4 border rounded-lg bg-muted/50">
                         <h3 className="font-semibold mb-1">Saved phone</h3>
-                        <p className="text-sm text-muted-foreground">{savedPhone}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {savedPhone}
+                        </p>
                       </div>
                       <div className="flex gap-3 flex-col sm:flex-row">
                         <Button
@@ -804,7 +906,10 @@ const Checkout = () => {
                           className="flex-1"
                           onClick={() => {
                             setUseSavedPhone(true);
-                            setFormData((prev) => ({ ...prev, phone: savedPhone ?? "" }));
+                            setFormData((prev) => ({
+                              ...prev,
+                              phone: savedPhone ?? "",
+                            }));
                           }}
                         >
                           Use saved phone
@@ -837,7 +942,10 @@ const Checkout = () => {
                           className="flex-1"
                           onClick={() => {
                             setUseSavedCity(true);
-                            setFormData((prev) => ({ ...prev, city: savedCity ?? "" }));
+                            setFormData((prev) => ({
+                              ...prev,
+                              city: savedCity ?? "",
+                            }));
                           }}
                         >
                           Use saved city
@@ -867,14 +975,24 @@ const Checkout = () => {
                         zone={buyerZone}
                         region={buyerRegion}
                       />
-                      {currentValue && (() => {
-                        const stations =
-                          buyerZone && buyerRegion
-                            ? getPickupStationsForZoneAndRegion(buyerZone, buyerRegion)
-                            : buyerZone ? getPickupStationsForZone(buyerZone) : [];
-                        const station = stations.find((s) => s.name === currentValue);
-                        return station ? <PickupStationCard station={station} /> : null;
-                      })()}
+                      {currentValue &&
+                        (() => {
+                          const stations =
+                            buyerZone && buyerRegion
+                              ? getPickupStationsForZoneAndRegion(
+                                  buyerZone,
+                                  buyerRegion,
+                                )
+                              : buyerZone
+                                ? getPickupStationsForZone(buyerZone)
+                                : [];
+                          const station = stations.find(
+                            (s) => s.name === currentValue,
+                          );
+                          return station ? (
+                            <PickupStationCard station={station} />
+                          ) : null;
+                        })()}
                     </div>
                   ) : currentStepData.type === "select" ? (
                     <div className="mb-6">

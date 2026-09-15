@@ -6,12 +6,13 @@ import {
   BadgeX,
   CalendarClock,
   Mail,
+  MapPin,
   Phone,
   Trash2,
   UserRound,
 } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -45,6 +46,7 @@ import { useVerifySeller } from "../../api/use-verify-seller";
 import { useRejectSeller } from "../../api/use-reject-seller";
 import { AdminSellerProductsTable } from "../../components/seller-products-table/seller-products-table";
 import { AdminBuyerOrdersTable } from "../../components/buyer-orders-table/buyer-orders-table";
+import { getAdminBackTarget } from "../../utils/back-navigation";
 
 const getInitials = (name: string) => {
   const parts = name.trim().split(" ").filter(Boolean);
@@ -72,7 +74,12 @@ const getRoleBadgeClass = (role: string) => {
 
 export default function UserDetails() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id = "" } = useParams();
+
+  // Where the admin came from (sellers, buyers, or the users list), so both the
+  // back link and the post-delete redirect return there.
+  const backTarget = getAdminBackTarget(location.state);
   const getUser = useGetAUser(id);
   const { mutate: deleteUser, isPending } = useDeleteUser();
   const [deleteMode, setDeleteMode] = useState<"soft" | "hard" | null>(null);
@@ -92,6 +99,29 @@ export default function UserDetails() {
       ? queryPayload.data
       : (queryPayload as IUsers | undefined);
 
+  const isSeller = user?.role === "seller";
+
+  /**
+   * Joins the parts of a location, dropping any the API left null or blank and
+   * collapsing repeats — city and state are often both "Lagos", which would
+   * otherwise render as "Lagos, Lagos".
+   */
+  const joinLocation = (...parts: (string | null | undefined)[]) => {
+    const seen = new Set<string>();
+    const filled: string[] = [];
+
+    for (const part of parts) {
+      const trimmed = part?.trim();
+      if (!trimmed || seen.has(trimmed.toLowerCase())) continue;
+      seen.add(trimmed.toLowerCase());
+      filled.push(trimmed);
+    }
+
+    return filled.length ? filled.join(", ") : null;
+  };
+
+  const businessLocation = joinLocation(user?.businessCity, user?.businessState);
+
   const createdAt = user?.createdAt
     ? format(new Date(user.createdAt), "PPP p")
     : "N/A";
@@ -108,7 +138,7 @@ export default function UserDetails() {
       { id: user.id, hard },
       {
         onSuccess: () => {
-          navigate("/admin/users");
+          navigate(backTarget.to);
         },
         onError: () => {
           setDeleteMode(null);
@@ -156,11 +186,11 @@ export default function UserDetails() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-2">
           <div className="space-y-2">
             <Link
-              to="/admin/users"
+              to={backTarget.to}
               className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               <ArrowLeft className="size-4" />
-              Back to users
+              {backTarget.label}
             </Link>
             <h1 className="text-2xl font-bold">User details</h1>
             <p className="text-muted-foreground">
@@ -493,6 +523,32 @@ export default function UserDetails() {
                       {formatNullable(user.companyName)}
                     </p>
                   </div>
+
+                  {/* Business location is only collected for sellers. */}
+                  {isSeller && (
+                    <>
+                      <Separator />
+                      <div className="space-y-1">
+                        <p className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                          <Building2 className="size-4" />
+                          Business address
+                        </p>
+                        <p className="font-medium">
+                          {formatNullable(user.businessAddress ?? null)}
+                        </p>
+                      </div>
+                      <Separator />
+                      <div className="space-y-1">
+                        <p className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                          <MapPin className="size-4" />
+                          Business city
+                        </p>
+                        <p className="font-medium">
+                          {formatNullable(businessLocation)}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </div>

@@ -6,7 +6,6 @@ export type OrderStatus =
   | "confirmed"
   | "picked_up"
   | "in_transit"
-  | "out_for_delivery"
   | "delivered";
 
 export interface OrderItem {
@@ -281,7 +280,6 @@ export const getStatusLabel = (status: OrderStatus): string => {
     confirmed: "Order Confirmed",
     picked_up: "Picked Up by Seller",
     in_transit: "In Transit",
-    out_for_delivery: "Out for Delivery",
     delivered: "Delivered",
   };
   return labels[status];
@@ -292,7 +290,6 @@ export const getStatusMessage = (status: OrderStatus): string => {
     confirmed: "Order has been confirmed",
     picked_up: "Order has been picked up by seller",
     in_transit: "Order is in transit",
-    out_for_delivery: "Order is out for delivery",
     delivered: "Order has been delivered",
   };
   return messages[status];
@@ -303,7 +300,6 @@ export const getStatusColor = (status: OrderStatus): string => {
     confirmed: "bg-blue-100 text-blue-700",
     picked_up: "bg-yellow-100 text-yellow-700",
     in_transit: "bg-purple-100 text-purple-700",
-    out_for_delivery: "bg-orange-100 text-orange-700",
     delivered: "bg-green-100 text-green-700",
   };
   return colors[status];

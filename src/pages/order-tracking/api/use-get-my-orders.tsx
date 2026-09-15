@@ -58,12 +58,43 @@ export interface MyOrder {
   updatedAt: string;
 }
 
+/** Statuses an order will not move out of on its own. */
+const TERMINAL_ORDER_STATUSES = new Set([
+  "DELIVERED",
+  "COMPLETED",
+  "CANCELLED",
+  "REFUNDED",
+]);
+
+/** How often to re-check an order that is still in flight. */
+export const MY_ORDERS_POLL_INTERVAL_MS = 30_000;
+
 export const useGetMyOrders = () => {
   return useQuery<MyOrder[]>({
     queryKey: ["my-orders"],
     queryFn: async () => {
       const response = await API.get("/orders/my-orders");
       return response.data.data;
+    },
+    // Tracking is only useful when it is current, so opt out of the global
+    // five-minute staleTime and re-check on every mount and tab focus.
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    // Poll only while something can still change — once every order has
+    // settled there is nothing left to watch. Polling pauses automatically
+    // while the tab is in the background.
+    refetchInterval: (query) => {
+      const orders = query.state.data;
+      if (!orders?.length) return false;
+
+      const hasOrderInFlight = orders.some(
+        (order) =>
+          !TERMINAL_ORDER_STATUSES.has(
+            (order.orderStatus ?? "").toUpperCase(),
+          ),
+      );
+
+      return hasOrderInFlight ? MY_ORDERS_POLL_INTERVAL_MS : false;
     },
   });
 };

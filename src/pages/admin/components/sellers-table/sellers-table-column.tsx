@@ -21,7 +21,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { IUsers } from "@/types";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { buildAdminBackState } from "../../utils/back-navigation";
 import { formatDate } from "date-fns";
 import { useDeactivateUser } from "../../api/use-deactivate-user";
 import { useDeleteUser } from "../../api/use-delete-user";
@@ -56,6 +57,7 @@ const getStatusBadge = (status: IUsers["isVerified"]) => {
 
 const ActionCell = ({ id, fullName }: { id: string; fullName: string }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteMode, setDeleteMode] = useState<"soft" | "hard" | null>(null);
@@ -64,7 +66,9 @@ const ActionCell = ({ id, fullName }: { id: string; fullName: string }) => {
   const { mutate: deleteUser, isPending: isDeletePending } = useDeleteUser();
 
   const handleViewDetails = () => {
-    navigate(`/admin/users/${id}`);
+    navigate(`/admin/users/${id}`, {
+      state: buildAdminBackState(location),
+    });
   };
 
   const handleDeactivate = () => {

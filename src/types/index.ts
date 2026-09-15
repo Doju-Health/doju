@@ -253,6 +253,10 @@ export interface IUsers {
   address: string | null;
   city?: string | null;
   state?: string | null;
+  /** Seller-only: the registered business location. */
+  businessAddress?: string | null;
+  businessCity?: string | null;
+  businessState?: string | null;
   profileImageUrl: string | null;
   licenseNumber: string | null;
   paystackRecipientCode: string | null;

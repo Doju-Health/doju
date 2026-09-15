@@ -156,6 +156,16 @@ const Terms = () => {
                     of error, fraud, or other operational reasons.
                   </li>
                 </ul>
+                <p className="text-muted-foreground" id="seller-refund-policy">
+                  4.4. Seller Refund Policy
+                </p>
+                <ul className="list-disc ml-5 text-muted-foreground space-y-1">
+                  <li>
+                    All sellers must accept returns and refunds within 7 days
+                    for defective, damaged, or incorrect items, subject to
+                    Doju’s platform policies.
+                  </li>
+                </ul>
               </section>
 
               <section>

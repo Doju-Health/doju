@@ -51,13 +51,7 @@ export const getStatusBadge = (status: string) => {
           {normalized === "SHIPPED" ? "Shipped" : "In Transit"}
         </Badge>
       );
-    case "OUT_FOR_DELIVERY":
-      return (
-        <Badge className="bg-indigo-100 text-indigo-700 gap-1 uppercase">
-          <Truck className="h-3 w-3" />
-          Out for Delivery
-        </Badge>
-      );
+
     case "CANCELLED":
       return (
         <Badge className="bg-red-100 text-red-700 gap-1 uppercase">

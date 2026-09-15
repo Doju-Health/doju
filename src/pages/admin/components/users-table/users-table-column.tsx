@@ -19,7 +19,8 @@ import { Button } from "@/components/ui/button";
 
 import { IUsers } from "@/types";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { buildAdminBackState } from "../../utils/back-navigation";
 import { formatDate } from "date-fns";
 import { useState } from "react";
 import { useDeactivateUser } from "../../api/use-deactivate-user";
@@ -35,6 +36,7 @@ const ActionCell = ({
   isActive: boolean;
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteMode, setDeleteMode] = useState<"soft" | "hard" | null>(null);
@@ -42,7 +44,9 @@ const ActionCell = ({
   const { mutate: deleteUser, isPending: isDeletePending } = useDeleteUser();
 
   const handleViewDetails = () => {
-    navigate(`/admin/users/${id}`);
+    navigate(`/admin/users/${id}`, {
+      state: buildAdminBackState(location),
+    });
   };
 
   const handleDeactivateUser = () => {

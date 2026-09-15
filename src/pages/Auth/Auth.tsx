@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { baseUrl } from "@/lib/axios";
 import {
   Dialog,
@@ -23,6 +25,7 @@ import { AuthApiError, isUnverifiedEmailError } from "./utils";
 import {
   loginPasswordZodSchema,
   passwordZodSchema,
+  PASSWORD_MIN_LENGTH,
 } from "@/lib/password-policy";
 import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
 
@@ -69,7 +72,7 @@ const signUpSteps: Step[] = [
   {
     id: "password",
     question: "Create a secure password",
-    placeholder: "At least 6 characters",
+    placeholder: `At least ${PASSWORD_MIN_LENGTH} characters`,
     type: "password",
     field: "password",
   },
@@ -111,6 +114,7 @@ const Auth = () => {
     phoneNumber: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
@@ -130,6 +134,11 @@ const Auth = () => {
   const steps = isLogin ? signInSteps : signUpSteps;
   const currentStepData = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
+
+  // Sellers take on obligations buyers do not (the 7-day returns rule, for
+  // one), so they must explicitly accept the terms before the account is made.
+  const requiresTermsAcceptance =
+    !isLogin && formData.role === "seller" && isLastStep;
 
   const validateCurrentStep = () => {
     const value = formData[currentStepData.field as keyof typeof formData];
@@ -170,6 +179,13 @@ const Auth = () => {
           return false;
         }
       }
+    }
+
+    if (requiresTermsAcceptance && !acceptedTerms) {
+      setError(
+        "Please accept the Terms and Conditions to create a seller account",
+      );
+      return false;
     }
 
     return true;
@@ -292,6 +308,7 @@ const Auth = () => {
       role: "",
       phoneNumber: "",
     });
+    setAcceptedTerms(false);
     setError("");
   };
 
@@ -316,6 +333,7 @@ const Auth = () => {
             role: "",
             phoneNumber: "",
           });
+          setAcceptedTerms(false);
         },
         onError: () => {
           setOtpError("Invalid OTP. Please try again.");
@@ -481,6 +499,41 @@ const Auth = () => {
                     password={String(formData.password ?? "")}
                     showWhenEmpty
                   />
+                )}
+
+                {/* Sellers must accept the terms before the account is created */}
+                {requiresTermsAcceptance && (
+                  <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/40 p-4">
+                    <Checkbox
+                      id="accept-terms"
+                      checked={acceptedTerms}
+                      onCheckedChange={(checked) => {
+                        setAcceptedTerms(checked === true);
+                        setError("");
+                      }}
+                      className="mt-0.5"
+                      aria-describedby="accept-terms-description"
+                    />
+                    <Label
+                      htmlFor="accept-terms"
+                      id="accept-terms-description"
+                      className="text-sm font-normal leading-relaxed cursor-pointer"
+                    >
+                      Do you accept our{" "}
+                      <Link
+                        to="/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-doju-lime underline underline-offset-2 hover:opacity-80"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Terms and Conditions
+                      </Link>
+                      ? This includes the Seller Refund Policy, which requires
+                      accepting returns within 7 days for defective, damaged, or
+                      incorrect items.
+                    </Label>
+                  </div>
                 )}
 
                 {/* Error */}

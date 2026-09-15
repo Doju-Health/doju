@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -23,10 +23,7 @@ import {
 import { Textarea } from "@/components/ui/textarea/textarea";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import {
-  useGetMyOrders,
-  MyOrder,
-} from "@/pages/order-tracking/api/use-get-my-orders";
+import { useGetMyOrders } from "@/pages/order-tracking/api/use-get-my-orders";
 import { useDeleteOrder } from "@/pages/order-tracking/api/use-delete-order";
 import { useCompleteOrder } from "@/pages/order-tracking/api/use-complete-order";
 import {
@@ -85,11 +82,7 @@ const STATUS_STEPS: {
     label: "In Transit",
     icon: <Truck className="h-4 w-4" />,
   },
-  {
-    status: "OUT_FOR_DELIVERY",
-    label: "Out for Delivery",
-    icon: <Package className="h-4 w-4" />,
-  },
+ 
   {
     status: "DELIVERED",
     label: "Delivered",
@@ -164,12 +157,20 @@ const OrderTracking = () => {
   const completeOrderMutation = useCompleteOrder();
   const { clearCart } = useCart();
   const [searchParams] = useSearchParams();
-  const [selectedOrder, setSelectedOrder] = useState<MyOrder | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackRating, setFeedbackRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
+
+  // Read the open order straight out of the fetched list rather than holding a
+  // copy in state, so a polled status change shows up in the detail view
+  // instead of leaving a stale snapshot on screen.
+  const selectedOrder = useMemo(
+    () => orders?.find((order) => order.id === selectedOrderId) ?? null,
+    [orders, selectedOrderId],
+  );
 
   // Clear cart when redirected back from Paystack after payment
   useEffect(() => {
@@ -181,7 +182,7 @@ const OrderTracking = () => {
   const handleDeleteOrder = async (orderId: string) => {
     try {
       await deleteOrderMutation.mutateAsync(orderId);
-      setSelectedOrder(null);
+      setSelectedOrderId(null);
       refetch();
     } catch {
       // Error handled by mutation's onError
@@ -209,7 +210,7 @@ const OrderTracking = () => {
         rating: feedbackRating,
       });
       setShowFeedbackModal(false);
-      setSelectedOrder(null);
+      setSelectedOrderId(null);
       refetch();
     } catch {
       // Error handled by mutation's onError
@@ -244,7 +245,7 @@ const OrderTracking = () => {
               >
                 {/* Back button */}
                 <button
-                  onClick={() => setSelectedOrder(null)}
+                  onClick={() => setSelectedOrderId(null)}
                   className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -716,7 +717,7 @@ const OrderTracking = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
                       className="rounded-2xl border border-border bg-card p-4 md:p-6 hover:border-doju-lime/30 transition-colors cursor-pointer"
-                      onClick={() => setSelectedOrder(order)}
+                      onClick={() => setSelectedOrderId(order.id)}
                     >
                       <div className="flex gap-4">
                         {/* Product Image */}

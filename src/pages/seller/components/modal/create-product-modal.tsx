@@ -326,9 +326,9 @@ export const CreateProductModal = ({
             />
             <CustomSelect
               name="size"
-              label="Size"
+              label="Weight"
               triggerClassName="w-full"
-              placeholder="Select Size"
+              placeholder="Select Weight"
               value={values.size}
               onValueChange={(value) => setValues({ ...values, size: value })}
               options={[
