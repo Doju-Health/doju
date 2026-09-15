@@ -115,11 +115,16 @@ const ProductDetail = () => {
   }
 
   const sellerCity = apiProduct?.seller?.businessCity ?? null;
+  const size = (apiProduct.size as "small" | "medium" | "large" | null) ?? null;
   const feeResult =
     deliveryCity && sellerCity
-      ? getDeliveryFee(sellerCity.toLowerCase()==="fct"? "Abuja":sellerCity, deliveryCity) // temporal patch: normalize for existing data
+      ? getDeliveryFee(
+          sellerCity.toLowerCase() === "fct" ? "Abuja" : sellerCity,
+          deliveryCity,
+          size,
+        ) // temporal patch: normalize for existing data
       : null;
- 
+
   const deliveryFee = feeResult?.fee ?? 0;
   const totalToday = product.price * quantity + deliveryFee;
 
