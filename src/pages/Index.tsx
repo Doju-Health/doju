@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import WhatsAppFloat from "@/components/layout/WhatsAppFloat";
 import CategoryCard from "@/components/products/CategoryCard";
 import AnimatedStat from "@/components/home/AnimatedStat";
 import TopSellingCarousel from "@/components/home/TopSellingCarousel";
@@ -634,6 +635,7 @@ const Index = () => {
       </main>
 
       <Footer />
+      <WhatsAppFloat />
     </div>
   );
 };
