@@ -16,6 +16,22 @@ import { useGetCategories } from "../seller/api/use-get-categories";
 import heroMedical from "@/assets/hero-medical.jpg";
 import { mapApiProduct } from "@/lib/product-mapper";
 
+/**
+ * A sliding window of page numbers around the current page. Rendering every
+ * page overflows the row once there are more than a handful.
+ */
+const getVisiblePages = (current: number, total: number, max = 5) => {
+  if (total <= max) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  const half = Math.floor(max / 2);
+  const end = Math.min(total, Math.max(current + half, max));
+  const start = Math.max(1, end - max + 1);
+
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+};
+
 const Marketplace = () => {
   const [page, setPage] = useState(1);
   const limit = 12;
@@ -268,8 +284,10 @@ const Marketplace = () => {
                               : "hover:bg-muted text-muted-foreground hover:text-foreground"
                           }`}
                         >
-                          <span>{category.name}</span>
-                          <span className="text-xs">
+                          <span className="min-w-0 text-left break-words">
+                            {category.name}
+                          </span>
+                          <span className="text-xs shrink-0 ml-2">
                             {
                               allProducts.filter(
                                 (p) => p.category === category.name,
@@ -354,9 +372,12 @@ const Marketplace = () => {
             </AnimatePresence>
 
             {/* Products Grid */}
-            <div className="lg:col-span-3">
+            {/* min-w-0: a grid item defaults to min-width:auto, which lets a
+                wide child push the column past the viewport instead of being
+                contained by it. */}
+            <div className="lg:col-span-3 min-w-0">
               <motion.div
-                className="flex items-center justify-between mb-6"
+                className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 mb-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
@@ -364,7 +385,7 @@ const Marketplace = () => {
                   Showing 1-{Math.min(12, filteredProducts.length)} of{" "}
                   {filteredProducts.length} results
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <span className="text-sm text-muted-foreground">Sort by</span>
                   <Button variant="outline" size="sm" className="rounded-xl">
                     Most relevant
@@ -489,7 +510,7 @@ const Marketplace = () => {
               {/* Pagination */}
               {paginationMeta.totalPages > 1 && (
                 <motion.div
-                  className="flex items-center justify-between mt-12 pt-8 border-t border-border"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-12 pt-8 border-t border-border"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
@@ -497,35 +518,41 @@ const Marketplace = () => {
                   <p className="text-sm text-muted-foreground">
                     Page {paginationMeta.page} of {paginationMeta.totalPages}
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={page <= 1}
-                      className="rounded-xl"
+                      className="rounded-xl flex-1 sm:flex-none"
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                     >
                       Previous
                     </Button>
-                    {Array.from(
-                      { length: paginationMeta.totalPages },
-                      (_, i) => i + 1,
-                    ).map((pageNum) => (
-                      <Button
-                        key={pageNum}
-                        variant={pageNum === page ? "doju-primary" : "outline"}
-                        size="sm"
-                        className="rounded-xl"
-                        onClick={() => setPage(pageNum)}
-                      >
-                        {pageNum}
-                      </Button>
-                    ))}
+                    {/* Numbers are a convenience; on phones the "Page x of y"
+                        label plus Previous/Next carries the same information
+                        without spilling out of the row. */}
+                    <div className="hidden sm:flex items-center gap-2">
+                      {getVisiblePages(page, paginationMeta.totalPages).map(
+                        (pageNum) => (
+                          <Button
+                            key={pageNum}
+                            variant={
+                              pageNum === page ? "doju-primary" : "outline"
+                            }
+                            size="sm"
+                            className="rounded-xl w-9 px-0"
+                            onClick={() => setPage(pageNum)}
+                          >
+                            {pageNum}
+                          </Button>
+                        ),
+                      )}
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={page >= paginationMeta.totalPages}
-                      className="rounded-xl"
+                      className="rounded-xl flex-1 sm:flex-none"
                       onClick={() =>
                         setPage((p) =>
                           Math.min(paginationMeta.totalPages, p + 1),

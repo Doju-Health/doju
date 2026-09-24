@@ -104,35 +104,33 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           </span>
         </div>
 
-        <div className="flex gap-1.5 sm:gap-2 pt-1 sm:pt-2">
-          <div className="flex-1">
-            <Button
-              variant="doju-outline"
-              size="sm"
-              className="w-full gap-1 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-3"
-              onClick={(e) => {
-                e.stopPropagation();
-                addToCart(product);
-                toast.success("Added to cart");
-              }}
-            >
-              <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Add</span>
-            </Button>
-          </div>
-          <div className="flex-1">
-            <Button
-              variant="doju-primary"
-              size="sm"
-              className="w-full h-9 sm:h-10 text-xs sm:text-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleProductClick();
-              }}
-            >
-              View
-            </Button>
-          </div>
+        {/* Stacked on narrow cards so "Add to cart" fits without truncating;
+            side by side once there is room. */}
+        <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2 pt-1 sm:pt-2">
+          <Button
+            variant="doju-outline"
+            size="sm"
+            className="flex-1 w-full gap-1.5 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-3"
+            onClick={(e) => {
+              e.stopPropagation();
+              addToCart(product);
+              toast.success("Added to cart");
+            }}
+          >
+            <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="whitespace-nowrap">Add to cart</span>
+          </Button>
+          <Button
+            variant="doju-primary"
+            size="sm"
+            className="flex-1 w-full h-9 sm:h-10 text-xs sm:text-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleProductClick();
+            }}
+          >
+            View
+          </Button>
         </div>
       </div>
     </motion.div>

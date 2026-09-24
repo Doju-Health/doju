@@ -17,9 +17,11 @@ import {
   Sparkles,
   ShoppingCart,
   CheckCircle2,
+  Store,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useGetAProduct } from "./api/use-get-a-product";
+import { ShareProduct } from "@/components/products/ShareProduct";
 import { useGetProducts } from "./api/use-get-products";
 import { useGetUserProfile } from "@/pages/Auth/api/use-get-profile";
 import { getDeliveryFee, jumiaZone } from "@/data/nigeria-geo";
@@ -87,7 +89,7 @@ const ProductDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col w-screen">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doju-lime" />
@@ -99,7 +101,7 @@ const ProductDetail = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col w-screen">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -115,6 +117,17 @@ const ProductDetail = () => {
   }
 
   const sellerCity = apiProduct?.seller?.businessCity ?? null;
+  const seller = apiProduct?.seller ?? null;
+
+  // Lead with the trading name buyers would recognise, falling back to the
+  // account holder's name when no company name is set.
+  const companyName = seller?.companyName?.trim() || null;
+  const fullName = seller?.fullName?.trim() || null;
+  const sellerDisplayName = companyName ?? fullName ?? "Doju Seller";
+  const sellerSecondaryName =
+    companyName && fullName && companyName.toLowerCase() !== fullName.toLowerCase()
+      ? fullName
+      : null;
   const size = (apiProduct.size as "small" | "medium" | "large" | null) ?? null;
   const feeResult =
     deliveryCity && sellerCity
@@ -264,6 +277,33 @@ const ProductDetail = () => {
                   </span>
                 </div>
 
+                {/* Sold by */}
+                {seller && (
+                  <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-3">
+                    <div className="h-10 w-10 rounded-full bg-doju-lime/15 flex items-center justify-center flex-shrink-0">
+                      <Store className="h-5 w-5 text-doju-lime" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Sold by</p>
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {sellerDisplayName}
+                      </p>
+                      {/* Only shown when the trading name differs from the
+                          person's name, so it never repeats itself. */}
+                      {sellerSecondaryName && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {sellerSecondaryName}
+                        </p>
+                      )}
+                      {sellerCity && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Ships from {sellerCity}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Description */}
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   {product.description}
@@ -324,6 +364,13 @@ const ProductDetail = () => {
                         }`}
                       />
                     </button>
+                    <ShareProduct
+                      productId={product.id}
+                      productName={product.name}
+                      summary={formatPrice(product.price)}
+                      compact
+                      className="h-11 w-11 p-0 rounded-lg flex-shrink-0"
+                    />
                   </div>
                 </div>
 
