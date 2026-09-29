@@ -9,9 +9,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input/input";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Product, ApiProduct, ApiCategory } from "@/types";
-import { Search, ChevronDown, X, SlidersHorizontal } from "lucide-react";
-import { useGetProducts } from "./api/use-get-products";
+import {
+  Search,
+  ChevronDown,
+  X,
+  SlidersHorizontal,
+  Star,
+} from "lucide-react";
+import {
+  useGetProducts,
+  type ProductFilters,
+  type ProductSortBy,
+} from "./api/use-get-products";
 import { useGetCategories } from "../seller/api/use-get-categories";
 import heroMedical from "@/assets/hero-medical.jpg";
 import { mapApiProduct } from "@/lib/product-mapper";
@@ -32,13 +50,99 @@ const getVisiblePages = (current: number, total: number, max = 5) => {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 };
 
+/** Upper bound of the price slider; sitting at it means "no maximum". */
+const PRICE_MAX = 500000;
+
+const SORT_OPTIONS: { value: ProductSortBy | "relevant"; label: string }[] = [
+  { value: "relevant", label: "Most relevant" },
+  { value: "createdAt", label: "Newest" },
+  { value: "priceAsc", label: "Price: Low to High" },
+  { value: "priceDesc", label: "Price: High to Low" },
+  { value: "rating", label: "Top rated" },
+  { value: "name", label: "Name: A to Z" },
+  { value: "stock", label: "Most in stock" },
+];
+
+const RATING_OPTIONS = [4, 3, 2, 1];
+
 const Marketplace = () => {
-  const [page, setPage] = useState(1);
   const limit = 12;
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initialize state from URL params
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || "",
+  );
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    searchParams.get("category") || null,
+  );
+  const [sortBy, setSortBy] = useState<ProductSortBy | "relevant">("relevant");
+  const [minRating, setMinRating] = useState<number | null>(null);
+  const [inStock, setInStock] = useState(false);
+  // The slider moves `priceDraft` while dragging; `priceRange` is only
+  // committed on release so we don't fire a request per step.
+  const [priceDraft, setPriceDraft] = useState<[number, number]>([
+    0,
+    PRICE_MAX,
+  ]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    0,
+    PRICE_MAX,
+  ]);
+  const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
   const { data: apiCategories = [], isLoading: categoriesLoading } =
     useGetCategories();
+
+  // Map API categories
+  const categories: ApiCategory[] = useMemo(() => {
+    return (apiCategories as ApiCategory[]).filter((c) => c.isActive);
+  }, [apiCategories]);
+
+  // The URL may carry either a category id or a name (category cards link by
+  // name), so resolve it to the category record either way.
+  const resolvedCategory = useMemo(() => {
+    if (!selectedCategory) return null;
+    return (
+      categories.find(
+        (c) => c.id === selectedCategory || c.name === selectedCategory,
+      ) ?? null
+    );
+  }, [selectedCategory, categories]);
+  const resolvedCategoryName = resolvedCategory?.name ?? selectedCategory;
+
+  const filters: ProductFilters = {
+    limit,
+    categoryId: resolvedCategory?.id,
+    search: debouncedSearch.trim() || undefined,
+    sortBy: sortBy === "relevant" ? undefined : sortBy,
+    minRating: minRating ?? undefined,
+    minPrice: priceRange[0] > 0 ? priceRange[0] : undefined,
+    maxPrice: priceRange[1] < PRICE_MAX ? priceRange[1] : undefined,
+    inStock: inStock || undefined,
+  };
+
+  // Go back to the first page whenever the filters change. Done during render
+  // rather than in an effect so we never fetch the new filters at a stale page.
+  const [page, setPage] = useState(1);
+  const filtersKey = JSON.stringify(filters);
+  const [pageFiltersKey, setPageFiltersKey] = useState(filtersKey);
+  if (pageFiltersKey !== filtersKey) {
+    setPageFiltersKey(filtersKey);
+    setPage(1);
+  }
+
   const { data: productsResponse, isLoading: productsLoading } = useGetProducts(
-    { page, limit },
+    { ...filters, page },
+    // Wait for categories when a category is selected, otherwise we'd briefly
+    // fetch unfiltered results before the name resolves to an id.
+    { enabled: !selectedCategory || !categoriesLoading },
   );
 
   const apiProducts = productsResponse?.data ?? [];
@@ -48,39 +152,9 @@ const Marketplace = () => {
     limit,
     totalPages: 1,
   };
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  // Initialize state from URL params
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get("search") || "",
-  );
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    searchParams.get("category") || null,
-  );
-
-  // Map API categories
-  const categories: ApiCategory[] = useMemo(() => {
-    return (apiCategories as ApiCategory[]).filter((c) => c.isActive);
-  }, [apiCategories]);
-
-  // if the query param is a category id we want to translate it to a name so
-  // that our filtering logic (which compares against product.category/name)
-  // works correctly.
-  const resolvedCategoryName = useMemo(() => {
-    if (!selectedCategory) return null;
-    // look up by id first
-    const byId = categories.find((c) => c.id === selectedCategory);
-    if (byId) return byId.name;
-    // otherwise maybe the value is already a name
-    return selectedCategory;
-  }, [selectedCategory, categories]);
-
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
-  const [showFilters, setShowFilters] = useState(false);
 
   // Map API products to internal Product shape
-  const allProducts: Product[] = useMemo(() => {
+  const products: Product[] = useMemo(() => {
     return (apiProducts as ApiProduct[])
       .filter((p) => p.isActive)
       .map(mapApiProduct);
@@ -93,52 +167,40 @@ const Marketplace = () => {
 
     if (urlSearch !== null) {
       setSearchQuery(urlSearch);
+      setDebouncedSearch(urlSearch);
     }
     if (urlCategory !== null) {
       setSelectedCategory(urlCategory);
     }
   }, [searchParams]);
 
-  // Get unique brands from products
-  const brands = useMemo(() => {
-    const uniqueBrands = [...new Set(allProducts.map((p) => p.brand))];
-    return uniqueBrands.sort();
-  }, [allProducts]);
-
-  // Get price range from products
-  const maxPrice = useMemo(() => {
-    return allProducts.length > 0
-      ? Math.max(...allProducts.map((p) => p.price))
-      : 500000;
-  }, [allProducts]);
-
-  const filteredProducts = allProducts.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      !resolvedCategoryName || product.category === resolvedCategoryName;
-    const matchesBrand =
-      selectedBrands.length === 0 || selectedBrands.includes(product.brand);
-    const matchesPrice =
-      product.price >= priceRange[0] && product.price <= priceRange[1];
-    return matchesSearch && matchesCategory && matchesBrand && matchesPrice;
-  });
-
-  const toggleBrand = (brand: string) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
-    );
+  const resetPrice = () => {
+    setPriceDraft([0, PRICE_MAX]);
+    setPriceRange([0, PRICE_MAX]);
   };
 
   const clearAllFilters = () => {
     setSearchQuery("");
+    setDebouncedSearch("");
     setSelectedCategory(null);
-    setSelectedBrands([]);
-    setPriceRange([0, maxPrice]);
+    setSortBy("relevant");
+    setMinRating(null);
+    setInStock(false);
+    resetPrice();
     setSearchParams({});
   };
+
+  const hasPriceFilter = priceRange[0] > 0 || priceRange[1] < PRICE_MAX;
+  const hasActiveFilters =
+    !!selectedCategory ||
+    !!searchQuery ||
+    minRating !== null ||
+    inStock ||
+    hasPriceFilter;
+
+  const rangeStart =
+    paginationMeta.total === 0 ? 0 : (page - 1) * limit + 1;
+  const rangeEnd = Math.min(page * limit, paginationMeta.total);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -148,6 +210,9 @@ const Marketplace = () => {
       maximumFractionDigits: 0,
     }).format(price);
   };
+
+  const formatPriceMax = (price: number) =>
+    price >= PRICE_MAX ? `${formatPrice(PRICE_MAX)}+` : formatPrice(price);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -265,7 +330,6 @@ const Marketplace = () => {
                       }`}
                     >
                       <span>All Categories</span>
-                      <span className="text-xs">{allProducts.length}</span>
                     </motion.button>
                     {categoriesLoading ? (
                       <div className="px-4 py-3 text-sm text-muted-foreground">
@@ -279,7 +343,7 @@ const Marketplace = () => {
                           whileHover={{ x: 4 }}
                           whileTap={{ scale: 0.98 }}
                           className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-all ${
-                            selectedCategory === category.name
+                            resolvedCategory?.id === category.id
                               ? "bg-doju-lime text-doju-navy font-semibold"
                               : "hover:bg-muted text-muted-foreground hover:text-foreground"
                           }`}
@@ -287,47 +351,70 @@ const Marketplace = () => {
                           <span className="min-w-0 text-left break-words">
                             {category.name}
                           </span>
-                          <span className="text-xs shrink-0 ml-2">
-                            {
-                              allProducts.filter(
-                                (p) => p.category === category.name,
-                              ).length
-                            }
-                          </span>
                         </motion.button>
                       ))
                     )}
                   </div>
                 </motion.div>
 
-                {/* Brands */}
+                {/* Rating */}
                 <motion.div
                   className="rounded-2xl border border-border bg-card p-5"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
                 >
-                  <h3 className="font-bold text-foreground mb-4">Brands</h3>
+                  <h3 className="font-bold text-foreground mb-4">
+                    Customer Rating
+                  </h3>
                   <div className="space-y-1">
-                    {brands.map((brand) => (
+                    {RATING_OPTIONS.map((rating) => (
                       <motion.button
-                        key={brand}
-                        onClick={() => toggleBrand(brand)}
+                        key={rating}
+                        onClick={() =>
+                          setMinRating((prev) =>
+                            prev === rating ? null : rating,
+                          )
+                        }
                         whileHover={{ x: 4 }}
                         whileTap={{ scale: 0.98 }}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-all ${
-                          selectedBrands.includes(brand)
+                        className={`w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm transition-all ${
+                          minRating === rating
                             ? "bg-doju-lime text-doju-navy font-semibold"
                             : "hover:bg-muted text-muted-foreground hover:text-foreground"
                         }`}
                       >
-                        <span>{brand}</span>
-                        <span className="text-xs">
-                          {allProducts.filter((p) => p.brand === brand).length}
+                        <span className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3.5 w-3.5 ${
+                                i < rating
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "text-muted-foreground/40"
+                              }`}
+                            />
+                          ))}
                         </span>
+                        <span>& up</span>
                       </motion.button>
                     ))}
                   </div>
+                </motion.div>
+
+                {/* Availability */}
+                <motion.div
+                  className="rounded-2xl border border-border bg-card p-5"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                >
+                  <label className="flex items-center justify-between gap-3 cursor-pointer">
+                    <span className="font-bold text-foreground">
+                      In stock only
+                    </span>
+                    <Switch checked={inStock} onCheckedChange={setInStock} />
+                  </label>
                 </motion.div>
 
                 {/* Price Range */}
@@ -342,18 +429,21 @@ const Marketplace = () => {
                   </h3>
                   <div className="space-y-4">
                     <Slider
-                      value={[priceRange[0], priceRange[1]]}
+                      value={[priceDraft[0], priceDraft[1]]}
                       onValueChange={(value) =>
+                        setPriceDraft([value[0], value[1]])
+                      }
+                      onValueCommit={(value) =>
                         setPriceRange([value[0], value[1]])
                       }
                       min={0}
-                      max={maxPrice}
+                      max={PRICE_MAX}
                       step={5000}
                       className="w-full"
                     />
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{formatPrice(priceRange[0])}</span>
-                      <span>{formatPrice(priceRange[1])}</span>
+                      <span>{formatPrice(priceDraft[0])}</span>
+                      <span>{formatPriceMax(priceDraft[1])}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -382,25 +472,45 @@ const Marketplace = () => {
                 animate={{ opacity: 1 }}
               >
                 <p className="text-sm text-muted-foreground">
-                  Showing 1-{Math.min(12, filteredProducts.length)} of{" "}
-                  {filteredProducts.length} results
+                  Showing {rangeStart}-{rangeEnd} of {paginationMeta.total}{" "}
+                  results
                 </p>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-sm text-muted-foreground">Sort by</span>
-                  <Button variant="outline" size="sm" className="rounded-xl">
-                    Most relevant
-                    <ChevronDown className="h-4 w-4 ml-2" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="rounded-xl">
+                        {
+                          SORT_OPTIONS.find((option) => option.value === sortBy)
+                            ?.label
+                        }
+                        <ChevronDown className="h-4 w-4 ml-2" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuRadioGroup
+                        value={sortBy}
+                        onValueChange={(value) =>
+                          setSortBy(value as ProductSortBy | "relevant")
+                        }
+                      >
+                        {SORT_OPTIONS.map((option) => (
+                          <DropdownMenuRadioItem
+                            key={option.value}
+                            value={option.value}
+                          >
+                            {option.label}
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </motion.div>
 
               {/* Active Filters */}
               <AnimatePresence>
-                {(selectedCategory ||
-                  searchQuery ||
-                  selectedBrands.length > 0 ||
-                  priceRange[0] > 0 ||
-                  priceRange[1] < maxPrice) && (
+                {hasActiveFilters && (
                   <motion.div
                     className="flex flex-wrap gap-2 mb-6"
                     initial={{ opacity: 0, y: -10 }}
@@ -435,30 +545,43 @@ const Marketplace = () => {
                         </button>
                       </Badge>
                     )}
-                    {selectedBrands.map((brand) => (
+                    {minRating !== null && (
                       <Badge
-                        key={brand}
                         variant="secondary"
                         className="gap-1 py-1.5 px-3 rounded-full"
                       >
-                        {brand}
+                        {minRating}★ & up
                         <button
-                          onClick={() => toggleBrand(brand)}
+                          onClick={() => setMinRating(null)}
                           className="ml-1 hover:text-destructive"
                         >
                           <X className="h-3 w-3" />
                         </button>
                       </Badge>
-                    ))}
-                    {(priceRange[0] > 0 || priceRange[1] < maxPrice) && (
+                    )}
+                    {inStock && (
+                      <Badge
+                        variant="secondary"
+                        className="gap-1 py-1.5 px-3 rounded-full"
+                      >
+                        In stock
+                        <button
+                          onClick={() => setInStock(false)}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    )}
+                    {hasPriceFilter && (
                       <Badge
                         variant="secondary"
                         className="gap-1 py-1.5 px-3 rounded-full"
                       >
                         {formatPrice(priceRange[0])} -{" "}
-                        {formatPrice(priceRange[1])}
+                        {formatPriceMax(priceRange[1])}
                         <button
-                          onClick={() => setPriceRange([0, maxPrice])}
+                          onClick={resetPrice}
                           className="ml-1 hover:text-destructive"
                         >
                           <X className="h-3 w-3" />
@@ -469,18 +592,18 @@ const Marketplace = () => {
                 )}
               </AnimatePresence>
 
-              {productsLoading ? (
+              {productsLoading || (selectedCategory && categoriesLoading) ? (
                 <div className="flex items-center justify-center py-16">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doju-lime"></div>
                 </div>
-              ) : filteredProducts.length > 0 ? (
+              ) : products.length > 0 ? (
                 <motion.div
                   className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-6"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
-                  {filteredProducts.map((product, index) => (
+                  {products.map((product, index) => (
                     <ProductCard
                       key={product.id}
                       product={product}

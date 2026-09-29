@@ -15,6 +15,7 @@ import Privacy from "@/pages/Privacy";
 import RefundPolicy from "@/pages/RefundPolicy";
 import ReturnPolicy from "@/pages/ReturnPolicy";
 import DisputePolicy from "@/pages/DisputePolicy";
+import FAQ from "@/pages/FAQ";
 import Terms from "@/pages/Terms";
 import { createBrowserRouter } from "react-router-dom";
 import { authRoutes } from "./auth";
@@ -72,6 +73,10 @@ export const allRoutes = [
   {
     path: "/about",
     element: <About />,
+  },
+  {
+    path: "/faq",
+    element: <FAQ />,
   },
   {
     path: "/careers",

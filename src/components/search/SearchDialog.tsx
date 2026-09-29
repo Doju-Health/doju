@@ -111,8 +111,10 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 gap-0 overflow-hidden">
-        <DialogHeader className="p-4 pb-0">
+      {/* Close button sits beside the input (vertically centred on it)
+          rather than on top of it; the header's right padding makes room. */}
+      <DialogContent className="sm:max-w-xl p-0 gap-0 overflow-hidden [&>button]:top-8">
+        <DialogHeader className="p-4 pr-12 pb-0">
           <DialogTitle className="sr-only">Search products</DialogTitle>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

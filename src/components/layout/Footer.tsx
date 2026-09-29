@@ -161,6 +161,12 @@ const Footer = () => {
               >
                 About
               </Link>
+              <Link
+                to="/faq"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                FAQ
+              </Link>
               {isAuthenticated && (
                 <Link
                   to="/track-order"
