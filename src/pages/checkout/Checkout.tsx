@@ -817,12 +817,7 @@ const Checkout = () => {
                     <span className="text-muted-foreground">Delivery</span>
                     <span>{formatPrice(orderResult.bulkDeliveryFee)}</span>
                   </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Est. platform fee</span>
-                    <span>
-                      {formatPrice(orderResult.bulkEstimatedPlatformFee)}
-                    </span>
-                  </div>
+                  
                   <div className="border-t border-border pt-2.5 flex justify-between font-bold text-base">
                     <span>Total</span>
                     <span className="text-doju-lime">

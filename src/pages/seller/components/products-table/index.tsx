@@ -1,8 +1,13 @@
-import { DataTableWrapper, DataTable } from "@/components/ui/table";
+import {
+  DataTableWrapper,
+  DataTable,
+  DataTablePagination,
+} from "@/components/ui/table";
 import { getProductsColumns } from "./product-table-column";
 import { useGetSellersProducts } from "../../api/use-get-seller-products";
 import { useMemo, useState } from "react";
 import { QueryWrapper } from "@/components/query-wrapper/query-wrapper";
+import { usePaginationQuery } from "@/hooks/use-pagination-query";
 import { IProductData } from "@/types";
 import { CreateProductModal } from "../modal/create-product-modal";
 import { useDeleteProduct } from "../../api/use-delete-product";
@@ -18,9 +23,20 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export const ProductTable = () => {
-  const filters = { page: 1, limit: 10 };
+  const {
+    setPage,
+    setSize,
+    page: currentPage,
+    size: currentSize,
+  } = usePaginationQuery();
+  // This endpoint takes `limit` rather than `size`.
+  const filters = { page: currentPage, limit: currentSize };
   const getSellerProducts = useGetSellersProducts(filters);
   const { data: sellerProducts } = getSellerProducts || {};
+
+  const totalPages = sellerProducts?.meta?.totalPages;
+  const size = sellerProducts?.meta?.limit;
+  const totalDocuments = sellerProducts?.meta?.total;
   const [selectedProduct, setSelectedProduct] = useState<IProductData | null>(
     null,
   );
@@ -32,8 +48,8 @@ export const ProductTable = () => {
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
 
   const memoizedSellerProducts = useMemo(
-    () => sellerProducts,
-    [sellerProducts],
+    () => sellerProducts?.data,
+    [sellerProducts?.data],
   );
   const columns = getProductsColumns(
     (product) => {
@@ -50,8 +66,21 @@ export const ProductTable = () => {
     <>
       <QueryWrapper currentQuery={getSellerProducts}>
         <DataTableWrapper className="">
-          <DataTable columns={columns} data={memoizedSellerProducts} />
+          <DataTable columns={columns} data={memoizedSellerProducts ?? []} />
         </DataTableWrapper>
+
+        {(totalDocuments ?? 0) > 10 && (
+          <DataTablePagination
+            handleLimitChange={setSize}
+            handlePageChange={setPage}
+            pagination={{
+              totalItems: totalDocuments ?? 0,
+              totalPages: totalPages ?? 0,
+              currentPage: currentPage ?? 0,
+              itemsPerPage: size ?? 0,
+            }}
+          />
+        )}
       </QueryWrapper>
 
       <CreateProductModal
