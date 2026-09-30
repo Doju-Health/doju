@@ -1,6 +1,10 @@
 import { BuyersTable } from "../../components/buyers-table/buyers-table";
+import { TableSearchInput } from "../../components/table-search/table-search-input";
+import { useUrlSearch } from "../../components/table-search/use-url-search";
 
 export default function AdminBuyersPage() {
+  const { input, setInput, search } = useUrlSearch();
+
   return (
     <div className="space-y-6">
       <div>
@@ -9,7 +13,14 @@ export default function AdminBuyersPage() {
           Manage all buyers in the system.
         </p>
       </div>
-      <BuyersTable />
+      <div className="flex justify-end">
+        <TableSearchInput
+          value={input}
+          onChange={setInput}
+          placeholder="Search buyers..."
+        />
+      </div>
+      <BuyersTable search={search} />
     </div>
   );
 }

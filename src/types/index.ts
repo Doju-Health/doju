@@ -262,12 +262,28 @@ export interface IUsers {
   paystackRecipientCode: string | null;
   emailVerified: boolean;
   isVerified: "verified" | "pending" | "unverified";
+  /** Seller-only: true once an admin has approved the seller's KYC. */
+  kycApproved?: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
   ninUrl: string | null;
   cacUrl: string | null;
 }
+
+export type SellerKycStatus = "verified" | "pending" | "unverified";
+
+/**
+ * A seller's KYC state. Approval comes from `kycApproved`; `isVerified` only
+ * tells us whether a submission is waiting for review.
+ */
+export const getSellerKycStatus = (
+  user?: Pick<IUsers, "isVerified" | "kycApproved"> | null,
+): SellerKycStatus => {
+  if (user?.kycApproved) return "verified";
+  if (user?.isVerified === "pending") return "pending";
+  return "unverified";
+};
 
 export type FilterProps = {
   from?: string;
@@ -277,6 +293,8 @@ export type FilterProps = {
   search?: string;
   type?: string | null;
   status?: string;
+  role?: string;
+  isVerified?: "verified" | "pending" | "unverified" | "rejected";
 };
 
 export type Meta = {

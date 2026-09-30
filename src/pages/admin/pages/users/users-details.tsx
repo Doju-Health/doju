@@ -38,7 +38,7 @@ import { QueryWrapper } from "@/components/query-wrapper/query-wrapper";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CustomTextarea } from "@/components/ui/textarea/custom-textarea";
-import { IUsers } from "@/types";
+import { IUsers, getSellerKycStatus } from "@/types";
 import { cn } from "@/lib/utils";
 import { useGetAUser } from "../../api/use-get-a-user";
 import { useDeleteUser } from "../../api/use-delete-user";
@@ -100,6 +100,7 @@ export default function UserDetails() {
       : (queryPayload as IUsers | undefined);
 
   const isSeller = user?.role === "seller";
+  const kycStatus = getSellerKycStatus(user);
 
   /**
    * Joins the parts of a location, dropping any the API left null or blank and
@@ -200,7 +201,7 @@ export default function UserDetails() {
           </div>
 
           <div className="flex flex-col gap-2 w-full sm:w-auto">
-            {user?.role === "seller" && user?.isVerified !== "verified" && (
+            {user?.role === "seller" && kycStatus !== "verified" && (
               <AlertDialog
                 open={isVerifySellerModalOpen}
                 onOpenChange={setIsVerifySellerModalOpen}
@@ -240,7 +241,7 @@ export default function UserDetails() {
               </AlertDialog>
             )}
 
-            {user?.role === "seller" && user?.isVerified !== "verified" && (
+            {user?.role === "seller" && kycStatus !== "verified" && (
               <AlertDialog
                 open={isRejectSellerModalOpen}
                 onOpenChange={(open) => {
@@ -438,16 +439,16 @@ export default function UserDetails() {
                         <Badge
                           variant="outline"
                           className={cn(
-                            user.isVerified === "verified"
+                            kycStatus === "verified"
                               ? "border-green-200 bg-green-100 text-green-700"
-                              : user.isVerified === "pending"
+                              : kycStatus === "pending"
                                 ? "border-amber-200 bg-amber-100 text-amber-700"
                                 : "border-red-200 bg-red-100 text-red-700",
                           )}
                         >
-                          {user.isVerified === "verified"
+                          {kycStatus === "verified"
                             ? "Identity verified"
-                            : user.isVerified === "pending"
+                            : kycStatus === "pending"
                               ? "Identity pending"
                               : "Identity unverified"}
                         </Badge>

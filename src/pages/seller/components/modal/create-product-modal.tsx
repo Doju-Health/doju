@@ -13,7 +13,7 @@ import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { useEditProduct } from "../../api/use-edit-product";
-import { IProductData } from "@/types";
+import { IProductData, getSellerKycStatus } from "@/types";
 import { useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
@@ -95,7 +95,7 @@ export const CreateProductModal = ({
     onSubmit: async () => {
       try {
         const { data: profileData } = await refetchProfile();
-        const verificationStatus = profileData?.user?.isVerified;
+        const verificationStatus = getSellerKycStatus(profileData?.user);
 
         if (verificationStatus === "pending") {
           toast.error(

@@ -5,7 +5,7 @@ import { useGetUsers } from "../../api/use-get-users";
 import { usePaginationQuery } from "@/hooks/use-pagination-query";
 import { getBuyersColumn } from "./buyers-table-column";
 
-export const BuyersTable = () => {
+export const BuyersTable = ({ search }: { search?: string }) => {
   const {
     page: currentPage,
     size: currentSize,
@@ -16,6 +16,7 @@ export const BuyersTable = () => {
     page: currentPage,
     size: currentSize,
     role: "buyer",
+    search: search || undefined,
   };
   const getUsers = useGetUsers(filters);
   const { data: users } = getUsers || {};

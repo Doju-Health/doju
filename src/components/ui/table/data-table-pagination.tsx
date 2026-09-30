@@ -85,8 +85,8 @@ export const DataTablePagination = ({
         previousLabel={<MoveLeft className="size-5 cursor-pointer" />}
         containerClassName="flex gap-2 items-center"
         pageLinkClassName="w-full h-full flex items-center justify-center"
-        pageClassName="flex items-center justify-center border size-7 rounded-lg transition duration-300 ease-in-out hover:bg-primary cursor-pointer hover:text-white"
-        activeClassName="flex items-center justify-center bg-primary text-white size-7 border-purple rounded-lg"
+        pageClassName="flex items-center justify-center border size-7 rounded-lg transition duration-300 ease-in-out hover:bg-doju-lime-light cursor-pointer hover:text-white"
+        activeClassName="flex items-center justify-center bg-doju-lime text-white font-semibold size-7 border-doju-lime rounded-lg"
       />
     </div>
   );

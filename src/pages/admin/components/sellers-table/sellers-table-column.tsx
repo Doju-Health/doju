@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { Badge } from "@/components/ui/badge";
-import { IUsers } from "@/types";
+import { IUsers, getSellerKycStatus, type SellerKycStatus } from "@/types";
 import { cn } from "@/lib/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 import { buildAdminBackState } from "../../utils/back-navigation";
@@ -27,7 +27,7 @@ import { formatDate } from "date-fns";
 import { useDeactivateUser } from "../../api/use-deactivate-user";
 import { useDeleteUser } from "../../api/use-delete-user";
 
-const getStatusBadge = (status: IUsers["isVerified"]) => {
+const getStatusBadge = (status: SellerKycStatus) => {
   switch (status) {
     case "verified":
       return (
@@ -254,8 +254,7 @@ export const getSellersColumn = (): ColumnDef<IUsers>[] => [
     header: "STATUS",
     accessorKey: "isVerified",
     cell: ({ row }) => {
-      const isVerified = row.original.isVerified;
-      return <div>{getStatusBadge(isVerified)}</div>;
+      return <div>{getStatusBadge(getSellerKycStatus(row.original))}</div>;
     },
   },
   {

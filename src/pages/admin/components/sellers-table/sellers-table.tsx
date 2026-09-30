@@ -4,18 +4,28 @@ import { QueryWrapper } from "@/components/query-wrapper/query-wrapper";
 import { getSellersColumn } from "./sellers-table-column";
 import { useGetUsers } from "../../api/use-get-users";
 import { usePaginationQuery } from "@/hooks/use-pagination-query";
+import { FilterProps } from "@/types";
 
-export const SellersTable = () => {
+export const SellersTable = ({
+  isVerified,
+  search,
+}: {
+  /** Omit to list every seller. */
+  isVerified?: FilterProps["isVerified"];
+  search?: string;
+}) => {
   const {
     page: currentPage,
     size: currentSize,
     setPage,
     setSize,
   } = usePaginationQuery();
-  const filters = {
+  const filters: FilterProps = {
     page: currentPage,
     size: currentSize,
     role: "seller",
+    isVerified,
+    search: search || undefined,
   };
   const getUsers = useGetUsers(filters);
   const { data: users } = getUsers || {};

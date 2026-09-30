@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { getSellerKycStatus } from "@/types";
 import { CustomInput } from "@/components/ui/input/custom-input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -44,7 +45,7 @@ export default function KYCVerificationPage() {
   const { mutateAsync: uploadImage } = useUploadImage();
   const { mutateAsync: updateProfile } = useUpdateProfile();
   const getUserProfile = useGetUserProfile();
-  const isVerified = getUserProfile.data?.user?.isVerified;
+  const kycStatus = getSellerKycStatus(getUserProfile.data?.user);
 
   useEffect(() => {
     if (!ninImage || !ninImage.type.startsWith("image/")) {
@@ -186,7 +187,7 @@ export default function KYCVerificationPage() {
           </p>
         </div>
 
-        {isVerified === "verified" ? (
+        {kycStatus === "verified" ? (
           <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-5 py-4 text-emerald-800">
             <p className="flex items-start gap-2 text-sm font-semibold">
               <CheckCircle className="mt-0.5 size-4" />
@@ -197,7 +198,7 @@ export default function KYCVerificationPage() {
               business details and documents if needed.
             </p>
           </div>
-        ) : isVerified === "pending" ? (
+        ) : kycStatus === "pending" ? (
           <div className="rounded-lg border border-blue-300 bg-blue-50 px-5 py-4 text-blue-800">
             <p className="flex items-start gap-2 text-sm font-semibold">
               <AlertTriangle className="mt-0.5 size-4" />

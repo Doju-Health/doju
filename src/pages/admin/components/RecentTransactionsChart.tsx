@@ -42,10 +42,10 @@ export const RecentTransactionsChart = () => {
       currentQuery={transactionsQuery}
       customLoader={<Skeleton className="h-80 w-full rounded-md" />}
     >
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-          <CardDescription>
+      <Card className="rounded-2xl">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Recent Transactions</CardTitle>
+          <CardDescription className="text-xs">
             Transaction amounts over the last 10 transactions
           </CardDescription>
         </CardHeader>
@@ -56,33 +56,21 @@ export const RecentTransactionsChart = () => {
           >
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <CartesianGrid vertical={false} stroke="#eef0f3" />
                 <XAxis
                   dataKey="date"
                   stroke="#6b7280"
+                  axisLine={false}
+                  tickLine={false}
+                  tickMargin={10}
                   style={{ fontSize: "12px", fontFamily: "Inter, sans-serif" }}
-                  label={{
-                    value: "Date",
-                    position: "insideBottomRight",
-                    offset: -8,
-                    style: {
-                      fontFamily: "Inter, sans-serif",
-                      fontSize: "12px",
-                    },
-                  }}
                 />
                 <YAxis
                   stroke="#6b7280"
+                  axisLine={false}
+                  tickLine={false}
+                  width={48}
                   style={{ fontSize: "12px", fontFamily: "Inter, sans-serif" }}
-                  label={{
-                    value: "Amount (₦)",
-                    angle: -90,
-                    position: "insideLeft",
-                    style: {
-                      fontFamily: "Inter, sans-serif",
-                      fontSize: "12px",
-                    },
-                  }}
                   tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
@@ -109,12 +97,12 @@ export const RecentTransactionsChart = () => {
                 <Area
                   type="monotone"
                   dataKey="amount"
-                  stroke="hsl(95 70% 45%)"
-                  fill="hsl(95 50% 95%)"
-                  fillOpacity={1}
-                  strokeWidth={0.7}
-                  dot={{ fill: "hsl(95 70% 45%)", r: 2 }}
-                  activeDot={{ r: 3 }}
+                  stroke="#22c55e"
+                  fill="#22c55e"
+                  fillOpacity={0.1}
+                  strokeWidth={2}
+                  dot={{ fill: "#22c55e", r: 3, strokeWidth: 0 }}
+                  activeDot={{ r: 5 }}
                   isAnimationActive={true}
                 />
               </AreaChart>

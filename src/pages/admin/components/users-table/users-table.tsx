@@ -9,7 +9,7 @@ import { getUsersColumn } from "./users-table-column";
 import { useGetUsers } from "../../api/use-get-users";
 import { usePaginationQuery } from "@/hooks/use-pagination-query";
 
-export const UsersTable = () => {
+export const UsersTable = ({ search }: { search?: string }) => {
   const {
     setPage,
     setSize,
@@ -19,7 +19,8 @@ export const UsersTable = () => {
   const filters = {
     page: currentPage,
     size: currentSize,
-  }
+    search: search || undefined,
+  };
   const getUsers = useGetUsers(filters);
   const { data: users } = getUsers || {};
   const columns = getUsersColumn();
