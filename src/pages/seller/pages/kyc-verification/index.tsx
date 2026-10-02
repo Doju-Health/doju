@@ -181,16 +181,16 @@ export default function KYCVerificationPage() {
     <QueryWrapper currentQuery={getUserProfile}>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">KYC Verification</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">KYC Verification</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Submit your business details and documents for verification.
           </p>
         </div>
 
         {kycStatus === "verified" ? (
-          <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-5 py-4 text-emerald-800">
+          <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 sm:px-5 sm:py-4 text-emerald-800">
             <p className="flex items-start gap-2 text-sm font-semibold">
-              <CheckCircle className="mt-0.5 size-4" />
+              <CheckCircle className="mt-0.5 size-4 shrink-0" />
               Account Verified
             </p>
             <p className="mt-1 text-sm">
@@ -199,9 +199,9 @@ export default function KYCVerificationPage() {
             </p>
           </div>
         ) : kycStatus === "pending" ? (
-          <div className="rounded-lg border border-blue-300 bg-blue-50 px-5 py-4 text-blue-800">
+          <div className="rounded-lg border border-blue-300 bg-blue-50 px-4 py-3 sm:px-5 sm:py-4 text-blue-800">
             <p className="flex items-start gap-2 text-sm font-semibold">
-              <AlertTriangle className="mt-0.5 size-4" />
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
               KYC Pending Review
             </p>
             <p className="mt-1 text-sm">
@@ -210,9 +210,9 @@ export default function KYCVerificationPage() {
             </p>
           </div>
         ) : (
-          <div className="rounded-lg border border-amber-300 bg-amber-50 px-5 py-4 text-amber-800">
+          <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 sm:px-5 sm:py-4 text-amber-800">
             <p className="flex items-start gap-2 text-sm font-semibold">
-              <AlertTriangle className="mt-0.5 size-4" />
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
               Action Required: Complete your KYC
             </p>
             <p className="mt-1 text-sm">
@@ -223,7 +223,7 @@ export default function KYCVerificationPage() {
         )}
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="px-4 pt-5 sm:px-6 sm:pt-6">
             <form
               className="space-y-5"
               onSubmit={(e) => {
@@ -237,17 +237,17 @@ export default function KYCVerificationPage() {
               }}
             >
               <div className="space-y-4">
-                <h2 className="text-2xl font-semibold">Personal Details</h2>
+                <h2 className="text-lg sm:text-2xl font-semibold">Personal Details</h2>
                 <div className="h-px w-full bg-border" />
               </div>
 
               <div className="space-y-4 pt-2">
-                <h2 className="text-2xl font-semibold">
+                <h2 className="text-lg sm:text-2xl font-semibold">
                   Business Registration
                 </h2>
                 <div className="h-px w-full bg-border" />
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <CustomInput
                     name="businessName"
                     label="Registered Business Name"
@@ -330,16 +330,16 @@ export default function KYCVerificationPage() {
                   <div
                     onClick={() => ninInputRef.current?.click()}
                     className={cn(
-                      "flex h-56 cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-md border border-dashed border-doju-lime/40 bg-doju-lime-pale/40 px-4 text-center",
+                      "flex h-44 sm:h-56 cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-md border border-dashed border-doju-lime/40 bg-doju-lime-pale/40 px-4 text-center",
                       fileErrors.ninImage && "border-destructive",
                     )}
                   >
                     {ninPreviewUrl ? (
-                      <div className="relative h-56 w-full">
+                      <div className="relative h-44 sm:h-56 w-full">
                         <img
                           src={ninPreviewUrl}
                           alt="NIN preview"
-                          className="h-56 w-full object-cover"
+                          className="h-44 sm:h-56 w-full object-cover"
                         />
                         <div className="absolute inset-x-0 bottom-0 bg-black/55 px-3 py-2 text-left text-white">
                           <p className="truncate text-sm font-medium">
@@ -364,7 +364,7 @@ export default function KYCVerificationPage() {
                   </div>
 
                   {ninImage && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground break-all">
                       Selected file: {ninImage.name}
                     </p>
                   )}
@@ -395,16 +395,16 @@ export default function KYCVerificationPage() {
                   <div
                     onClick={() => cacInputRef.current?.click()}
                     className={cn(
-                      "flex h-56 cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-md border border-dashed border-doju-lime/40 bg-doju-lime-pale/40 px-4 text-center",
+                      "flex h-44 sm:h-56 cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-md border border-dashed border-doju-lime/40 bg-doju-lime-pale/40 px-4 text-center",
                       fileErrors.cacDocument && "border-destructive",
                     )}
                   >
                     {cacPreviewUrl ? (
-                      <div className="relative h-56 w-full">
+                      <div className="relative h-44 sm:h-56 w-full">
                         <img
                           src={cacPreviewUrl}
                           alt="CAC preview"
-                          className="h-56 w-full object-cover"
+                          className="h-44 sm:h-56 w-full object-cover"
                         />
                         <div className="absolute inset-x-0 bottom-0 bg-black/55 px-3 py-2 text-left text-white">
                           <p className="truncate text-sm font-medium">
@@ -439,7 +439,7 @@ export default function KYCVerificationPage() {
                   </div>
 
                   {cacDocument && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground break-all">
                       Selected file: {cacDocument.name}
                     </p>
                   )}
@@ -452,10 +452,11 @@ export default function KYCVerificationPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 border-t pt-4">
+              <div className="flex flex-col-reverse gap-3 border-t pt-4 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
                   variant="outline"
+                  className="w-full sm:w-auto"
                   onClick={handleSaveDraft}
                 >
                   Save Draft
@@ -463,6 +464,7 @@ export default function KYCVerificationPage() {
                 <Button
                   type="submit"
                   variant="doju-primary"
+                  className="w-full sm:w-auto"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Submitting..." : "Submit for Verification"}
